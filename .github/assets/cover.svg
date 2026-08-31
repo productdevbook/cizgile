@@ -1,0 +1,225 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 628" width="1200" height="628">
+  <defs>
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feBlend in="SourceGraphic" mode="overlay" result="blend"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.06"/>
+      </feComponentTransfer>
+      <feBlend in="SourceGraphic" mode="normal"/>
+    </filter>
+
+    <filter id="glow-emerald" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feFlood flood-color="#34d399" flood-opacity="0.5"/>
+      <feComposite in2="blur" operator="in"/>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-cyan" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feFlood flood-color="#06b6d4" flood-opacity="0.45"/>
+      <feComposite in2="blur" operator="in"/>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-purple" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feFlood flood-color="#a78bfa" flood-opacity="0.4"/>
+      <feComposite in2="blur" operator="in"/>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-orange" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feFlood flood-color="#f97316" flood-opacity="0.35"/>
+      <feComposite in2="blur" operator="in"/>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <radialGradient id="ambientEmerald" cx="0.05" cy="0.2" r="0.4">
+      <stop offset="0%" stop-color="#34d399" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#34d399" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="ambientCyan" cx="0.95" cy="0.15" r="0.35">
+      <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.07"/>
+      <stop offset="100%" stop-color="#06b6d4" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="ambientPurple" cx="0.05" cy="0.85" r="0.35">
+      <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#a78bfa" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="ambientOrange" cx="0.95" cy="0.85" r="0.35">
+      <stop offset="0%" stop-color="#f97316" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#f97316" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="centerBackdrop" cx="0.5" cy="0.5" r="0.55">
+      <stop offset="0%" stop-color="#06070b" stop-opacity="0.96"/>
+      <stop offset="55%" stop-color="#06070b" stop-opacity="0.9"/>
+      <stop offset="80%" stop-color="#06070b" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#06070b" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="dotGrid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="0.6" fill="#334155" opacity="0.35"/>
+    </pattern>
+    <radialGradient id="vignetteGrad" cx="0.5" cy="0.5" r="0.7">
+      <stop offset="0%" stop-color="transparent"/>
+      <stop offset="100%" stop-color="#06070b"/>
+    </radialGradient>
+    <linearGradient id="slugLine" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="50%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#a78bfa"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="628" fill="#06070b"/>
+  <rect width="1200" height="628" fill="url(#ambientEmerald)"/>
+  <rect width="1200" height="628" fill="url(#ambientCyan)"/>
+  <rect width="1200" height="628" fill="url(#ambientPurple)"/>
+  <rect width="1200" height="628" fill="url(#ambientOrange)"/>
+  <rect width="1200" height="628" fill="url(#dotGrid)" opacity="0.4"/>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- TRANSFORM CARD — top left               -->
+  <!-- input → slugify → slug                  -->
+  <!-- ════════════════════════════════════════ -->
+  <g transform="translate(-10, 6) rotate(-9, 180, 130)" filter="url(#glow-emerald)" opacity="0.85">
+    <rect x="20" y="30" width="330" height="176" rx="10" fill="#34d39910" stroke="#34d399" stroke-width="1.2"/>
+    <line x1="20" y1="62" x2="350" y2="62" stroke="#34d399" stroke-width="1"/>
+    <circle cx="38" cy="46" r="4" fill="#34d399" opacity="0.6"/>
+    <circle cx="52" cy="46" r="4" fill="#34d399" opacity="0.4"/>
+    <circle cx="66" cy="46" r="4" fill="#34d399" opacity="0.25"/>
+    <text font-family="'SF Mono','Fira Code',monospace" font-size="13" fill="#34d399">
+      <tspan x="36" y="92" opacity="0.7">slugify(</tspan>
+      <tspan x="104" y="92" fill="#f8fafc">"İstanbul Şişli &amp; Çığ"</tspan>
+      <tspan x="296" y="92" opacity="0.7">, {</tspan>
+      <tspan x="60" y="116" opacity="0.7">locale: </tspan>
+      <tspan x="130" y="116" fill="#fbbf24">"tr"</tspan>
+      <tspan x="36" y="140" opacity="0.7">})</tspan>
+      <tspan x="36" y="178" opacity="0.7">// </tspan>
+      <tspan x="60" y="178" fill="#f8fafc" font-weight="bold">istanbul-sisli-ve-cig</tspan>
+    </text>
+  </g>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- URL BAR — top right                     -->
+  <!-- the slug is the last path segment       -->
+  <!-- ════════════════════════════════════════ -->
+  <g transform="translate(830, 24) rotate(8, 180, 60)" filter="url(#glow-cyan)" opacity="0.85">
+    <rect x="0" y="20" width="372" height="48" rx="24" fill="#06b6d410" stroke="#06b6d4" stroke-width="1.2"/>
+    <circle cx="26" cy="44" r="7" fill="none" stroke="#06b6d4" stroke-width="1.3"/>
+    <path d="M23 44 l2 2 l4 -4" stroke="#06b6d4" stroke-width="1.3" fill="none"/>
+    <text font-family="'SF Mono','Fira Code',monospace" font-size="13">
+      <tspan x="44" y="49" fill="#06b6d4" opacity="0.7">https://example.com/blog/</tspan>
+      <tspan fill="#f8fafc" font-weight="bold">deja-vu</tspan>
+    </text>
+    <rect x="256" y="30" width="72" height="28" rx="6" fill="none" stroke="#06b6d4" stroke-width="1" stroke-dasharray="3 3" opacity="0.8"/>
+    <text x="292" y="96" text-anchor="middle" font-family="'SF Mono','Fira Code',monospace" font-size="10.5" fill="#06b6d4" letter-spacing="2" opacity="0.8">SEGMENT-NZ-NC</text>
+    <text font-family="'SF Mono','Fira Code',monospace" font-size="12" fill="#06b6d4" opacity="0.65">
+      <tspan x="44" y="126">"Déjà Vu!"</tspan>
+      <tspan x="138" y="126" fill="#f8fafc" opacity="0.9">→</tspan>
+      <tspan x="160" y="126" fill="#f8fafc">deja-vu</tspan>
+    </text>
+  </g>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- SCRIPTS — bottom left                   -->
+  <!-- transliteration pairs                   -->
+  <!-- ════════════════════════════════════════ -->
+  <g transform="translate(24, 416) rotate(7, 150, 80)" filter="url(#glow-purple)" opacity="0.85">
+    <g font-family="'Georgia','Noto Serif','DejaVu Serif',serif" font-size="30" fill="#a78bfa">
+      <text x="24" y="40">Щ</text>
+      <text x="24" y="86">Ø</text>
+      <text x="24" y="132">ß</text>
+      <text x="150" y="40">Ω</text>
+      <text x="150" y="86">Đ</text>
+      <text x="150" y="132">Ş</text>
+    </g>
+    <g font-family="'SF Mono','Fira Code',monospace" font-size="15" fill="#f8fafc" opacity="0.9">
+      <text x="64" y="38">→ shch</text>
+      <text x="64" y="84">→ oe</text>
+      <text x="64" y="130">→ ss</text>
+      <text x="186" y="38">→ o</text>
+      <text x="186" y="84">→ d</text>
+      <text x="186" y="130">→ s</text>
+    </g>
+    <text x="24" y="170" font-family="'SF Mono','Fira Code',monospace" font-size="10.5" fill="#a78bfa" letter-spacing="2" opacity="0.8">7 SCRIPTS · 19 LOCALES · NFD FALLBACK</text>
+  </g>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- RFC 3986 — bottom right                 -->
+  <!-- ABNF + percent-encoding                 -->
+  <!-- ════════════════════════════════════════ -->
+  <g transform="translate(846, 424) rotate(-8, 160, 90)" filter="url(#glow-orange)" opacity="0.85">
+    <rect x="0" y="0" width="330" height="170" rx="10" fill="#f9731610" stroke="#f97316" stroke-width="1.2"/>
+    <text x="16" y="26" font-family="'SF Mono','Fira Code',monospace" font-size="10.5" fill="#f97316" letter-spacing="2" opacity="0.9">RFC 3986 · STD 66</text>
+    <text font-family="'SF Mono','Fira Code',monospace" font-size="12.5" fill="#f8fafc" opacity="0.9">
+      <tspan x="16" y="56"><tspan fill="#f97316">unreserved</tspan> = ALPHA / DIGIT</tspan>
+      <tspan x="16" y="76">           / "-" / "." / "_" / "~"</tspan>
+      <tspan x="16" y="106"><tspan fill="#f97316">pct-encoded</tspan> = "%" HEXDIG HEXDIG</tspan>
+      <tspan x="16" y="140">résumé → r<tspan fill="#f97316">%C3%A9</tspan>sum<tspan fill="#f97316">%C3%A9</tspan></tspan>
+    </text>
+  </g>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- CENTER DARK BACKDROP                    -->
+  <!-- ════════════════════════════════════════ -->
+  <rect width="1200" height="628" fill="url(#centerBackdrop)"/>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- CENTER CONTENT                          -->
+  <!-- ════════════════════════════════════════ -->
+
+  <!-- wordmark -->
+  <text x="600" y="256" text-anchor="middle" fill="#f8fafc" font-family="'Georgia','Playfair Display','Times New Roman',serif" font-size="148" font-weight="bold" letter-spacing="-3" opacity="0.97">cizgi</text>
+
+  <!-- the slug line: a hyphen drawn as a gradient rule -->
+  <line x1="340" y1="284" x2="860" y2="284" stroke="url(#slugLine)" stroke-width="2" opacity="0.7"/>
+
+  <!-- Tagline -->
+  <text x="600" y="324" text-anchor="middle" fill="#cbd5e1" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="19" letter-spacing="6">ZERO-DEP URL SLUG ENGINE</text>
+
+  <!-- Feature pills -->
+  <g font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="14" letter-spacing="1.5">
+    <g transform="translate(140, 354)">
+      <rect x="0" y="0" width="164" height="38" rx="19" fill="#34d39910" stroke="#34d399" stroke-width="1.3" opacity="0.7"/>
+      <text x="82" y="25" text-anchor="middle" fill="#34d399" opacity="0.95">0 DEPENDENCIES</text>
+    </g>
+    <g transform="translate(320, 354)">
+      <rect x="0" y="0" width="150" height="38" rx="19" fill="#06b6d410" stroke="#06b6d4" stroke-width="1.3" opacity="0.7"/>
+      <text x="75" y="25" text-anchor="middle" fill="#06b6d4" opacity="0.95">RFC 3986/3987</text>
+    </g>
+    <g transform="translate(486, 354)">
+      <rect x="0" y="0" width="140" height="38" rx="19" fill="#a78bfa10" stroke="#a78bfa" stroke-width="1.3" opacity="0.7"/>
+      <text x="70" y="25" text-anchor="middle" fill="#a78bfa" opacity="0.95">TYPESCRIPT</text>
+    </g>
+    <g transform="translate(642, 354)">
+      <rect x="0" y="0" width="172" height="38" rx="19" fill="#f9731610" stroke="#f97316" stroke-width="1.3" opacity="0.7"/>
+      <text x="86" y="25" text-anchor="middle" fill="#f97316" opacity="0.95">TREE-SHAKEABLE</text>
+    </g>
+    <g transform="translate(830, 354)">
+      <rect x="0" y="0" width="230" height="38" rx="19" fill="#fbbf2410" stroke="#fbbf24" stroke-width="1.3" opacity="0.7"/>
+      <text x="115" y="25" text-anchor="middle" fill="#fbbf24" opacity="0.95">19 LOCALES · 7 SCRIPTS</text>
+    </g>
+  </g>
+
+  <!-- Capability list -->
+  <text x="600" y="430" text-anchor="middle" fill="#94a3b8" font-family="'SF Mono','Fira Code',monospace" font-size="13" letter-spacing="2.5">SLUGIFY · TRANSLITERATE · UNICODE · IRI → URI · PERCENT-ENCODE · NORMALIZE</text>
+
+  <!-- npm install badge -->
+  <g transform="translate(498, 458)">
+    <rect x="0" y="0" width="204" height="40" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1.2"/>
+    <text x="20" y="26" fill="#64748b" font-family="'SF Mono','Fira Code',monospace" font-size="16">$</text>
+    <text x="38" y="26" fill="#94a3b8" font-family="'SF Mono','Fira Code',monospace" font-size="16"> npm i </text>
+    <text x="118" y="26" fill="#f8fafc" font-family="'SF Mono','Fira Code',monospace" font-size="16" font-weight="bold">cizgi</text>
+  </g>
+
+  <!-- GitHub link -->
+  <text x="600" y="556" text-anchor="middle" fill="#64748b" font-family="'SF Mono','Fira Code',monospace" font-size="13" letter-spacing="1.5">github.com/productdevbook/cizgi</text>
+
+  <!-- Grain overlay -->
+  <rect width="1200" height="628" filter="url(#grain)" opacity="0.2"/>
+
+  <!-- Vignette -->
+  <rect width="1200" height="628" fill="url(#vignetteGrad)" opacity="0.45"/>
+</svg>

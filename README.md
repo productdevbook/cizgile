@@ -1,15 +1,20 @@
-# cizgi
-
-<p>
+<p align="center">
+  <br>
+  <img src=".github/assets/cover.svg" alt="cizgi — Zero-dependency URL slug engine" width="100%">
+  <br><br>
+  <b style="font-size: 2em;">cizgi</b>
+  <br><br>
+  Zero-dependency URL slug engine.
+  <br>
+  RFC 3986/3987 slugs, transliteration for seven scripts, Unicode slugs, IRI ↔ URI, percent-encoding, dot-segment removal, reference resolution. Pure TypeScript, works everywhere.
+  <br><br>
   <a href="https://npmjs.com/package/cizgi"><img src="https://img.shields.io/npm/v/cizgi?style=flat&colorA=18181B&colorB=34d399" alt="npm version"></a>
   <a href="https://npmjs.com/package/cizgi"><img src="https://img.shields.io/npm/dm/cizgi?style=flat&colorA=18181B&colorB=34d399" alt="npm downloads"></a>
   <a href="https://bundlephobia.com/result?p=cizgi"><img src="https://img.shields.io/bundlephobia/minzip/cizgi?style=flat&colorA=18181B&colorB=34d399" alt="bundle size"></a>
   <a href="https://github.com/productdevbook/cizgi/blob/main/LICENSE"><img src="https://img.shields.io/github/license/productdevbook/cizgi?style=flat&colorA=18181B&colorB=34d399" alt="license"></a>
 </p>
 
-URL slugs grounded in RFC 3986 / RFC 3987. Transliteration for Latin, Cyrillic, Greek, Arabic,
-Armenian, Georgian and Dhivehi, Unicode slugs, IRI ↔ URI conversion, percent-encoding, dot-segment
-removal, reference resolution and normalisation. Zero dependencies, ESM only, tree-shakeable.
+## Quick Start
 
 ```sh
 npm install cizgi
@@ -218,6 +223,17 @@ bun run release   # test + build, then bumpp --commit --tag --push --all; the v*
 ```
 
 Node ≥ 20.19 or any runtime with `String.prototype.normalize` and Unicode property escapes.
+
+## Credits
+
+cizgi stands on the shoulders of people who solved pieces of this problem first:
+
+- [simov/slugify](https://github.com/simov/slugify) — the charmap + per-locale override idea, and most of the Cyrillic, Greek, Arabic and symbol values.
+- [sindresorhus/slugify](https://github.com/sindresorhus/slugify) and [sindresorhus/transliterate](https://github.com/sindresorhus/transliterate) — `decamelize`, `customReplacements`, the counter slugger, and the Armenian, Georgian, Vietnamese and Dhivehi tables.
+- [Django](https://github.com/django/django) `django.utils.text.slugify` and [Rails](https://github.com/rails/rails) `ActiveSupport::Inflector#parameterize` — the reference behaviours the parity tests are written against.
+- [WHATWG URL Standard](https://url.spec.whatwg.org/) — the percent-encode sets and the parser every `cizgi/uri` result is cross-checked with.
+- [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986) by Berners-Lee, Fielding and Masinter, and [RFC 3987](https://datatracker.ietf.org/doc/html/rfc3987) by Duerst and Suignard — the specifications this library exists to implement faithfully.
+- [Rolldown](https://rolldown.rs), [Oxc](https://oxc.rs), [Vitest](https://vitest.dev), [Bun](https://bun.sh) and [TypeScript](https://www.typescriptlang.org) — the toolchain.
 
 ## License
 
