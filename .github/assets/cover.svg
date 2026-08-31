@@ -171,7 +171,7 @@
   <!-- ════════════════════════════════════════ -->
 
   <!-- wordmark -->
-  <text x="600" y="256" text-anchor="middle" fill="#f8fafc" font-family="'Georgia','Playfair Display','Times New Roman',serif" font-size="148" font-weight="bold" letter-spacing="-3" opacity="0.97">cizgi</text>
+  <text x="600" y="256" text-anchor="middle" fill="#f8fafc" font-family="'Georgia','Playfair Display','Times New Roman',serif" font-size="148" font-weight="bold" letter-spacing="-3" opacity="0.97">cizgile</text>
 
   <!-- the slug line: a hyphen drawn as a gradient rule -->
   <line x1="340" y1="284" x2="860" y2="284" stroke="url(#slugLine)" stroke-width="2" opacity="0.7"/>
@@ -207,11 +207,11 @@
   <text x="600" y="430" text-anchor="middle" fill="#94a3b8" font-family="'SF Mono','Fira Code',monospace" font-size="13" letter-spacing="2.5">SLUGIFY · TRANSLITERATE · UNICODE · IRI → URI · PERCENT-ENCODE · NORMALIZE</text>
 
   <!-- npm install badge -->
-  <g transform="translate(498, 458)">
-    <rect x="0" y="0" width="204" height="40" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1.2"/>
+  <g transform="translate(486, 458)">
+    <rect x="0" y="0" width="228" height="40" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1.2"/>
     <text x="20" y="26" fill="#64748b" font-family="'SF Mono','Fira Code',monospace" font-size="16">$</text>
     <text x="38" y="26" fill="#94a3b8" font-family="'SF Mono','Fira Code',monospace" font-size="16"> npm i </text>
-    <text x="118" y="26" fill="#f8fafc" font-family="'SF Mono','Fira Code',monospace" font-size="16" font-weight="bold">cizgi</text>
+    <text x="118" y="26" fill="#f8fafc" font-family="'SF Mono','Fira Code',monospace" font-size="16" font-weight="bold">cizgile</text>
   </g>
 
   <!-- GitHub link -->

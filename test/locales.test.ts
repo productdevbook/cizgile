@@ -72,7 +72,7 @@ describe("other Latin locales", () => {
   })
 })
 
-describe("Cyrillic locales (Locale objects from cizgi/transliterate)", () => {
+describe("Cyrillic locales (Locale objects from cizgile/transliterate)", () => {
   it("Ukrainian", () => {
     expect(slugify("Київ Ґудзик", { locale: uk })).toBe("kyiv-gudzyk")
     expect(slugify("Щастя & Здоров'я", { locale: uk })).toBe("shchastia-ta-zdorovia")

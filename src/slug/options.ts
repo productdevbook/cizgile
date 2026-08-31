@@ -57,7 +57,7 @@ function resolveLocale(locale: LatinLocaleId | Locale | undefined): Locale | und
     const found = latinLocales[locale] as Locale | undefined
     if (found === undefined) {
       throw new TypeError(
-        `slugify: unknown locale "${locale}"; pass a Locale object exported by cizgi/transliterate`,
+        `slugify: unknown locale "${locale}"; pass a Locale object exported by cizgile/transliterate`,
       )
     }
     return found

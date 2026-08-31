@@ -1,27 +1,27 @@
 <p align="center">
   <br>
-  <img src=".github/assets/cover.svg" alt="cizgi — Zero-dependency URL slug engine" width="100%">
+  <img src=".github/assets/cover.svg" alt="cizgile — Zero-dependency URL slug engine" width="100%">
   <br><br>
-  <b style="font-size: 2em;">cizgi</b>
+  <b style="font-size: 2em;">cizgile</b>
   <br><br>
   Zero-dependency URL slug engine.
   <br>
   RFC 3986/3987 slugs, transliteration for seven scripts, Unicode slugs, IRI ↔ URI, percent-encoding, dot-segment removal, reference resolution. Pure TypeScript, works everywhere.
   <br><br>
-  <a href="https://npmjs.com/package/cizgi"><img src="https://img.shields.io/npm/v/cizgi?style=flat&colorA=18181B&colorB=34d399" alt="npm version"></a>
-  <a href="https://npmjs.com/package/cizgi"><img src="https://img.shields.io/npm/dm/cizgi?style=flat&colorA=18181B&colorB=34d399" alt="npm downloads"></a>
-  <a href="https://bundlephobia.com/result?p=cizgi"><img src="https://img.shields.io/bundlephobia/minzip/cizgi?style=flat&colorA=18181B&colorB=34d399" alt="bundle size"></a>
+  <a href="https://npmjs.com/package/cizgile"><img src="https://img.shields.io/npm/v/cizgile?style=flat&colorA=18181B&colorB=34d399" alt="npm version"></a>
+  <a href="https://npmjs.com/package/cizgile"><img src="https://img.shields.io/npm/dm/cizgile?style=flat&colorA=18181B&colorB=34d399" alt="npm downloads"></a>
+  <a href="https://bundlephobia.com/result?p=cizgile"><img src="https://img.shields.io/bundlephobia/minzip/cizgile?style=flat&colorA=18181B&colorB=34d399" alt="bundle size"></a>
   <a href="https://github.com/productdevbook/cizgi/blob/main/LICENSE"><img src="https://img.shields.io/github/license/productdevbook/cizgi?style=flat&colorA=18181B&colorB=34d399" alt="license"></a>
 </p>
 
 ## Quick Start
 
 ```sh
-npm install cizgi
+npm install cizgile
 ```
 
 ```ts
-import { slugify } from "cizgi"
+import { slugify } from "cizgile"
 
 slugify("Hello, World!") // "hello-world"
 slugify("İstanbul Şişli & Çığ", { locale: "tr" }) // "istanbul-sisli-ve-cig"
@@ -31,33 +31,33 @@ slugify("你好 World", { unicode: true }) // "你好-world"
 
 Three entry points, each importable on its own:
 
-| entry                 | what it holds                                                                                                 |
-| --------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `cizgi`               | `slugify`, `isSlug`, `truncateSlug`, `createSlugger`, `decamelize`                                            |
-| `cizgi/uri`           | RFC 3986 character classes, percent-encoding, `removeDotSegments`, `resolveUri`, `normalizeUri`, RFC 3987 IRI |
-| `cizgi/transliterate` | script tables, locales, `transliterate`, `defineLocale`                                                       |
+| entry                   | what it holds                                                                                                 |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `cizgile`               | `slugify`, `isSlug`, `truncateSlug`, `createSlugger`, `decamelize`                                            |
+| `cizgile/uri`           | RFC 3986 character classes, percent-encoding, `removeDotSegments`, `resolveUri`, `normalizeUri`, RFC 3987 IRI |
+| `cizgile/transliterate` | script tables, locales, `transliterate`, `defineLocale`                                                       |
 
-`import { slugify } from "cizgi"` bundles the Latin table and symbols only; Cyrillic, Greek, Arabic,
+`import { slugify } from "cizgile"` bundles the Latin table and symbols only; Cyrillic, Greek, Arabic,
 Armenian, Georgian and Dhivehi are opt-in and tree-shake away when unused.
 
 ## `slugify(input, options?)`
 
 Every option, with its default:
 
-| option                      | default   | meaning                                                                                                                                         |
-| --------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `separator`                 | `"-"`     | Any string of non-alphanumerics; `""` joins words. `/`, `?`, `#`, `%` are rejected (they would break a path segment).                           |
-| `lowercase`                 | `true`    | `false` keeps case (`"Donald E. Knuth"` → `Donald-E-Knuth`).                                                                                    |
-| `unicode`                   | `false`   | `true` keeps every letter, digit and combining mark (Django `allow_unicode`), output in NFKC.                                                   |
-| `locale`                    | —         | `"az" "da" "de" "es" "fi" "fr" "hu" "it" "nb" "nl" "pt" "sv" "tr" "vi"`, or a `Locale` object (Cyrillic locales live in `cizgi/transliterate`). |
-| `transliterate`             | `true`    | `false` skips the tables (diacritics still fold); an array of tables is consulted before the Latin defaults.                                    |
-| `decamelize`                | `false`   | `fooBar` → `foo-bar`, `HTMLParser` → `html-parser`, `APIs` stays.                                                                               |
-| `replacements`              | `[]`      | Literal `[from, to]` pairs applied first; surrounding spaces become separators (`["&", " and "]`).                                              |
-| `remove`                    | `/['’]/g` | Global regex stripped after transliteration (`don't` → `dont`); `false` to keep.                                                                |
-| `preserveCharacters`        | `[]`      | Extra single characters allowed in the output (`["."]` keeps `v1.2.3`). May not contain the separator.                                          |
-| `preserveLeadingUnderscore` | `false`   | `_foo bar` → `_foo-bar`.                                                                                                                        |
-| `preserveTrailingSeparator` | `false`   | `foo bar-` → `foo-bar-` (useful while typing into an input).                                                                                    |
-| `maxLength`                 | —         | Cuts at the last separator inside the limit; never mid-word unless there is no separator, never inside a surrogate pair or before a mark.       |
+| option                      | default   | meaning                                                                                                                                           |
+| --------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `separator`                 | `"-"`     | Any string of non-alphanumerics; `""` joins words. `/`, `?`, `#`, `%` are rejected (they would break a path segment).                             |
+| `lowercase`                 | `true`    | `false` keeps case (`"Donald E. Knuth"` → `Donald-E-Knuth`).                                                                                      |
+| `unicode`                   | `false`   | `true` keeps every letter, digit and combining mark (Django `allow_unicode`), output in NFKC.                                                     |
+| `locale`                    | —         | `"az" "da" "de" "es" "fi" "fr" "hu" "it" "nb" "nl" "pt" "sv" "tr" "vi"`, or a `Locale` object (Cyrillic locales live in `cizgile/transliterate`). |
+| `transliterate`             | `true`    | `false` skips the tables (diacritics still fold); an array of tables is consulted before the Latin defaults.                                      |
+| `decamelize`                | `false`   | `fooBar` → `foo-bar`, `HTMLParser` → `html-parser`, `APIs` stays.                                                                                 |
+| `replacements`              | `[]`      | Literal `[from, to]` pairs applied first; surrounding spaces become separators (`["&", " and "]`).                                                |
+| `remove`                    | `/['’]/g` | Global regex stripped after transliteration (`don't` → `dont`); `false` to keep.                                                                  |
+| `preserveCharacters`        | `[]`      | Extra single characters allowed in the output (`["."]` keeps `v1.2.3`). May not contain the separator.                                            |
+| `preserveLeadingUnderscore` | `false`   | `_foo bar` → `_foo-bar`.                                                                                                                          |
+| `preserveTrailingSeparator` | `false`   | `foo bar-` → `foo-bar-` (useful while typing into an input).                                                                                      |
+| `maxLength`                 | —         | Cuts at the last separator inside the limit; never mid-word unless there is no separator, never inside a surrogate pair or before a mark.         |
 
 The pipeline, in order — the order is what makes the edge cases come out right:
 
@@ -77,12 +77,12 @@ valid RFC 3986 `segment-nz-nc`, so it needs no percent-encoding. `slugify` is id
 
 ### Locales
 
-Locale ids resolve to objects from `cizgi/transliterate`; you can pass those objects directly or
+Locale ids resolve to objects from `cizgile/transliterate`; you can pass those objects directly or
 build your own without mutating anything global:
 
 ```ts
-import { slugify } from "cizgi"
-import { de, defineLocale, uk } from "cizgi/transliterate"
+import { slugify } from "cizgile"
+import { de, defineLocale, uk } from "cizgile/transliterate"
 
 slugify("Київ Ґудзик", { locale: uk }) // "kyiv-gudzyk"
 slugify("Fisch & Chips", { locale: de }) // "fisch-und-chips"
@@ -95,7 +95,7 @@ slugify("x & y", { locale: { id: "mine", table: { "&": " plus " } } }) // "x-plu
 Non-Latin scripts without a locale:
 
 ```ts
-import { cyrillic, greek } from "cizgi/transliterate"
+import { cyrillic, greek } from "cizgile/transliterate"
 
 slugify("Привет мир", { transliterate: [cyrillic] }) // "privet-mir"
 slugify("Καλημέρα κόσμε", { transliterate: [greek] }) // "kalimera-kosme"
@@ -105,8 +105,8 @@ slugify("Привет мир") // "" — nothing to keep in ASCII mode
 ### Unicode slugs
 
 ```ts
-import { slugify } from "cizgi"
-import { iriToUri, uriToIri } from "cizgi/uri"
+import { slugify } from "cizgile"
+import { iriToUri, uriToIri } from "cizgile/uri"
 
 const slug = slugify("Ünïcödé ﬁnal ①", { unicode: true }) // "ünïcödé-final-1"
 const uri = iriToUri(slug) // "%C3%BCn%C3%AFc%C3%B6d%C3%A9-final-1"
@@ -135,7 +135,7 @@ form arrives on its own (`foo-2` after `foo-2` becomes `foo-2-2`), results stay 
 
 The truncation step on its own: `truncateSlug("hello-world", 8)` → `hello`.
 
-## `cizgi/uri`
+## `cizgile/uri`
 
 Everything here follows RFC 3986 to the letter and is checked against its test vectors (§5.4 normal
 and abnormal references, §6.2 normalisation) and, where both apply, against the WHATWG `URL` parser.
@@ -157,7 +157,7 @@ and abnormal references, §6.2 normalisation) and, where both apply, against the
 | `uriToIri(uri)`                                                                                | 3987 §3.2         | decodes only well-formed UTF-8 `ucschar`; `iprivate`, ASCII and bidi controls stay encoded                                                                                                                              |
 
 ```ts
-import { normalizeUri, percentEncode, removeDotSegments, resolveUri } from "cizgi/uri"
+import { normalizeUri, percentEncode, removeDotSegments, resolveUri } from "cizgile/uri"
 
 removeDotSegments("/a/b/c/./../../g") // "/a/g"
 resolveUri("http://a/b/c/d;p?q", "../../g") // "http://a/g"
@@ -168,10 +168,10 @@ percentEncode("À ア", "pchar") // "%C3%80%20%E3%82%A2"
 Not implemented on purpose: RFC 6874 IPv6 zone identifiers (`[fe80::a%25en1]`) — RFC 9844 reverted
 that change to the URI syntax.
 
-## `cizgi/transliterate`
+## `cizgile/transliterate`
 
 ```ts
-import { transliterate, cyrillic, greek, latin, symbols, locales } from "cizgi/transliterate"
+import { transliterate, cyrillic, greek, latin, symbols, locales } from "cizgile/transliterate"
 
 transliterate("Straße Ærø") // "Strasse AEro"
 transliterate("Привет", { tables: [cyrillic] }) // "Privet"
@@ -191,7 +191,7 @@ Where a script spells a letter differently at the start of a word (Armenian `ե`
 
 ## How it compares
 
-| input                       | cizgi                | Django `slugify` | Rails `parameterize` | `@sindresorhus/slugify` |
+| input                       | cizgile              | Django `slugify` | Rails `parameterize` | `@sindresorhus/slugify` |
 | --------------------------- | -------------------- | ---------------- | -------------------- | ----------------------- |
 | `" Joel is a slug "`        | `joel-is-a-slug`     | same             | same                 | same                    |
 | `"jack & jill"`             | `jack-and-jill`      | `jack-jill`      | `jack-jill`          | `jack-and-jill`         |
@@ -226,12 +226,12 @@ Node ≥ 20.19 or any runtime with `String.prototype.normalize` and Unicode prop
 
 ## Credits
 
-cizgi stands on the shoulders of people who solved pieces of this problem first:
+cizgile stands on the shoulders of people who solved pieces of this problem first:
 
 - [simov/slugify](https://github.com/simov/slugify) — the charmap + per-locale override idea, and most of the Cyrillic, Greek, Arabic and symbol values.
 - [sindresorhus/slugify](https://github.com/sindresorhus/slugify) and [sindresorhus/transliterate](https://github.com/sindresorhus/transliterate) — `decamelize`, `customReplacements`, the counter slugger, and the Armenian, Georgian, Vietnamese and Dhivehi tables.
 - [Django](https://github.com/django/django) `django.utils.text.slugify` and [Rails](https://github.com/rails/rails) `ActiveSupport::Inflector#parameterize` — the reference behaviours the parity tests are written against.
-- [WHATWG URL Standard](https://url.spec.whatwg.org/) — the percent-encode sets and the parser every `cizgi/uri` result is cross-checked with.
+- [WHATWG URL Standard](https://url.spec.whatwg.org/) — the percent-encode sets and the parser every `cizgile/uri` result is cross-checked with.
 - [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986) by Berners-Lee, Fielding and Masinter, and [RFC 3987](https://datatracker.ietf.org/doc/html/rfc3987) by Duerst and Suignard — the specifications this library exists to implement faithfully.
 - [Rolldown](https://rolldown.rs), [Oxc](https://oxc.rs), [Vitest](https://vitest.dev), [Bun](https://bun.sh) and [TypeScript](https://www.typescriptlang.org) — the toolchain.
 
