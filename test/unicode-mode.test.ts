@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { isSlug, slugify } from "../src"
+import { checkScripts, detectScripts, isBidiSafeComponent, isSlug, slugify } from "../src"
 import { encodePathSegment, hasBidiControls, iriToUri, isSegmentNzNc, uriToIri } from "../src/uri"
 import { CORPUS_SAFE } from "./fixtures/corpus"
 
@@ -57,6 +57,59 @@ describe("unicode: true", () => {
     expect(isSlug("́a", unicode)).toBe(false)
     expect(isSlug("Привет", unicode)).toBe(false)
     expect(isSlug("Привет", { unicode: true, lowercase: false })).toBe(true)
+  })
+
+  it("script restriction levels (UTS #39 §5.1)", () => {
+    const cyrillicA = "p\u0430ypal"
+    expect(slugify(cyrillicA, unicode)).toBe(cyrillicA)
+    expect(() => slugify(cyrillicA, { unicode: true, scripts: "single" })).toThrow(RangeError)
+    expect(() => slugify(cyrillicA, { unicode: true, scripts: "moderately-restrictive" })).toThrow(
+      RangeError,
+    )
+    expect(slugify("paypal", { unicode: true, scripts: "single" })).toBe("paypal")
+    expect(slugify("東京タワー", { unicode: true, scripts: "highly-restrictive" })).toBe(
+      "東京タワー",
+    )
+    expect(() => slugify("東京タワー", { unicode: true, scripts: "single" })).toThrow(RangeError)
+    expect(slugify("hello नमस्ते", { unicode: true, scripts: "moderately-restrictive" })).toBe(
+      "hello-नमस्ते",
+    )
+    expect(() => slugify("hello नमस्ते", { unicode: true, scripts: "highly-restrictive" })).toThrow(
+      RangeError,
+    )
+    expect(() =>
+      slugify("Привет world", { unicode: true, scripts: "moderately-restrictive" }),
+    ).toThrow(RangeError)
+    expect(slugify("한국어 abc", { unicode: true, scripts: "highly-restrictive" })).toBe(
+      "한국어-abc",
+    )
+    expect(slugify("ASCII only 123", { scripts: "single" })).toBe("ascii-only-123")
+    expect(checkScripts(cyrillicA, "single")).toEqual({ ok: false, scripts: ["Cyrillic", "Latin"] })
+    expect(detectScripts("東京タワー")).toEqual(["Han", "Katakana"])
+    expect(detectScripts("123 -")).toEqual([])
+    expect(isSlug(cyrillicA, { unicode: true, scripts: "single" })).toBe(false)
+    expect(isSlug(cyrillicA, unicode)).toBe(true)
+  })
+
+  it("bidi component rules (RFC 3987 §4.2)", () => {
+    expect(isBidiSafeComponent("hello")).toBe(true)
+    expect(isBidiSafeComponent("مرحبا")).toBe(true)
+    expect(isBidiSafeComponent("مرحبا-بالعالم")).toBe(true)
+    expect(isBidiSafeComponent("שלום")).toBe(true)
+    expect(isBidiSafeComponent("مرحبا-123")).toBe(false)
+    expect(isBidiSafeComponent("123-مرحبا")).toBe(false)
+    expect(isBidiSafeComponent("hello-مرحبا")).toBe(false)
+    expect(isBidiSafeComponent("مرحباworld")).toBe(false)
+    expect(isBidiSafeComponent("")).toBe(true)
+    expect(slugify("مرحبا 123", unicode)).toBe("مرحبا-123")
+    expect(() => slugify("مرحبا 123", { unicode: true, bidi: "throw" })).toThrow(RangeError)
+    expect(slugify("مرحبا 123", { unicode: true, bidi: "encode" })).toBe(
+      "%D9%85%D8%B1%D8%AD%D8%A8%D8%A7-123",
+    )
+    expect(slugify("hello مرحبا", { unicode: true, bidi: "encode" })).toMatch(/^[a-z0-9A-F%-]+$/)
+    expect(slugify("مرحبا بالعالم", { unicode: true, bidi: "throw" })).toBe("مرحبا-بالعالم")
+    expect(isSlug("مرحبا-123", { unicode: true, bidi: "throw" })).toBe(false)
+    expect(isSlug("مرحبا-بالعالم", { unicode: true, bidi: "throw" })).toBe(true)
   })
 
   it("keeps locale casing but not locale transliteration", () => {

@@ -3,6 +3,7 @@ import { latinLocales } from "../transliterate/locales-latin"
 import type { LatinLocaleId, Locale, TransliterationTable } from "../transliterate/types"
 import { isSegmentNzNc } from "../uri/charset"
 import { escapeClassChar, uniqueChars } from "./charset"
+import type { ScriptRestriction } from "./scripts"
 
 export interface SlugifyOptions {
   readonly separator?: string
@@ -17,6 +18,8 @@ export interface SlugifyOptions {
   readonly preserveLeadingUnderscore?: boolean
   readonly preserveTrailingSeparator?: boolean
   readonly maxLength?: number
+  readonly scripts?: ScriptRestriction
+  readonly bidi?: "allow" | "encode" | "throw"
 }
 
 export type IsSlugOptions = Pick<
@@ -28,6 +31,8 @@ export type IsSlugOptions = Pick<
   | "preserveLeadingUnderscore"
   | "preserveTrailingSeparator"
   | "maxLength"
+  | "scripts"
+  | "bidi"
 >
 
 export interface ResolvedOptions {
@@ -43,6 +48,8 @@ export interface ResolvedOptions {
   readonly preserveLeadingUnderscore: boolean
   readonly preserveTrailingSeparator: boolean
   readonly maxLength: number | undefined
+  readonly scripts: ScriptRestriction
+  readonly bidi: "allow" | "encode" | "throw"
   readonly allowedClass: string
   readonly wordClass: string
   readonly disallowed: RegExp
@@ -143,6 +150,8 @@ function build(options: SlugifyOptions): ResolvedOptions {
     preserveLeadingUnderscore: options.preserveLeadingUnderscore ?? false,
     preserveTrailingSeparator: options.preserveTrailingSeparator ?? false,
     maxLength,
+    scripts: options.scripts ?? "any",
+    bidi: options.bidi ?? "allow",
     allowedClass,
     wordClass,
     disallowed: new RegExp(`[^${allowedClass}]+`, "gu"),

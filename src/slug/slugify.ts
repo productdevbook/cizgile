@@ -5,6 +5,9 @@ import { escapeClassChar, escapeRegExp, stripControls, uniqueChars } from "./cha
 import { decamelize } from "./decamelize"
 import { type ResolvedOptions, resolveOptions, type SlugifyOptions } from "./options"
 import { truncateSlug } from "./truncate"
+import { iriToUri } from "../uri/iri"
+import { isBidiSafeComponent } from "./bidi"
+import { checkScripts } from "./scripts"
 
 let symbolOnlyCache: WeakMap<TransliterationTable, TransliterationTable> | undefined
 
@@ -92,5 +95,23 @@ export function slugify(input: string, options: SlugifyOptions = {}): string {
     s = "_" + s
   }
   if (o.preserveTrailingSeparator && hadTrailingSeparator && s !== "") s += o.separator
+  if (o.unicode && s !== "") {
+    if (o.scripts !== "any") {
+      const check = checkScripts(s, o.scripts)
+      if (!check.ok) {
+        throw new RangeError(
+          `slugify: ${JSON.stringify(s)} mixes scripts (${check.scripts.join(", ")}) beyond the "${o.scripts}" restriction level`,
+        )
+      }
+    }
+    if (o.bidi !== "allow" && !isBidiSafeComponent(s)) {
+      if (o.bidi === "throw") {
+        throw new RangeError(
+          `slugify: ${JSON.stringify(s)} mixes text directions (RFC 3987 section 4.2)`,
+        )
+      }
+      s = iriToUri(s)
+    }
+  }
   return s
 }

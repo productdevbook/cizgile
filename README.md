@@ -117,11 +117,25 @@ uriToIri(uri) === slug // true
 word with a combining mark, so `iriToUri` gives you the wire form Google asks for (UTF-8
 percent-encoded) and `uriToIri` gets the slug back byte-for-byte.
 
+Two opt-in guards for user-supplied Unicode titles:
+
+- `scripts: "single" | "highly-restrictive" | "moderately-restrictive" | "any"` (default `"any"`) — the
+  UTS #39 §5.1 restriction levels. `"single"` requires one script; `"highly-restrictive"` also allows Latin
+  with Japanese (Han + Hiragana + Katakana), Chinese (Han + Bopomofo) or Korean (Han + Hangul);
+  `"moderately-restrictive"` additionally allows Latin with any one other script except Cyrillic, Greek
+  and Cherokee. A violating slug throws `RangeError`; `checkScripts(text, level)` and `detectScripts(text)`
+  are exported for inspection. `slugify("pаypal", { unicode: true, scripts: "single" })` (Cyrillic `а`)
+  throws instead of producing a look-alike of `paypal` (RFC 3987 §6.1, §7.5, §8).
+- `bidi: "allow" | "encode" | "throw"` (default `"allow"`) — RFC 3987 §4.2: a component should not mix
+  left-to-right and right-to-left characters and, when right-to-left, should start and end with them.
+  `"encode"` percent-encodes the whole slug (the RFC's own escape hatch), `"throw"` raises.
+  `isBidiSafeComponent(text)` is exported.
+
 ### `isSlug(value, options?)`
 
 `true` when `value` is exactly what `slugify` would have produced under the same `separator`,
-`lowercase`, `unicode`, `preserveCharacters`, `preserveLeadingUnderscore`, `preserveTrailingSeparator`
-and `maxLength`. Empty strings, the dot-segments `.` and `..`, leading/trailing/doubled separators, wrong
+`lowercase`, `unicode`, `preserveCharacters`, `preserveLeadingUnderscore`, `preserveTrailingSeparator`,
+`maxLength`, `scripts` and `bidi`. Empty strings, the dot-segments `.` and `..`, leading/trailing/doubled separators, wrong
 case and non-NFKC input are rejected.
 
 ### `createSlugger(defaults?)`
