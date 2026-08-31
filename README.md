@@ -1,6 +1,6 @@
 <p align="center">
   <br>
-  <img src=".github/assets/cover.svg" alt="cizgile — Zero-dependency URL slug engine" width="100%">
+  <img src=".github/assets/cover.svg?v=1a3fd12" alt="cizgile — Zero-dependency URL slug engine" width="100%">
   <br><br>
   <b style="font-size: 2em;">cizgile</b>
   <br><br>
