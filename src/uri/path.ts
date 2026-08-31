@@ -41,7 +41,8 @@ export interface NormalizePathOptions {
 }
 
 export function normalizePath(path: string, options: NormalizePathOptions = {}): string {
-  let out = removeDotSegments(normalizePercentEncoding(path))
+  let out = normalizePercentEncoding(path)
+  if (out.startsWith("/")) out = removeDotSegments(out)
   const mode = options.trailingSlash ?? "keep"
   if (mode === "add" && out.length > 0 && !out.endsWith("/")) out += "/"
   if (mode === "remove" && out.length > 1 && out.endsWith("/")) out = out.slice(0, -1)

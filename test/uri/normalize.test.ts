@@ -20,6 +20,9 @@ describe("normalizeUri (RFC 3986 §6.2.2, §6.2.3)", () => {
     ["ftp://x:21/", "ftp://x/"],
     ["http://a//b/../c", "http://a//c"],
     ["example://a", "example://a"],
+    ["http://%C3%89xample.com/", "http://%C3%89xample.com/"],
+    ["http://a%2Fb.com/", "http://a%2Fb.com/"],
+    ["http://EXAMPLE.com/%c3%a9", "http://example.com/%C3%A9"],
   ])("%j → %j", (input, expected) => {
     expect(normalizeUri(input)).toBe(expected)
   })
@@ -27,6 +30,14 @@ describe("normalizeUri (RFC 3986 §6.2.2, §6.2.3)", () => {
   it("accepts custom default ports", () => {
     expect(normalizeUri("git://x:9418/", { defaultPorts: { git: 9418 } })).toBe("git://x/")
     expect(normalizeUri("http://x:80/", { defaultPorts: {} })).toBe("http://x:80/")
+  })
+
+  it("never emits lowercase hex in a percent-encoding", () => {
+    for (const input of ["http://%c3%89.com/%c3%a9?%c3#%c3", "HTTP://A%2fB/%2f"]) {
+      for (const triplet of normalizeUri(input).match(/%[0-9A-Fa-f]{2}/g) ?? []) {
+        expect(triplet).toBe(triplet.toUpperCase())
+      }
+    }
   })
 
   it("is idempotent", () => {

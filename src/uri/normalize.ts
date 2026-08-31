@@ -57,7 +57,7 @@ export function normalizeUri(input: string, options: NormalizeUriOptions = {}): 
   if (c.authority !== undefined) {
     const a = parseAuthority(c.authority)
     if (a.userinfo !== undefined) a.userinfo = normalizePercentEncoding(a.userinfo)
-    a.host = normalizePercentEncoding(a.host).toLowerCase()
+    a.host = normalizePercentEncoding(a.host.toLowerCase())
     if (a.port !== undefined && (a.port === "" || Number(a.port) === defaultPort)) delete a.port
     c.authority = serializeAuthority(a)
   }

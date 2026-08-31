@@ -55,6 +55,13 @@ describe("normalizePath", () => {
     expect(normalizePath("/%7e/./a/%41/../b%2f")).toBe("/~/a/b%2F")
   })
 
+  it("keeps dot segments in relative paths (§6.2.2.3 applies to absolute paths only)", () => {
+    expect(normalizePath("../a/%7e")).toBe("../a/~")
+    expect(normalizePath("./a")).toBe("./a")
+    expect(normalizePath("a/../b")).toBe("a/../b")
+    expect(normalizePath("/a/../b")).toBe("/b")
+  })
+
   it("handles trailing slash modes", () => {
     expect(normalizePath("/a/b", { trailingSlash: "add" })).toBe("/a/b/")
     expect(normalizePath("/a/b/", { trailingSlash: "remove" })).toBe("/a/b")

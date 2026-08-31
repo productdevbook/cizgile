@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { mergePaths, parseUri, resolveUri, serializeUri } from "../../src/uri"
+import { isScheme, mergePaths, parseUri, resolveUri, serializeUri } from "../../src/uri"
 import { ABNORMAL, BASE, NORMAL } from "../fixtures/rfc3986-5-4"
 
 describe("resolveUri (RFC 3986 §5.4)", () => {
@@ -23,6 +23,56 @@ describe("resolveUri (RFC 3986 §5.4)", () => {
     for (const [ref, expected] of [...NORMAL, ...ABNORMAL]) {
       if (ref === "g:h" || ref === "//g") continue
       expect(new URL(ref, BASE).href).toBe(expected)
+    }
+  })
+
+  it("only treats an ABNF-valid scheme prefix as a scheme (§3.1, §4.1)", () => {
+    expect(parseUri("1:2")).toEqual({ path: "1:2" })
+    expect(parseUri("a b:c")).toEqual({ path: "a b:c" })
+    expect(parseUri("-a:c")).toEqual({ path: "-a:c" })
+    expect(parseUri("a+b.c-d:x")).toEqual({ scheme: "a+b.c-d", path: "x" })
+    expect(resolveUri("http://a/b/c/", "1:2")).toBe("http://a/b/c/1:2")
+    expect(resolveUri("http://a/b/c/", "1:2")).toBe(new URL("1:2", "http://a/b/c/").href)
+    expect(isScheme("http")).toBe(true)
+    expect(isScheme("h2")).toBe(true)
+    expect(isScheme("2h")).toBe(false)
+    expect(isScheme("")).toBe(false)
+    expect(isScheme("a_b")).toBe(false)
+  })
+
+  it("normalizes the base path before merging (erratum 4789, §5.2.1)", () => {
+    for (const [base, ref] of [
+      ["http://a/b/..", "c"],
+      ["http://a/b/c/..", "d"],
+      ["http://a/b/.", "d"],
+      ["http://a/b/../c/./d", "e"],
+      ["http://a/b/..", ""],
+    ]) {
+      expect(resolveUri(base ?? "", ref ?? "")).toBe(new URL(ref ?? "", base).href)
+    }
+    expect(resolveUri("http://a/b/..", "c")).toBe("http://a/c")
+  })
+
+  it("never produces a string that re-parses to different components (§3, §4.2, §5.3)", () => {
+    expect(resolveUri("a:/b", "..//c")).toBe("a:/.//c")
+    expect(resolveUri("/b/c", "..//d")).toBe("/.//d")
+    expect(serializeUri({ path: "//a/b" })).toBe("/.//a/b")
+    expect(serializeUri({ path: "this:that" })).toBe("./this:that")
+    expect(serializeUri({ scheme: "s", path: "this:that" })).toBe("s:this:that")
+    expect(serializeUri({ authority: "h", path: "x" })).toBe("//h/x")
+    expect(serializeUri({ authority: "h", path: "" })).toBe("//h")
+    for (const c of [
+      { path: "//a/b" },
+      { path: "this:that" },
+      { path: "a/this:that" },
+      { authority: "h", path: "x" },
+      { scheme: "a", authority: "c", path: "" },
+      { scheme: "a", path: "//c" },
+    ]) {
+      const text = serializeUri(c)
+      expect(serializeUri(parseUri(text))).toBe(text)
+      expect(parseUri(text).authority).toBe(c.authority)
+      expect(parseUri(text).scheme).toBe(c.scheme)
     }
   })
 
@@ -71,6 +121,7 @@ describe("parseUri / serializeUri", () => {
   it("parses a relative path whose first segment has no colon", () => {
     expect(parseUri("./this:that")).toEqual({ path: "./this:that" })
     expect(parseUri("this:that")).toEqual({ scheme: "this", path: "that" })
+    expect(serializeUri(parseUri("./this:that"))).toBe("./this:that")
   })
 
   it("keeps newlines inside components", () => {

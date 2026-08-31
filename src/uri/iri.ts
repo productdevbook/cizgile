@@ -6,7 +6,7 @@ export function isUcschar(cp: number): boolean {
     (cp >= 0xa0 && cp <= 0xd7ff) ||
     (cp >= 0xf900 && cp <= 0xfdcf) ||
     (cp >= 0xfdf0 && cp <= 0xffef) ||
-    (cp >= 0x10000 && cp <= 0xefffd && (cp & 0xffff) <= 0xfffd)
+    (cp >= 0x10000 && cp <= 0xefffd && (cp & 0xffff) <= 0xfffd && !(cp >= 0xe0000 && cp <= 0xe0fff))
   )
 }
 
@@ -78,7 +78,11 @@ export function uriToIri(uri: string): string {
     let k = 0
     while (k < bytes.length) {
       const char = readUtf8(bytes, k)
-      if (char !== undefined && isUcschar(char.codePoint) && !isBidiControl(char.codePoint)) {
+      if (
+        char !== undefined &&
+        (isUnreserved(char.codePoint) ||
+          (isUcschar(char.codePoint) && !isBidiControl(char.codePoint)))
+      ) {
         out += String.fromCodePoint(char.codePoint)
         k += char.length
       } else {

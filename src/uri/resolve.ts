@@ -17,6 +17,7 @@ export function resolveUri(
   options: ResolveUriOptions = {},
 ): string {
   const b = parseUri(base)
+  if (b.scheme !== undefined || b.authority !== undefined) b.path = removeDotSegments(b.path)
   const r = parseUri(reference)
   const strict = options.strict ?? true
   if (

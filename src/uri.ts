@@ -8,6 +8,7 @@ export {
   isPchar,
   isQueryChar,
   isReserved,
+  isScheme,
   isSegmentNzNc,
   isSubDelim,
   isUnreserved,

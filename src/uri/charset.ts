@@ -28,6 +28,10 @@ export function isHexDigit(cp: number): boolean {
   return isDigit(cp) || (cp >= 0x41 && cp <= 0x46) || (cp >= 0x61 && cp <= 0x66)
 }
 
+export function isScheme(text: string): boolean {
+  return /^[A-Za-z][A-Za-z0-9+.-]*$/.test(text)
+}
+
 export function isUnreserved(cp: number): boolean {
   return isAlpha(cp) || isDigit(cp) || inChars("-._~", cp)
 }
