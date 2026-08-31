@@ -69,6 +69,8 @@ export {
   type PercentDecodeOptions,
   percentEncode,
 } from "./uri/percent"
+export { domainToAscii, domainToUnicode, punycodeDecode, punycodeEncode } from "./uri/punycode"
+export { relativize } from "./uri/relativize"
 export { mergePaths, resolveUri, type ResolveUriOptions } from "./uri/resolve"
 export {
   classifyReference,

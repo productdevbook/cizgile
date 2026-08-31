@@ -1,5 +1,7 @@
 import { isReserved, isSubDelim, isUnreserved } from "./charset"
+import { parseAuthority, serializeAuthority } from "./normalize"
 import { parseUri, serializeUri } from "./parse"
+import { domainToAscii } from "./punycode"
 import { hexByte, readHexByte, readUtf8, utf8Bytes } from "./utf8"
 
 export function isUcschar(cp: number): boolean {
@@ -49,6 +51,7 @@ export interface IriToUriOptions {
   readonly bidi?: "throw" | "strip"
   readonly nfc?: boolean
   readonly strict?: boolean
+  readonly host?: "percent" | "punycode"
 }
 
 export function iriToUri(iri: string, options: IriToUriOptions = {}): string {
@@ -60,6 +63,15 @@ export function iriToUri(iri: string, options: IriToUriOptions = {}): string {
     input = input.replace(BIDI_CONTROLS_GLOBAL, "")
   }
   if (options.nfc === true) input = input.normalize("NFC")
+  if (options.host === "punycode") {
+    const c = parseUri(input)
+    if (c.authority !== undefined) {
+      const a = parseAuthority(c.authority)
+      a.host = domainToAscii(a.host)
+      c.authority = serializeAuthority(a)
+      input = serializeUri(c)
+    }
+  }
   const strict = options.strict ?? false
   let out = ""
   for (const ch of input) {
