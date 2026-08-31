@@ -109,14 +109,28 @@ function isAsciiLabel(label: string): boolean {
   return true
 }
 
+function mapLabel(label: string): string {
+  return label
+    .replace(/\p{Cf}/gu, "")
+    .normalize("NFKC")
+    .toLowerCase()
+    .normalize("NFC")
+    .replace(/[\u3002\uFF0E\uFF61]/g, ".")
+}
+
 export function domainToAscii(host: string): string {
   if (host.startsWith("[")) return host
   return host
-    .split(".")
+    .split(/[.\u3002\uFF0E\uFF61]/)
     .map((label) => {
       if (isAsciiLabel(label)) return label
-      const mapped = label.normalize("NFC").toLowerCase()
-      return isAsciiLabel(mapped) ? mapped : PREFIX + punycodeEncode(mapped)
+      const mapped = mapLabel(label)
+      if (mapped.includes(".")) return domainToAscii(mapped)
+      if (isAsciiLabel(mapped)) return mapped
+      const encoded = PREFIX + punycodeEncode(mapped)
+      if (encoded.length > 63)
+        throw new RangeError(`domainToAscii: label ${JSON.stringify(label)} exceeds 63 octets`)
+      return encoded
     })
     .join(".")
 }

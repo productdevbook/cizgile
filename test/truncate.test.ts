@@ -59,6 +59,9 @@ describe("truncateSlug", () => {
     expect(graphemeBoundary("abc", 2, fb)).toBe(2)
     expect(graphemeBoundary("abc", 5, fb)).toBe(5)
     expect(graphemeBoundary("\u{E0067}x", 1, fb)).toBe(0)
+    expect(graphemeBoundary("क्षत्रिय", 2, fb)).toBe(0)
+    expect(graphemeBoundary("क्षत्रिय", 3, fb)).toBe(3)
+    expect(graphemeBoundary("क्षत्रिय", 4, fb)).toBe(3)
     expect(graphemeBoundary("👨‍👩‍👧x", 3)).toBe(graphemeBoundary("👨‍👩‍👧x", 3, fb))
   })
 

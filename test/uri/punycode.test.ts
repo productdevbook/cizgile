@@ -44,6 +44,14 @@ describe("punycode (RFC 3492)", () => {
     expect(domainToAscii("EXAMPLE.com")).toBe("EXAMPLE.com")
     expect(domainToAscii("[::1]")).toBe("[::1]")
     expect(domainToAscii("Bücher.DE")).toBe("xn--bcher-kva.DE")
+    expect(domainToAscii("ﬁnal.example")).toBe("final.example")
+    expect(domainToAscii("bü\u200Bcher.de")).toBe("xn--bcher-kva.de")
+    expect(domainToAscii("例え。jp")).toBe("xn--r8jz45g.jp")
+    expect(domainToAscii("ＡＢＣ.example")).toBe("abc.example")
+    expect(() => domainToAscii("ü".repeat(60) + ".x")).toThrow(RangeError)
+    for (const host of ["ﬁnal.example", "例え。jp", "ＡＢＣ.example"]) {
+      expect(domainToAscii(host)).toBe(new URL(`http://${host}/`).hostname)
+    }
     expect(domainToUnicode("XN--BCHER-KVA.de")).toBe("bücher.de")
   })
 

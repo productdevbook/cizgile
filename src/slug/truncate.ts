@@ -10,6 +10,14 @@ function graphemeSegmenter(): Intl.Segmenter | undefined {
   return segmenter ?? undefined
 }
 
+const VIRAMA =
+  /[\u094D\u09CD\u0A4D\u0ACD\u0B4D\u0BCD\u0C4D\u0CCD\u0D3B\u0D3C\u0D4D\u0DCA\u0E3A\u0EBA\u0F84\u1039\u103A\u1714\u1734\u17D2\u1A60\u1B44\u1BAA\u1BAB\u1BF2\u1BF3\u2D7F\uA806\uA82C\uA8C4\uA953\uA9C0\uAAF6\uABED]/u
+
+function isJoinerBefore(text: string, index: number): boolean {
+  const previous = text.slice(0, index).at(-1)
+  return previous !== undefined && (previous === "\u200D" || VIRAMA.test(previous))
+}
+
 function isClusterExtender(cp: number): boolean {
   return (
     (cp >= 0xdc00 && cp <= 0xdfff) ||
@@ -42,7 +50,7 @@ export function graphemeBoundary(
   }
   let cut = limit
   while (cut > 0 && cut < text.length) {
-    if (text.codePointAt(cut - 1) === 0x200d || isClusterExtender(text.codePointAt(cut) ?? 0)) {
+    if (isJoinerBefore(text, cut) || isClusterExtender(text.codePointAt(cut) ?? 0)) {
       cut -= 1
     } else {
       break
