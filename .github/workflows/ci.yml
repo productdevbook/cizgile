@@ -38,11 +38,15 @@ jobs:
         run: bun run lint
       - name: Typecheck
         run: bun run typecheck
-      - name: Test
+      - name: Test (node runtime)
         run: bun run test:unit
+      - name: Test (bun runtime)
+        run: bun run test:bun
       - name: Build
         run: bun run build
       - name: Pack
         run: npm pack --dry-run
-      - name: Smoke
+      - name: Smoke (node)
         run: node -e "import('./dist/index.mjs').then(m => { if (m.slugify('Hello World') !== 'hello-world') process.exit(1) })"
+      - name: Smoke (bun)
+        run: bun -e "import { slugify } from './dist/index.mjs'; import { resolveUri } from './dist/uri.mjs'; if (typeof Bun === 'undefined' || slugify('Hello World') !== 'hello-world' || resolveUri('http://a/b/c/d;p?q', '../../g') !== 'http://a/g') process.exit(1)"

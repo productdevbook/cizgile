@@ -57,11 +57,12 @@
     "lint:fix": "oxlint --type-aware . --fix && oxfmt .",
     "fmt": "oxfmt .",
     "typecheck": "tsc --noEmit",
-    "test": "bun run lint && bun run typecheck && vitest run",
+    "test": "bun run lint && bun run typecheck && vitest run && bun run test:bun",
     "test:unit": "vitest run",
     "coverage": "vitest run --coverage",
     "release": "bun run test && bun run build && bumpp --commit --tag --push --all",
-    "prepack": "bun run build"
+    "prepack": "bun run build",
+    "test:bun": "bun --bun vitest run"
   },
   "devDependencies": {
     "@types/bun": "1.4.0",

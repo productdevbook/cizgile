@@ -219,7 +219,8 @@ transliteration — those scripts are kept in `unicode: true` and dropped in ASC
 
 ```sh
 bun install
-bun run test      # oxlint --type-aware, oxfmt --check, tsc --noEmit, vitest
+bun run test      # oxlint --type-aware, oxfmt --check, tsc --noEmit, vitest under node, then vitest under bun
+bun run test:bun  # the suite on the Bun runtime only
 bun run build     # rolldown → dist/*.mjs + dist/*.d.mts
 bun run coverage
 bun run release   # test + build, then bumpp --commit --tag --push --all; the v* tag triggers the npm publish workflow
