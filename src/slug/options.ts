@@ -1,4 +1,5 @@
-import { DEFAULT_TABLES } from "../transliterate/core"
+import { type CompiledTables, compileTables, DEFAULT_TABLES } from "../transliterate/core"
+import { symbols } from "../transliterate/symbols"
 import { latinLocales } from "../transliterate/locales-latin"
 import type { LatinLocaleId, Locale, TransliterationTable } from "../transliterate/types"
 import { isSegmentNzNc } from "../uri/charset"
@@ -53,6 +54,29 @@ export interface ResolvedOptions {
   readonly allowedClass: string
   readonly wordClass: string
   readonly disallowed: RegExp
+  readonly compiled: CompiledTables | undefined
+  readonly symbolTables: readonly TransliterationTable[]
+  readonly compiledSymbols: CompiledTables
+  readonly separatorRuns: RegExp | undefined
+  readonly leadingMarks: RegExp | undefined
+}
+
+let symbolOnlyCache: WeakMap<TransliterationTable, TransliterationTable> | undefined
+
+export function symbolEntries(table: TransliterationTable): TransliterationTable {
+  symbolOnlyCache ??= new WeakMap()
+  const cached = symbolOnlyCache.get(table)
+  if (cached !== undefined) return cached
+  const out: Record<string, string> = {}
+  for (const [key, value] of Object.entries(table)) {
+    if (!/[\p{L}\p{M}\p{N}]/u.test(key)) out[key] = value
+  }
+  symbolOnlyCache.set(table, out)
+  return out
+}
+
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 }
 
 const DEFAULT_REMOVE = /['’]/g
@@ -137,12 +161,23 @@ function build(options: SlugifyOptions): ResolvedOptions {
     ? `\\p{L}\\p{N}\\p{M}${wordExtra}`
     : `a-z0-9${lowercase ? "" : "A-Z"}${wordExtra}`
   const allowedClass = wordClass + separatorChars.map(escapeClassChar).join("")
+  const tables = resolveTables(options.transliterate, unicode, locale)
+  const symbolTables = (locale === undefined ? [symbols] : [locale.table, symbols]).map(
+    symbolEntries,
+  )
+  const separatorRuns =
+    separator === ""
+      ? undefined
+      : new RegExp(`[${separatorChars.map(escapeClassChar).join("")}]+`, "gu")
+  const leadingMarks = unicode
+    ? new RegExp(`(${separator === "" ? "^" : `(?:^|${escapeRegExp(separator)})`})\\p{M}+`, "gu")
+    : undefined
   return {
     separator,
     lowercase,
     unicode,
     locale,
-    tables: resolveTables(options.transliterate, unicode, locale),
+    tables,
     decamelize: options.decamelize ?? false,
     replacements: options.replacements ?? [],
     remove,
@@ -155,14 +190,65 @@ function build(options: SlugifyOptions): ResolvedOptions {
     allowedClass,
     wordClass,
     disallowed: new RegExp(`[^${allowedClass}]+`, "gu"),
+    compiled: tables === undefined ? undefined : compileTables(tables),
+    symbolTables,
+    compiledSymbols: compileTables(symbolTables),
+    separatorRuns,
+    leadingMarks,
   }
 }
 
-export function resolveOptions(options: SlugifyOptions = {}): ResolvedOptions {
+const DEFAULT_OPTIONS: SlugifyOptions = {}
+
+let objectIds: WeakMap<object, number> | undefined
+let nextObjectId = 0
+let byKey: Map<string, ResolvedOptions> | undefined
+
+function objectId(value: object): number {
+  objectIds ??= new WeakMap()
+  let id = objectIds.get(value)
+  if (id === undefined) {
+    id = nextObjectId
+    nextObjectId += 1
+    objectIds.set(value, id)
+  }
+  return id
+}
+
+function optionsKey(options: SlugifyOptions): string {
+  const locale = options.locale
+  const transliterate = options.transliterate
+  const remove = options.remove
+  return JSON.stringify([
+    options.separator,
+    options.lowercase,
+    options.unicode,
+    typeof locale === "object" ? `#${objectId(locale)}` : locale,
+    Array.isArray(transliterate) ? transliterate.map((t) => objectId(t)) : transliterate,
+    options.decamelize,
+    options.replacements,
+    remove instanceof RegExp ? `${remove.source}/${remove.flags}` : remove,
+    options.preserveCharacters,
+    options.preserveLeadingUnderscore,
+    options.preserveTrailingSeparator,
+    options.maxLength,
+    options.scripts,
+    options.bidi,
+  ])
+}
+
+export function resolveOptions(options: SlugifyOptions = DEFAULT_OPTIONS): ResolvedOptions {
   cache ??= new WeakMap()
   const cached = cache.get(options)
   if (cached !== undefined) return cached
-  const resolved = build(options)
+  byKey ??= new Map()
+  const key = optionsKey(options)
+  let resolved = byKey.get(key)
+  if (resolved === undefined) {
+    resolved = build(options)
+    if (byKey.size > 512) byKey.clear()
+    byKey.set(key, resolved)
+  }
   cache.set(options, resolved)
   return resolved
 }

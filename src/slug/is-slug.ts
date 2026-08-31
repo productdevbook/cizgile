@@ -21,7 +21,9 @@ function patternFor(options: IsSlugOptions): RegExp {
   return pattern
 }
 
-export function isSlug(input: string, options: IsSlugOptions = {}): boolean {
+const DEFAULT_OPTIONS: IsSlugOptions = {}
+
+export function isSlug(input: string, options: IsSlugOptions = DEFAULT_OPTIONS): boolean {
   if (typeof input !== "string" || input === "" || input === "." || input === "..") return false
   const o = resolveOptions(options)
   if (o.maxLength !== undefined && input.length > o.maxLength) return false
