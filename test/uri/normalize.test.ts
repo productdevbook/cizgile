@@ -19,12 +19,43 @@ describe("normalizeUri (RFC 3986 §6.2.2, §6.2.3)", () => {
     ["mailto:Joe@Example.COM", "mailto:Joe@Example.COM"],
     ["ftp://x:21/", "ftp://x/"],
     ["http://a//b/../c", "http://a//c"],
-    ["example://a", "example://a"],
+    ["example://a", "example://a/"],
+    ["git://host", "git://host/"],
+    ["//host", "//host"],
+    ["http://ÉXAMPLE.com/", "http://Éxample.com/"],
+    ["http://İSTANBUL.example/", "http://İstanbul.example/"],
+    ["http://[::1", "http://[::1/"],
     ["http://%C3%89xample.com/", "http://%C3%89xample.com/"],
     ["http://a%2Fb.com/", "http://a%2Fb.com/"],
     ["http://EXAMPLE.com/%c3%a9", "http://example.com/%C3%A9"],
   ])("%j → %j", (input, expected) => {
     expect(normalizeUri(input)).toBe(expected)
+  })
+
+  it("can skip scheme-based normalization (§6.2.2 only)", () => {
+    expect(normalizeUri("HTTP://Example.COM:80", { schemeBased: false })).toBe(
+      "http://example.com:80",
+    )
+    expect(normalizeUri("http://a:/", { schemeBased: false })).toBe("http://a/")
+    expect(normalizeUri("http://a/%7e/./b/../c", { schemeBased: false })).toBe("http://a/~/c")
+  })
+
+  it("can strip the password or the whole userinfo (§3.2.1, §7.5, §7.6)", () => {
+    expect(normalizeUri("http://user:pw@a/")).toBe("http://user:pw@a/")
+    expect(normalizeUri("http://user:pw@a/", { userinfo: "strip-password" })).toBe("http://user@a/")
+    expect(normalizeUri("http://user:pw@a/", { userinfo: "strip" })).toBe("http://a/")
+    expect(normalizeUri("http://user@[::1]:8/", { userinfo: "strip-password" })).toBe(
+      "http://user@[::1]:8/",
+    )
+    expect(normalizeUri("http://user:p:w@[::1]/", { userinfo: "strip-password" })).toBe(
+      "http://user@[::1]/",
+    )
+    expect(normalizeUri("http://@a/", { userinfo: "strip" })).toBe("http://a/")
+    expect(
+      normalizeUri("http://cnn.example.com&story=breaking_news@10.0.0.1/top_story.htm", {
+        userinfo: "strip",
+      }),
+    ).toBe("http://10.0.0.1/top_story.htm")
   })
 
   it("accepts custom default ports", () => {

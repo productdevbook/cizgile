@@ -1,4 +1,5 @@
-import { isReserved, isUnreserved } from "./charset"
+import { isReserved, isSubDelim, isUnreserved } from "./charset"
+import { parseUri, serializeUri } from "./parse"
 import { hexByte, readHexByte, readUtf8, utf8Bytes } from "./utf8"
 
 export function isUcschar(cp: number): boolean {
@@ -18,11 +19,13 @@ export function isIprivate(cp: number): boolean {
   )
 }
 
-const BIDI_CONTROLS = /[\u200E\u200F\u202A-\u202E\u2066-\u2069]/u
-const BIDI_CONTROLS_GLOBAL = /[\u200E\u200F\u202A-\u202E\u2066-\u2069]/gu
+const BIDI_CONTROLS = /\p{Bidi_Control}/u
+const BIDI_CONTROLS_GLOBAL = /\p{Bidi_Control}/gu
+const IRI_ASCII_MAY_ENCODE = '<>"{}|\\^` '
 
 export function isBidiControl(cp: number): boolean {
   return (
+    cp === 0x061c ||
     cp === 0x200e ||
     cp === 0x200f ||
     (cp >= 0x202a && cp <= 0x202e) ||
@@ -34,9 +37,18 @@ export function hasBidiControls(input: string): boolean {
   return BIDI_CONTROLS.test(input)
 }
 
+export function isIunreserved(cp: number): boolean {
+  return isUnreserved(cp) || (isUcschar(cp) && !isBidiControl(cp))
+}
+
+export function isIpchar(cp: number): boolean {
+  return isIunreserved(cp) || isSubDelim(cp) || cp === 0x3a || cp === 0x40
+}
+
 export interface IriToUriOptions {
   readonly bidi?: "throw" | "strip"
   readonly nfc?: boolean
+  readonly strict?: boolean
 }
 
 export function iriToUri(iri: string, options: IriToUriOptions = {}): string {
@@ -48,50 +60,78 @@ export function iriToUri(iri: string, options: IriToUriOptions = {}): string {
     input = input.replace(BIDI_CONTROLS_GLOBAL, "")
   }
   if (options.nfc === true) input = input.normalize("NFC")
+  const strict = options.strict ?? false
   let out = ""
   for (const ch of input) {
     const cp = ch.codePointAt(0) ?? 0
     if (cp < 0x80 && (isUnreserved(cp) || isReserved(cp) || cp === 0x25)) {
       out += ch
-    } else {
-      for (const byte of utf8Bytes(cp)) out += hexByte(byte)
+      continue
     }
+    if (
+      strict &&
+      !(cp < 0x80 ? IRI_ASCII_MAY_ENCODE.includes(ch) : isUcschar(cp) || isIprivate(cp))
+    ) {
+      throw new RangeError(
+        `iriToUri: U+${cp.toString(16).toUpperCase().padStart(4, "0")} is not allowed in an IRI`,
+      )
+    }
+    for (const byte of utf8Bytes(cp)) out += hexByte(byte)
   }
   return out
 }
 
-export function uriToIri(uri: string): string {
+function decodeComponent(text: string, allowPrivate: boolean): string {
   let out = ""
   let i = 0
-  while (i < uri.length) {
-    const first = readHexByte(uri, i)
+  while (i < text.length) {
+    const first = readHexByte(text, i)
     if (first === -1) {
-      out += uri.charAt(i)
+      out += text.charAt(i)
       i += 1
       continue
     }
     const bytes: number[] = []
     let j = i
-    for (let byte = first; byte !== -1; byte = readHexByte(uri, j)) {
+    for (let byte = first; byte !== -1; byte = readHexByte(text, j)) {
       bytes.push(byte)
       j += 3
     }
     let k = 0
     while (k < bytes.length) {
       const char = readUtf8(bytes, k)
+      const cp = char?.codePoint ?? -1
       if (
         char !== undefined &&
-        (isUnreserved(char.codePoint) ||
-          (isUcschar(char.codePoint) && !isBidiControl(char.codePoint)))
+        (isUnreserved(cp) ||
+          (isUcschar(cp) && !isBidiControl(cp)) ||
+          (allowPrivate && isIprivate(cp)))
       ) {
-        out += String.fromCodePoint(char.codePoint)
+        out += String.fromCodePoint(cp)
         k += char.length
       } else {
-        out += uri.slice(i + k * 3, i + k * 3 + 3)
+        out += text.slice(i + k * 3, i + k * 3 + 3)
         k += 1
       }
     }
     i = j
   }
   return out
+}
+
+export function uriToIri(uri: string): string {
+  const c = parseUri(uri)
+  if (
+    c.scheme === undefined &&
+    c.authority === undefined &&
+    c.query === undefined &&
+    c.fragment === undefined
+  ) {
+    return decodeComponent(uri, false)
+  }
+  if (c.authority !== undefined) c.authority = decodeComponent(c.authority, false)
+  c.path = decodeComponent(c.path, false)
+  if (c.query !== undefined) c.query = decodeComponent(c.query, true)
+  if (c.fragment !== undefined) c.fragment = decodeComponent(c.fragment, false)
+  return serializeUri(c)
 }

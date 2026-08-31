@@ -3,6 +3,7 @@ import { removeDotSegments } from "./path"
 
 export interface ResolveUriOptions {
   readonly strict?: boolean
+  readonly allowRelativeBase?: boolean
 }
 
 export function mergePaths(base: UriComponents, referencePath: string): string {
@@ -17,6 +18,12 @@ export function resolveUri(
   options: ResolveUriOptions = {},
 ): string {
   const b = parseUri(base)
+  if (b.scheme === undefined && options.allowRelativeBase !== true) {
+    throw new RangeError(
+      "resolveUri: base must be an absolute-URI (RFC 3986 §5.1); pass { allowRelativeBase: true } to resolve against a relative reference",
+    )
+  }
+  delete b.fragment
   if (b.scheme !== undefined || b.authority !== undefined) b.path = removeDotSegments(b.path)
   const r = parseUri(reference)
   const strict = options.strict ?? true

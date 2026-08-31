@@ -3,7 +3,9 @@ import {
   hasBidiControls,
   iriToUri,
   isBidiControl,
+  isIpchar,
   isIprivate,
+  isIunreserved,
   isUcschar,
   uriToIri,
 } from "../../src/uri"
@@ -70,7 +72,7 @@ describe("ucschar / iprivate ranges (RFC 3987 §2.2)", () => {
 
 describe("bidi controls (RFC 3987 §4.1)", () => {
   const controls = [
-    0x200e, 0x200f, 0x202a, 0x202b, 0x202c, 0x202d, 0x202e, 0x2066, 0x2067, 0x2068, 0x2069,
+    0x061c, 0x200e, 0x200f, 0x202a, 0x202b, 0x202c, 0x202d, 0x202e, 0x2066, 0x2067, 0x2068, 0x2069,
   ]
 
   it("detects each formatting character", () => {
@@ -118,6 +120,27 @@ describe("iriToUri (RFC 3987 §3.1)", () => {
     expect(iriToUri("a\u200Fb", { bidi: "strip" })).toBe("ab")
   })
 
+  it("strict mode rejects characters outside the IRI grammar (RFC 3987 §2.2, §3.1)", () => {
+    expect(iriToUri("\uFFFE\uFDD0\u0000\u007F\uD800")).toBe("%EF%BF%BE%EF%B7%90%00%7F%EF%BF%BD")
+    for (const bad of ["\uFFFE", "\uFDD0", "\u0000", "\u007F", "\uD800", "\u0080", "\uFFF0"]) {
+      expect(() => iriToUri("a" + bad, { strict: true }), JSON.stringify(bad)).toThrow(RangeError)
+    }
+    expect(iriToUri('a b<>"{}|\\^`', { strict: true })).toBe("a%20b%3C%3E%22%7B%7D%7C%5C%5E%60")
+    expect(iriToUri("é\uE000", { strict: true })).toBe("%C3%A9%EE%80%80")
+    expect(iriToUri("a\u061Cb", { bidi: "strip" })).toBe("ab")
+    expect(() => iriToUri("a\u061Cb")).toThrow(RangeError)
+  })
+
+  it("IRI predicates", () => {
+    expect(isIunreserved(0xe9)).toBe(true)
+    expect(isIunreserved(0x41)).toBe(true)
+    expect(isIunreserved(0x200f)).toBe(false)
+    expect(isIunreserved(0xfffe)).toBe(false)
+    expect(isIpchar(0x3a)).toBe(true)
+    expect(isIpchar(0x2f)).toBe(false)
+    expect(isIpchar(0xe000)).toBe(false)
+  })
+
   it("leaves a bare percent sign alone (existing pct-encoding is never re-encoded)", () => {
     expect(iriToUri("100%")).toBe("100%")
     expect(iriToUri("%E4%BE%8B")).toBe("%E4%BE%8B")
@@ -145,6 +168,11 @@ describe("uriToIri (RFC 3987 §3.2)", () => {
     ["%EE%80%80", "%EE%80%80"],
     ["%F3%B0%80%80", "%F3%B0%80%80"],
     ["%E2%80%8E", "%E2%80%8E"],
+    ["a%D8%9Cb", "a%D8%9Cb"],
+    ["http://a/x?%EE%80%80", "http://a/x?\uE000"],
+    ["http://a/%EE%80%80?y", "http://a/%EE%80%80?y"],
+    ["http://a/%EE%80%80#%EE%80%80", "http://a/%EE%80%80#%EE%80%80"],
+    ["http://%C3%A9@%C3%A9.example/", "http://é@é.example/"],
     ["%EF%BF%BD", "%EF%BF%BD"],
     ["%C3%28", "%C3%28"],
     ["%C3", "%C3"],

@@ -55,7 +55,7 @@ describe("resolveUri (RFC 3986 §5.4)", () => {
 
   it("never produces a string that re-parses to different components (§3, §4.2, §5.3)", () => {
     expect(resolveUri("a:/b", "..//c")).toBe("a:/.//c")
-    expect(resolveUri("/b/c", "..//d")).toBe("/.//d")
+    expect(resolveUri("/b/c", "..//d", { allowRelativeBase: true })).toBe("/.//d")
     expect(serializeUri({ path: "//a/b" })).toBe("/.//a/b")
     expect(serializeUri({ path: "this:that" })).toBe("./this:that")
     expect(serializeUri({ scheme: "s", path: "this:that" })).toBe("s:this:that")
@@ -87,9 +87,13 @@ describe("resolveUri (RFC 3986 §5.4)", () => {
     expect(mergePaths({ path: "x/y" }, "g")).toBe("x/g")
   })
 
-  it("resolves against a base without a scheme", () => {
-    expect(resolveUri("/b/c/d", "../g")).toBe("/b/g")
-    expect(resolveUri("b/c/d", "../g")).toBe("b/g")
+  it("requires an absolute-URI base unless allowRelativeBase is set (§5.1)", () => {
+    expect(() => resolveUri("/b/c/d", "../g")).toThrow(RangeError)
+    expect(() => resolveUri("b/c/d", "../g")).toThrow(RangeError)
+    expect(resolveUri("/b/c/d", "../g", { allowRelativeBase: true })).toBe("/b/g")
+    expect(resolveUri("b/c/d", "../g", { allowRelativeBase: true })).toBe("b/g")
+    expect(resolveUri("http://a/b#frag", "")).toBe("http://a/b")
+    expect(resolveUri("http://a/b#frag", "#x")).toBe("http://a/b#x")
   })
 })
 

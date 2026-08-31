@@ -15,19 +15,41 @@ export {
   resolveEncodeSet,
 } from "./uri/charset"
 export {
+  type EquivalenceLevel,
+  equivalentUris,
+  type EquivalentUrisOptions,
+  isSameDocumentReference,
+  type SameDocumentOptions,
+} from "./uri/compare"
+export {
   encodeForm,
   encodeFragment,
   encodePath,
+  type EncodePathOptions,
   encodePathSegment,
   type EncodePathSegmentOptions,
   encodeQuery,
 } from "./uri/encode"
+export { extractUri } from "./uri/extract"
+export {
+  type HostKind,
+  isHost,
+  isIPLiteral,
+  isIPv4Address,
+  isIPv6Address,
+  isIPvFuture,
+  isRegName,
+  type ParsedHost,
+  parseHost,
+} from "./uri/host"
 export {
   hasBidiControls,
   iriToUri,
   type IriToUriOptions,
   isBidiControl,
+  isIpchar,
   isIprivate,
+  isIunreserved,
   isUcschar,
   uriToIri,
 } from "./uri/iri"
@@ -48,3 +70,16 @@ export {
   percentEncode,
 } from "./uri/percent"
 export { mergePaths, resolveUri, type ResolveUriOptions } from "./uri/resolve"
+export {
+  classifyReference,
+  isAbsoluteUri,
+  isIri,
+  isIriReference,
+  isRelativeReference,
+  isUri,
+  isUriReference,
+  type PathForm,
+  pathForm,
+  type ReferenceClassification,
+  type ValidateOptions,
+} from "./uri/validate"

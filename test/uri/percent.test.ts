@@ -162,6 +162,10 @@ describe("encodePathSegment / encodePath / encodeQuery / encodeFragment", () => 
   it("encodePath keeps slashes and encodes per segment", () => {
     expect(encodePath("/a b/c?d/é")).toBe("/a%20b/c%3Fd/%C3%A9")
     expect(encodePath("")).toBe("")
+    expect(encodePath("this:that/x")).toBe("this:that/x")
+    expect(encodePath("this:that/x", { relative: true })).toBe("this%3Athat/x")
+    expect(encodePath("/a:b", { relative: true })).toBe("/a:b")
+    expect(encodePath("a/b:c", { relative: true })).toBe("a/b:c")
   })
 
   it("query and fragment keep '/' and '?' but encode '#' and '%'", () => {
