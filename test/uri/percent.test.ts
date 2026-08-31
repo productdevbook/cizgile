@@ -121,12 +121,13 @@ describe("WHATWG percent-encode sets match the URL parser", () => {
   })
 
   it("path and userinfo", () => {
+    expect(percentEncode("^", "whatwg-path")).toBe("%5E")
     for (const ch of printable) {
-      if ("%/?#\\.".includes(ch)) continue
+      if ("%/?#\\.^".includes(ch)) continue
       expect(percentEncode(ch, "whatwg-path"), ch).toBe(new URL("http://h/" + ch).pathname.slice(1))
     }
     for (const ch of printable) {
-      if ("%@/?#\\:".includes(ch)) continue
+      if ("%@/?#\\:^".includes(ch)) continue
       expect(percentEncode(ch, "whatwg-userinfo"), ch).toBe(
         new URL("http://" + ch + "@h/").username,
       )
