@@ -16,5 +16,5 @@
     "verbatimModuleSyntax": true,
     "skipLibCheck": true
   },
-  "include": ["src", "test", "rolldown.config.ts", "vitest.config.ts"]
+  "include": ["src", "test", "bench", "rolldown.config.ts", "vitest.config.ts"]
 }

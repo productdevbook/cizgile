@@ -11,6 +11,7 @@ import {
   greek,
   latin,
   locales,
+  lookup,
   mergeTables,
   stripMarks,
   symbols,
@@ -84,6 +85,12 @@ describe("tables", () => {
     expect(new Set(allScripts).size).toBe(allScripts.length)
     expect(allScripts).toContain(latin)
     expect(allScripts).toContain(georgian)
+  })
+
+  it("lookup consults tables in order", () => {
+    expect(lookup([de.table, latin], "ä")).toBe("ae")
+    expect(lookup([latin, de.table], "ß")).toBe("ss")
+    expect(lookup([latin], "x")).toBeUndefined()
   })
 
   it("stripMarks removes combining marks and recomposes", () => {

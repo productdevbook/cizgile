@@ -62,9 +62,11 @@
     "coverage": "vitest run --coverage",
     "release": "bun run test && bun run build && bumpp --commit --tag --push --all",
     "prepack": "bun run build",
-    "test:bun": "bun --bun vitest run"
+    "test:bun": "bun --bun vitest run",
+    "bench": "vitest bench --run"
   },
   "devDependencies": {
+    "@sindresorhus/slugify": "^3.0.0",
     "@types/bun": "1.4.0",
     "@vitest/coverage-v8": "4.1.11",
     "bumpp": "12.2.2",
@@ -73,6 +75,7 @@
     "oxlint-tsgolint": "7.0.2001",
     "rolldown": "1.2.6",
     "rolldown-plugin-dts": "0.28.4",
+    "slugify": "^1.6.9",
     "typescript": "7.0.2",
     "vitest": "4.1.11"
   },

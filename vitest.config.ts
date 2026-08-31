@@ -3,6 +3,7 @@ import { defineConfig, type ViteUserConfig } from "vitest/config"
 const config: ViteUserConfig = defineConfig({
   test: {
     include: ["test/**/*.test.ts"],
+    benchmark: { include: ["bench/**/*.bench.ts"] },
     testTimeout: 30000,
     coverage: {
       provider: "v8",
