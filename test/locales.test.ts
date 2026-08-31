@@ -75,7 +75,8 @@ describe("other Latin locales", () => {
 describe("Cyrillic locales (Locale objects from cizgi/transliterate)", () => {
   it("Ukrainian", () => {
     expect(slugify("Київ Ґудзик", { locale: uk })).toBe("kyiv-gudzyk")
-    expect(slugify("Щастя & Здоров'я", { locale: uk })).toBe("shchastya-ta-zdorovya")
+    expect(slugify("Щастя & Здоров'я", { locale: uk })).toBe("shchastia-ta-zdorovia")
+    expect(slugify("Єва Їжак Юрій", { locale: uk })).toBe("yeva-yizhak-yurii")
     expect(slugify("Київ", { transliterate: [cyrillic] })).toBe("kiyiv")
   })
 

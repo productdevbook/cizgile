@@ -51,12 +51,12 @@ The pipeline, in order — the order is what makes the edge cases come out right
 
 1. control and format characters are dropped (tabs/newlines become spaces; ZWSP, soft hyphen, BOM, bidi marks vanish)
 2. NFC, then `replacements`
-3. NFKC (`ﬁ` → `fi`, `①` → `1`, `™` → `TM`)
+3. compatibility symbols the tables know (`µ`, `™`, `№`) are mapped, then NFKC (`ﬁ` → `fi`, `①` → `1`)
 4. `decamelize`
 5. transliteration: locale table → locale scripts → your tables → Latin → symbols → strip combining marks
 6. lowercase (`İ` → `i`; Turkish/Azerbaijani locales use `toLocaleLowerCase("tr")` in unicode mode)
 7. `remove`
-8. runs of anything else become one separator; separators collapse and are trimmed
+8. in ASCII mode, letters no table could map are dropped (Django behaviour: `Straße` with `transliterate: false` → `strae`); runs of anything else become one separator; separators collapse and are trimmed
 9. `maxLength`
 
 Output in ASCII mode always matches `^[a-z0-9]+(-[a-z0-9]+)*$` (with the default separator) and is a
@@ -173,6 +173,8 @@ Tables: `latin` `symbols` `cyrillic` `cyrillicUk` `cyrillicBg` `cyrillicMk` `cyr
 `az bg da de es fi fr hu it mk nb nl pt ru sr sv tr uk vi` and the `locales` map. Lookup order is
 locale table → locale scripts → your tables → Latin → symbols → decompose and strip marks. Table keys
 are single NFC code points; a few multi-character keys (Armenian `ու`) are matched longest-first.
+Where a script spells a letter differently at the start of a word (Armenian `ե`/`ո`, Ukrainian
+`є ї й ю я`), the capital carries the word-initial form and the lowercase the medial one.
 `defineLocale(base, overrides)` and `mergeTables(...tables)` return new objects; nothing is mutated.
 
 ## How it compares
@@ -185,6 +187,7 @@ are single NFC code points; a few multi-character keys (Armenian `ու`) are mat
 | `"fooBar"`                  | `foobar`             | `foobar`         | `foobar`             | `foo-bar`               |
 | `"^très\|Jolie-- "`         | `tres-jolie`         | `tres-jolie`     | `tres-jolie`         | `tres-jolie`            |
 | `"Straße"` (`locale: "de"`) | `strasse`            | `strae`          | `strasse`            | `strasse`               |
+| `"5µm"`                     | `5-u-m`              | `5m`             | `5-m`                | `5-m`                   |
 | `"Привет"`                  | `""` (opt-in tables) | `""`             | `""`                 | `privet`                |
 
 `decamelize` is off by default (Django/Rails behaviour) and `&` is spelled out (sindresorhus

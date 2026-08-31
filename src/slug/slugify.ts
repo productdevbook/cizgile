@@ -20,6 +20,30 @@ function symbolEntries(table: TransliterationTable): TransliterationTable {
   return out
 }
 
+let compatCache: WeakMap<TransliterationTable, ReadonlyArray<readonly [string, string]>> | undefined
+
+function compatEntries(table: TransliterationTable): ReadonlyArray<readonly [string, string]> {
+  compatCache ??= new WeakMap()
+  const cached = compatCache.get(table)
+  if (cached !== undefined) return cached
+  const out: Array<readonly [string, string]> = []
+  for (const [key, value] of Object.entries(table)) {
+    if (key.normalize("NFKC") !== key) out.push([key, value])
+  }
+  compatCache.set(table, out)
+  return out
+}
+
+function applyCompat(text: string, tables: readonly TransliterationTable[]): string {
+  let out = text
+  for (const table of tables) {
+    for (const [key, value] of compatEntries(table)) {
+      if (out.includes(key)) out = out.split(key).join(value)
+    }
+  }
+  return out
+}
+
 function lowercaseOf(text: string, o: ResolvedOptions): string {
   if (o.unicode && o.locale?.lowercase !== undefined) return o.locale.lowercase(text)
   return text.replaceAll("İ", "i").toLowerCase()
@@ -41,13 +65,15 @@ export function slugify(input: string, options: SlugifyOptions = {}): string {
   for (const [from, to] of o.replacements) {
     if (from !== "") s = s.split(from).join(to)
   }
-  s = s.normalize("NFKC")
+  const symbolTables = (o.locale === undefined ? [symbols] : [o.locale.table, symbols]).map(
+    symbolEntries,
+  )
+  s = applyCompat(s, o.tables ?? symbolTables).normalize("NFKC")
   if (o.decamelize) s = decamelize(s)
   if (o.tables !== undefined) {
-    s = fold(s, o.tables, false)
+    s = fold(s, o.tables, false).replace(/(?![\x00-\x7F])[\p{L}\p{M}\p{N}]/gu, "")
   } else {
-    const tables = o.locale === undefined ? [symbols] : [o.locale.table, symbols]
-    s = fold(s, tables.map(symbolEntries), false, false)
+    s = fold(s, symbolTables, false, false)
   }
   if (o.lowercase) s = lowercaseOf(s, o)
   if (o.unicode) s = s.normalize("NFKC")

@@ -132,17 +132,20 @@ export const cyrillic: TransliterationTable = {
 export const cyrillicUk: TransliterationTable = {
   Г: "H",
   г: "h",
+  Є: "Ye",
+  є: "ie",
+  Ї: "Yi",
   ї: "i",
   И: "Y",
   и: "y",
   Й: "Y",
-  й: "y",
+  й: "i",
   Щ: "Shch",
   щ: "shch",
   Ю: "Yu",
-  ю: "yu",
+  ю: "iu",
   Я: "Ya",
-  я: "ya",
+  я: "ia",
 }
 
 export const cyrillicBg: TransliterationTable = {

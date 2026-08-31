@@ -24,6 +24,7 @@ export const symbols: TransliterationTable = {
   "฿": " baht ",
   "°": " deg ",
   "№": " no ",
+  µ: " u ",
   "×": " x ",
   "∞": " infinity ",
   "∑": " sum ",
