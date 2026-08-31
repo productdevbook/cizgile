@@ -1,0 +1,82 @@
+{
+  "name": "cizgi",
+  "version": "0.0.0",
+  "description": "RFC 3986/3987-grounded URL slugs. Transliteration, Unicode slugs, IRI to URI, percent-encoding, dot-segment removal. Zero dependencies, tree-shakeable.",
+  "keywords": [
+    "esm",
+    "iri",
+    "percent-encoding",
+    "rfc3986",
+    "rfc3987",
+    "slug",
+    "slugify",
+    "transliterate",
+    "typescript",
+    "unicode",
+    "uri",
+    "url",
+    "zero-dependency"
+  ],
+  "homepage": "https://github.com/productdevbook/cizgi",
+  "bugs": {
+    "url": "https://github.com/productdevbook/cizgi/issues"
+  },
+  "license": "MIT",
+  "author": "productdevbook",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/productdevbook/cizgi.git"
+  },
+  "funding": "https://github.com/sponsors/productdevbook",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
+    },
+    "./uri": {
+      "types": "./dist/uri.d.mts",
+      "default": "./dist/uri.mjs"
+    },
+    "./transliterate": {
+      "types": "./dist/transliterate.d.mts",
+      "default": "./dist/transliterate.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "rolldown -c",
+    "dev": "vitest",
+    "lint": "oxlint --type-aware . && oxfmt --check .",
+    "lint:fix": "oxlint --type-aware . --fix && oxfmt .",
+    "fmt": "oxfmt .",
+    "typecheck": "tsc --noEmit",
+    "test": "bun run lint && bun run typecheck && vitest run",
+    "test:unit": "vitest run",
+    "coverage": "vitest run --coverage",
+    "release": "bun run test && bun run build && bumpp --commit --tag --push --all",
+    "prepack": "bun run build"
+  },
+  "devDependencies": {
+    "@types/bun": "1.4.0",
+    "@vitest/coverage-v8": "4.1.11",
+    "bumpp": "12.2.2",
+    "oxfmt": "0.65.0",
+    "oxlint": "1.80.0",
+    "oxlint-tsgolint": "7.0.2001",
+    "rolldown": "1.2.6",
+    "rolldown-plugin-dts": "0.28.4",
+    "typescript": "7.0.2",
+    "vitest": "4.1.11"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "packageManager": "bun@1.4.0"
+}
