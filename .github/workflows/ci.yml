@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: ["22", "24", "current"]
+        node: ["24", "lts/*"]
     name: ci (node ${{ matrix.node }})
     steps:
       - uses: actions/checkout@v5
