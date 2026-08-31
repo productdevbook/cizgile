@@ -1,6 +1,6 @@
 {
   "name": "cizgile",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "RFC 3986/3987-grounded URL slugs. Transliteration, Unicode slugs, IRI to URI, percent-encoding, dot-segment removal. Zero dependencies, tree-shakeable.",
   "keywords": [
     "esm",
