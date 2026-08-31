@@ -11,7 +11,7 @@
   <a href="https://npmjs.com/package/cizgile"><img src="https://img.shields.io/npm/v/cizgile?style=flat&colorA=18181B&colorB=34d399" alt="npm version"></a>
   <a href="https://npmjs.com/package/cizgile"><img src="https://img.shields.io/npm/dm/cizgile?style=flat&colorA=18181B&colorB=34d399" alt="npm downloads"></a>
   <a href="https://bundlephobia.com/result?p=cizgile"><img src="https://img.shields.io/bundlephobia/minzip/cizgile?style=flat&colorA=18181B&colorB=34d399" alt="bundle size"></a>
-  <a href="https://github.com/productdevbook/cizgi/blob/main/LICENSE"><img src="https://img.shields.io/github/license/productdevbook/cizgi?style=flat&colorA=18181B&colorB=34d399" alt="license"></a>
+  <a href="https://github.com/productdevbook/cizgile/blob/main/LICENSE"><img src="https://img.shields.io/github/license/productdevbook/cizgile?style=flat&colorA=18181B&colorB=34d399" alt="license"></a>
 </p>
 
 ## Quick Start

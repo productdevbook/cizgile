@@ -17,15 +17,15 @@
     "url",
     "zero-dependency"
   ],
-  "homepage": "https://github.com/productdevbook/cizgi",
+  "homepage": "https://github.com/productdevbook/cizgile",
   "bugs": {
-    "url": "https://github.com/productdevbook/cizgi/issues"
+    "url": "https://github.com/productdevbook/cizgile/issues"
   },
   "license": "MIT",
   "author": "productdevbook",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/productdevbook/cizgi.git"
+    "url": "git+https://github.com/productdevbook/cizgile.git"
   },
   "funding": "https://github.com/sponsors/productdevbook",
   "files": [
