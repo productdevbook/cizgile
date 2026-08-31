@@ -101,9 +101,15 @@ describe("iriToUri (RFC 3987 §3.1)", () => {
     expect(iriToUri(iri)).toBe(uri)
   })
 
-  it("normalizes to NFC before encoding", () => {
-    expect(iriToUri("résumé")).toBe(iriToUri("résumé"))
-    expect(iriToUri("résumé")).toBe("r%C3%A9sum%C3%A9")
+  it("does not normalize Unicode input unless asked (RFC 3987 §3.1 step 1c)", () => {
+    expect(iriToUri("e\u0301")).toBe("e%CC%81")
+    expect(iriToUri("e\u0301")).toBe(encodeURI("e\u0301"))
+    expect(iriToUri("Vie\u0323\u0302t")).toBe(
+      new URL("http://a/Vie\u0323\u0302t").pathname.slice(1),
+    )
+    expect(iriToUri("e\u0301", { nfc: true })).toBe("%C3%A9")
+    expect(iriToUri("r\u00e9sum\u00e9", { nfc: true })).toBe("r%C3%A9sum%C3%A9")
+    expect(iriToUri("re\u0301sume\u0301", { nfc: true })).toBe("r%C3%A9sum%C3%A9")
   })
 
   it("rejects bidi formatting characters unless told to strip them", () => {
@@ -159,7 +165,7 @@ describe("uriToIri (RFC 3987 §3.2)", () => {
     let checked = 0
     for (const s of CORPUS_SAFE) {
       if (hasBidiControls(s)) continue
-      const nfc = s.normalize("NFC")
+      const nfc = s
       let safe = true
       for (const c of nfc) {
         const code = c.codePointAt(0) ?? 0

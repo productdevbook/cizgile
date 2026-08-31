@@ -36,6 +36,7 @@ export function hasBidiControls(input: string): boolean {
 
 export interface IriToUriOptions {
   readonly bidi?: "throw" | "strip"
+  readonly nfc?: boolean
 }
 
 export function iriToUri(iri: string, options: IriToUriOptions = {}): string {
@@ -46,7 +47,7 @@ export function iriToUri(iri: string, options: IriToUriOptions = {}): string {
     }
     input = input.replace(BIDI_CONTROLS_GLOBAL, "")
   }
-  input = input.normalize("NFC")
+  if (options.nfc === true) input = input.normalize("NFC")
   let out = ""
   for (const ch of input) {
     const cp = ch.codePointAt(0) ?? 0

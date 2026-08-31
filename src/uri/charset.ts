@@ -6,7 +6,12 @@ export type EncodeSetName =
   | "query"
   | "fragment"
   | "userinfo"
+  | "whatwg-c0-control"
+  | "whatwg-fragment"
+  | "whatwg-query"
+  | "whatwg-special-query"
   | "whatwg-path"
+  | "whatwg-userinfo"
   | "whatwg-component"
   | "form"
 
@@ -60,12 +65,32 @@ export function isQueryChar(cp: number): boolean {
   return isPchar(cp) || cp === 0x2f || cp === 0x3f
 }
 
+function isWhatwgC0Safe(cp: number): boolean {
+  return cp >= 0x20 && cp <= 0x7e
+}
+
+function isWhatwgFragmentSafe(cp: number): boolean {
+  return cp >= 0x21 && cp <= 0x7e && !inChars('"<>`', cp)
+}
+
+function isWhatwgQuerySafe(cp: number): boolean {
+  return cp >= 0x21 && cp <= 0x7e && !inChars('"#<>', cp)
+}
+
+function isWhatwgSpecialQuerySafe(cp: number): boolean {
+  return isWhatwgQuerySafe(cp) && cp !== 0x27
+}
+
 function isWhatwgPathSafe(cp: number): boolean {
-  return cp >= 0x21 && cp <= 0x7e && !inChars('"#<>?^`{}', cp)
+  return isWhatwgQuerySafe(cp) && !inChars("?^`{}", cp)
+}
+
+function isWhatwgUserinfoSafe(cp: number): boolean {
+  return isWhatwgPathSafe(cp) && !inChars("/:;=@[\\]|", cp)
 }
 
 function isWhatwgComponentSafe(cp: number): boolean {
-  return isWhatwgPathSafe(cp) && !inChars("/:;=@[\\]|$&+,", cp)
+  return isWhatwgUserinfoSafe(cp) && !inChars("$&+,", cp)
 }
 
 function isFormSafe(cp: number): boolean {
@@ -80,7 +105,12 @@ const SETS: Readonly<Record<EncodeSetName, (codePoint: number) => boolean>> = {
   query: isQueryChar,
   fragment: isQueryChar,
   userinfo: (cp) => isUnreserved(cp) || isSubDelim(cp) || cp === 0x3a,
+  "whatwg-c0-control": isWhatwgC0Safe,
+  "whatwg-fragment": isWhatwgFragmentSafe,
+  "whatwg-query": isWhatwgQuerySafe,
+  "whatwg-special-query": isWhatwgSpecialQuerySafe,
   "whatwg-path": isWhatwgPathSafe,
+  "whatwg-userinfo": isWhatwgUserinfoSafe,
   "whatwg-component": isWhatwgComponentSafe,
   form: isFormSafe,
 }

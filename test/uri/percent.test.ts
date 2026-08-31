@@ -54,6 +54,14 @@ describe("character classes (RFC 3986 §2)", () => {
     expect(resolveEncodeSet("whatwg-path")(0x7f)).toBe(false)
     expect(resolveEncodeSet("whatwg-component")(cp("&"))).toBe(false)
     expect(resolveEncodeSet("form")(cp("*"))).toBe(true)
+    expect(resolveEncodeSet("whatwg-c0-control")(0x20)).toBe(true)
+    expect(resolveEncodeSet("whatwg-c0-control")(0x7f)).toBe(false)
+    expect(resolveEncodeSet("whatwg-fragment")(cp("#"))).toBe(true)
+    expect(resolveEncodeSet("whatwg-fragment")(cp("`"))).toBe(false)
+    expect(resolveEncodeSet("whatwg-query")(cp("'"))).toBe(true)
+    expect(resolveEncodeSet("whatwg-special-query")(cp("'"))).toBe(false)
+    expect(resolveEncodeSet("whatwg-userinfo")(cp("|"))).toBe(false)
+    expect(resolveEncodeSet("whatwg-userinfo")(cp("$"))).toBe(true)
     expect(resolveEncodeSet((c) => c === 0x41)(0x41)).toBe(true)
   })
 })
@@ -85,6 +93,44 @@ describe("percentEncode", () => {
 
   it("supports a custom keep predicate", () => {
     expect(percentEncode("ab", (c) => c === 0x61)).toBe("a%62")
+  })
+})
+
+describe("WHATWG percent-encode sets match the URL parser", () => {
+  const printable: string[] = []
+  for (let c = 0x21; c <= 0x7e; c++) printable.push(String.fromCodePoint(c))
+
+  it("special-query and query", () => {
+    for (const ch of printable) {
+      if (ch === "#" || ch === "%") continue
+      expect(percentEncode(ch, "whatwg-special-query"), ch).toBe(
+        new URL("http://h/?" + ch).search.slice(1),
+      )
+      expect(percentEncode(ch, "whatwg-query"), ch).toBe(new URL("foo://h/?" + ch).search.slice(1))
+    }
+    expect(percentEncode("a b", "whatwg-special-query")).toBe("a%20b")
+  })
+
+  it("fragment", () => {
+    for (const ch of printable) {
+      if (ch === "%") continue
+      expect(percentEncode(ch, "whatwg-fragment"), ch).toBe(
+        new URL("http://h/#" + ch).hash.slice(1),
+      )
+    }
+  })
+
+  it("path and userinfo", () => {
+    for (const ch of printable) {
+      if ("%/?#\\.".includes(ch)) continue
+      expect(percentEncode(ch, "whatwg-path"), ch).toBe(new URL("http://h/" + ch).pathname.slice(1))
+    }
+    for (const ch of printable) {
+      if ("%@/?#\\:".includes(ch)) continue
+      expect(percentEncode(ch, "whatwg-userinfo"), ch).toBe(
+        new URL("http://" + ch + "@h/").username,
+      )
+    }
   })
 })
 
