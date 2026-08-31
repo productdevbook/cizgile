@@ -15,7 +15,3 @@ export function uniqueChars(text: string): string[] {
   for (const ch of text) seen.add(ch)
   return [...seen]
 }
-
-export function isMark(ch: string): boolean {
-  return /^\p{M}$/u.test(ch)
-}

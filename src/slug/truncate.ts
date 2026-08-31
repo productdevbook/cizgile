@@ -22,8 +22,16 @@ function isClusterExtender(cp: number): boolean {
   )
 }
 
-function graphemeBoundary(text: string, limit: number): number {
-  const seg = graphemeSegmenter()
+export interface GraphemeBoundaryOptions {
+  readonly fallback?: boolean
+}
+
+export function graphemeBoundary(
+  text: string,
+  limit: number,
+  options: GraphemeBoundaryOptions = {},
+): number {
+  const seg = options.fallback === true ? undefined : graphemeSegmenter()
   if (seg !== undefined) {
     let boundary = 0
     for (const { index, segment } of seg.segment(text)) {
