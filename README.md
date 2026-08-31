@@ -1,5 +1,12 @@
 # cizgi
 
+<p>
+  <a href="https://npmjs.com/package/cizgi"><img src="https://img.shields.io/npm/v/cizgi?style=flat&colorA=18181B&colorB=34d399" alt="npm version"></a>
+  <a href="https://npmjs.com/package/cizgi"><img src="https://img.shields.io/npm/dm/cizgi?style=flat&colorA=18181B&colorB=34d399" alt="npm downloads"></a>
+  <a href="https://bundlephobia.com/result?p=cizgi"><img src="https://img.shields.io/bundlephobia/minzip/cizgi?style=flat&colorA=18181B&colorB=34d399" alt="bundle size"></a>
+  <a href="https://github.com/productdevbook/cizgi/blob/main/LICENSE"><img src="https://img.shields.io/github/license/productdevbook/cizgi?style=flat&colorA=18181B&colorB=34d399" alt="license"></a>
+</p>
+
 URL slugs grounded in RFC 3986 / RFC 3987. Transliteration for Latin, Cyrillic, Greek, Arabic,
 Armenian, Georgian and Dhivehi, Unicode slugs, IRI ↔ URI conversion, percent-encoding, dot-segment
 removal, reference resolution and normalisation. Zero dependencies, ESM only, tree-shakeable.
@@ -207,6 +214,7 @@ bun install
 bun run test      # oxlint --type-aware, oxfmt --check, tsc --noEmit, vitest
 bun run build     # rolldown → dist/*.mjs + dist/*.d.mts
 bun run coverage
+bun run release   # test + build, then bumpp --commit --tag --push --all; the v* tag triggers the npm publish workflow
 ```
 
 Node ≥ 20.19 or any runtime with `String.prototype.normalize` and Unicode property escapes.
