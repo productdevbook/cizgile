@@ -249,6 +249,24 @@ If you are an assistant writing code with this library, these are the facts that
 - Use `resolveUri`, `normalizeUri` and `equivalentUris` instead of string concatenation or `new URL()` when you need RFC behaviour (strict scheme handling, no special-scheme rewriting, no host IDNA unless you ask for it).
 - Every exported function has an explicit TypeScript signature; the `.d.mts` files in `dist/` are the authoritative API.
 
+## Performance
+
+Measured with `bun run bench` (vitest bench, Node 24, one core of a desktop CPU). Higher is better.
+
+| input                                 | cizgile        | `@sindresorhus/slugify` | `slugify` (simov) |
+| ------------------------------------- | -------------- | ----------------------- | ----------------- |
+| ASCII title (60 chars)                | **396k ops/s** | 136k                    | 147k              |
+| Latin with diacritics                 | **235k ops/s** | 96k                     | 179k              |
+| Turkish, `locale: "tr"`               | 212k ops/s     | 99k                     | **216k**          |
+| Cyrillic, `transliterate: [cyrillic]` | 179k ops/s     | 86k                     | **188k**          |
+| 2.5 KB of mixed text                  | **6.4k ops/s** | 4.3k                    | 3.4k              |
+| `isSlug`                              | 3.7M ops/s     | —                       | —                 |
+
+`resolveUri` runs at ~0.8M ops/s (the built-in `URL` parser: ~1M), `removeDotSegments` at 2M,
+`percentEncode` at 0.5M (`encodeURIComponent`: 3.3M — it is native), `normalizeUri` at 0.3M.
+Options objects are resolved once and cached structurally, so inline `{ locale: "tr" }` literals cost
+nothing after the first call.
+
 ## How it compares
 
 | input                       | cizgile              | Django `slugify` | Rails `parameterize` | `@sindresorhus/slugify` |
