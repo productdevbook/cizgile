@@ -6,7 +6,7 @@
   <br><br>
   Zero-dependency URL slug engine.
   <br>
-  RFC 3986/3987 slugs, transliteration for seven scripts, Unicode slugs, IRI ↔ URI, percent-encoding, dot-segment removal, reference resolution. Pure TypeScript, works everywhere.
+  Turn any title into a clean URL slug — in any language — and work with URLs the way RFC 3986 and RFC 3987 describe them. Pure TypeScript, works everywhere.
   <br><br>
   <a href="https://npmjs.com/package/cizgile"><img src="https://img.shields.io/npm/v/cizgile?style=flat&colorA=18181B&colorB=34d399" alt="npm version"></a>
   <a href="https://npmjs.com/package/cizgile"><img src="https://img.shields.io/npm/dm/cizgile?style=flat&colorA=18181B&colorB=34d399" alt="npm downloads"></a>
@@ -14,7 +14,7 @@
   <a href="https://github.com/productdevbook/cizgile/blob/main/LICENSE"><img src="https://img.shields.io/github/license/productdevbook/cizgile?style=flat&colorA=18181B&colorB=34d399" alt="license"></a>
 </p>
 
-## Quick Start
+## Install
 
 ```sh
 npm install cizgile
@@ -29,78 +29,61 @@ slugify("Straße Über Ärger", { locale: "de" }) // "strasse-ueber-aerger"
 slugify("你好 World", { unicode: true }) // "你好-world"
 ```
 
-Three entry points, each importable on its own:
+No dependencies. ESM only. Node 20+, Bun, Deno, browsers, edge workers.
 
-| entry                   | what it holds                                                                                                 |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `cizgile`               | `slugify`, `isSlug`, `truncateSlug`, `createSlugger`, `decamelize`                                            |
-| `cizgile/uri`           | RFC 3986 character classes, percent-encoding, `removeDotSegments`, `resolveUri`, `normalizeUri`, RFC 3987 IRI |
-| `cizgile/transliterate` | script tables, locales, `transliterate`, `defineLocale`                                                       |
+## Why cizgile
 
-`import { slugify } from "cizgile"` bundles the Latin table and symbols only; Cyrillic, Greek, Arabic,
-Armenian, Georgian and Dhivehi are opt-in and tree-shake away when unused.
+- **Slugs that are correct by construction.** Every ASCII slug is a valid URL path segment (RFC 3986 `segment-nz-nc`) — no percent-encoding needed, no `.` or `..`, no accidental scheme prefix.
+- **Speaks your language.** 19 locales (`tr`, `de`, `da`, `sv`, `uk`, `bg`, …) and 7 scripts (Latin, Cyrillic, Greek, Arabic, Armenian, Georgian, Dhivehi). `ß` → `ss`, `İ` → `i`, `Щ` → `shch`.
+- **Unicode slugs when you want them.** `你好-world` stays readable, and `iriToUri` gives you the exact percent-encoded form for the wire.
+- **A real URL toolkit underneath.** Resolve, normalise, compare, validate and relativise URLs by the RFC, cross-checked against the WHATWG `URL` parser.
+- **Small and tree-shakeable.** `import { slugify }` ships the Latin table only; other scripts load only when you import them.
 
-## `slugify(input, options?)`
+## Three entry points
 
-Every option, with its default:
+| import                  | what you get                                                                                  |
+| ----------------------- | --------------------------------------------------------------------------------------------- |
+| `cizgile`               | `slugify`, `isSlug`, `createSlugger`, `truncateSlug`, `decamelize`, script and bidi guards    |
+| `cizgile/transliterate` | `transliterate`, per-script tables, locales, `defineLocale`                                   |
+| `cizgile/uri`           | percent-encoding, `resolveUri`, `normalizeUri`, `relativize`, validators, IRI ↔ URI, punycode |
 
-| option                      | default   | meaning                                                                                                                                                                                                                                                                                                                             |
-| --------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `separator`                 | `"-"`     | Any string of RFC 3986 unreserved / sub-delims / `@` characters that are not letters or digits (`-` `_` `.` `~` `!` `$` `&` `'` `(` `)` `*` `+` `,` `;` `=` `@`); `""` joins words. Anything else — `/ ? # % : [ ]`, non-ASCII — throws, so every slug stays a single `segment-nz-nc`.                                              |
-| `lowercase`                 | `true`    | `false` keeps case (`"Donald E. Knuth"` → `Donald-E-Knuth`).                                                                                                                                                                                                                                                                        |
-| `unicode`                   | `false`   | `true` keeps every letter, digit and combining mark (Django `allow_unicode`), output in NFKC.                                                                                                                                                                                                                                       |
-| `locale`                    | —         | `"az" "da" "de" "es" "fi" "fr" "hu" "it" "nb" "nl" "pt" "sv" "tr" "vi"`, or a `Locale` object (Cyrillic locales live in `cizgile/transliterate`).                                                                                                                                                                                   |
-| `transliterate`             | `true`    | `false` skips the tables (diacritics still fold); an array of tables is consulted before the Latin defaults.                                                                                                                                                                                                                        |
-| `decamelize`                | `false`   | `fooBar` → `foo-bar`, `HTMLParser` → `html-parser`, `APIs` stays.                                                                                                                                                                                                                                                                   |
-| `replacements`              | `[]`      | Literal `[from, to]` pairs applied first; surrounding spaces become separators (`["&", " and "]`).                                                                                                                                                                                                                                  |
-| `remove`                    | `/['’]/g` | Global regex stripped after transliteration (`don't` → `dont`); `false` to keep.                                                                                                                                                                                                                                                    |
-| `preserveCharacters`        | `[]`      | Extra single characters allowed in the output (`["."]` keeps `v1.2.3`); same character rule as `separator`, and may not contain the separator. A result that would be the dot-segment `.` or `..` becomes `""`.                                                                                                                     |
-| `preserveLeadingUnderscore` | `false`   | `_foo bar` → `_foo-bar`.                                                                                                                                                                                                                                                                                                            |
-| `preserveTrailingSeparator` | `false`   | `foo bar-` → `foo-bar-` (useful while typing into an input).                                                                                                                                                                                                                                                                        |
-| `maxLength`                 | —         | Limit in UTF-16 code units (what `String#length` counts — the percent-encoded wire form can be up to 3× longer per unit). Cuts at the last separator inside the limit, never mid-word unless there is no separator, and never inside a grapheme cluster (surrogate pairs, combining marks, ZWJ emoji, skin tones, conjoining jamo). |
+## Slugs
 
-The pipeline, in order — the order is what makes the edge cases come out right:
-
-1. control and format characters are dropped (tabs/newlines become spaces; ZWSP, soft hyphen, BOM, bidi marks vanish)
-2. NFC, then `replacements`
-3. compatibility symbols the tables know (`µ`, `™`, `№`) are mapped, then NFKC (`ﬁ` → `fi`, `①` → `1`)
-4. `decamelize`
-5. transliteration: locale table → locale scripts → your tables → Latin → symbols → strip combining marks
-6. lowercase (`İ` → `i`; Turkish/Azerbaijani locales use `toLocaleLowerCase("tr")` in unicode mode)
-7. `remove`
-8. in ASCII mode, letters no table could map are dropped (Django behaviour: `Straße` with `transliterate: false` → `strae`); runs of anything else become one separator; separators collapse and are trimmed
-9. `maxLength`
-
-Output in ASCII mode always matches `^[a-z0-9]+(-[a-z0-9]+)*$` (with the default separator) and is a
-valid RFC 3986 `segment-nz-nc`, so it needs no percent-encoding. `slugify` is idempotent:
-`slugify(slugify(x)) === slugify(x)`.
-
-### Locales
-
-Locale ids resolve to objects from `cizgile/transliterate`; you can pass those objects directly or
-build your own without mutating anything global:
+### Everyday use
 
 ```ts
 import { slugify } from "cizgile"
-import { de, defineLocale, uk } from "cizgile/transliterate"
 
-slugify("Київ Ґудзик", { locale: uk }) // "kyiv-gudzyk"
-slugify("Fisch & Chips", { locale: de }) // "fisch-und-chips"
+slugify("Déjà Vu!") // "deja-vu"
+slugify("don't stop") // "dont-stop"
+slugify("v1.2.3", { preserveCharacters: ["."] }) // "v1.2.3"
+slugify("Hello World", { separator: "_" }) // "hello_world"
+slugify("Donald E. Knuth", { lowercase: false }) // "Donald-E-Knuth"
+slugify("getHTTPResponse", { decamelize: true }) // "get-http-response"
+slugify("the quick brown fox", { maxLength: 9 }) // "the-quick"
+slugify("C++ & Rust", { replacements: [["C++", "cpp"]] }) // "cpp-and-rust"
+```
+
+### Languages and scripts
+
+Locale ids for Latin-script languages; Cyrillic locales and other scripts come from `cizgile/transliterate` so they only end up in your bundle when you use them.
+
+```ts
+import { slugify } from "cizgile"
+import { cyrillic, greek, uk, defineLocale, de } from "cizgile/transliterate"
+
+slugify("Çay & Simit", { locale: "tr" }) // "cay-ve-simit"
+slugify("Fisch & Chips", { locale: "de" }) // "fisch-und-chips"
+slugify("Ærø", { locale: "da" }) // "aeroe"
+slugify("Київ", { locale: uk }) // "kyiv"
+slugify("Привет мир", { transliterate: [cyrillic] }) // "privet-mir"
+slugify("Καλημέρα", { transliterate: [greek] }) // "kalimera"
 
 const swiss = defineLocale(de, { id: "de-CH", table: { ß: "ss" } })
 slugify("Straße", { locale: swiss }) // "strasse"
-slugify("x & y", { locale: { id: "mine", table: { "&": " plus " } } }) // "x-plus-y"
 ```
 
-Non-Latin scripts without a locale:
-
-```ts
-import { cyrillic, greek } from "cizgile/transliterate"
-
-slugify("Привет мир", { transliterate: [cyrillic] }) // "privet-mir"
-slugify("Καλημέρα κόσμε", { transliterate: [greek] }) // "kalimera-kosme"
-slugify("Привет мир") // "" — nothing to keep in ASCII mode
-```
+Locale ids: `az da de es fi fr hu it nb nl pt sv tr vi`. Locale objects: those plus `bg mk ru sr uk`.
 
 ### Unicode slugs
 
@@ -109,109 +92,162 @@ import { slugify } from "cizgile"
 import { iriToUri, uriToIri } from "cizgile/uri"
 
 const slug = slugify("Ünïcödé ﬁnal ①", { unicode: true }) // "ünïcödé-final-1"
-const uri = iriToUri(slug) // "%C3%BCn%C3%AFc%C3%B6d%C3%A9-final-1"
-uriToIri(uri) === slug // true
+const wire = iriToUri(slug) // "%C3%BCn%C3%AFc%C3%B6d%C3%A9-final-1"
+uriToIri(wire) === slug // true
 ```
 
-`unicode: true` keeps `\p{L}\p{N}\p{M}`, normalises to NFKC, removes bidi controls and never starts a
-word with a combining mark, so `iriToUri` gives you the wire form Google asks for (UTF-8
-percent-encoded) and `uriToIri` gets the slug back byte-for-byte.
-
-Two opt-in guards for user-supplied Unicode titles:
-
-- `scripts: "single" | "highly-restrictive" | "moderately-restrictive" | "any"` (default `"any"`) — the
-  UTS #39 §5.1 restriction levels. `"single"` requires one script; `"highly-restrictive"` also allows Latin
-  with Japanese (Han + Hiragana + Katakana), Chinese (Han + Bopomofo) or Korean (Han + Hangul);
-  `"moderately-restrictive"` additionally allows Latin with any one other script except Cyrillic, Greek
-  and Cherokee. A violating slug throws `RangeError`; `checkScripts(text, level)` and `detectScripts(text)`
-  are exported for inspection. `slugify("pаypal", { unicode: true, scripts: "single" })` (Cyrillic `а`)
-  throws instead of producing a look-alike of `paypal` (RFC 3987 §6.1, §7.5, §8).
-- `bidi: "allow" | "encode" | "throw"` (default `"allow"`) — RFC 3987 §4.2: a component should not mix
-  left-to-right and right-to-left characters and, when right-to-left, should start and end with them.
-  `"encode"` percent-encodes the whole slug (the RFC's own escape hatch), `"throw"` raises.
-  `isBidiSafeComponent(text)` is exported.
-
-### `isSlug(value, options?)`
-
-`true` when `value` is exactly what `slugify` would have produced under the same `separator`,
-`lowercase`, `unicode`, `preserveCharacters`, `preserveLeadingUnderscore`, `preserveTrailingSeparator`,
-`maxLength`, `scripts` and `bidi`. Empty strings, the dot-segments `.` and `..`, leading/trailing/doubled separators, wrong
-case and non-NFKC input are rejected.
-
-### `createSlugger(defaults?)`
-
-Unique slugs for a document: `foo`, `foo-2`, `foo-3`. Uniqueness is guaranteed even when a suffixed
-form arrives on its own (`foo-2` after `foo-2` becomes `foo-2-2`), results stay within `maxLength`
-(`foobar`, `foob-2`), the empty slug is never counted. `reset()`, `has(slug)`, `reserve(slug)`.
-`slugifyWithCounter` is an alias.
-
-### `truncateSlug(slug, maxLength, separator = "-")`
-
-The truncation step on its own: `truncateSlug("hello-world", 8)` → `hello`. Grapheme boundaries come from
-`Intl.Segmenter` when the runtime has it (Node ≥ 16, Bun, evergreen browsers) with a code-point heuristic as
-fallback.
-
-## `cizgile/uri`
-
-Everything here follows RFC 3986 to the letter and is checked against its test vectors (§5.4 normal
-and abnormal references, §6.2 normalisation) and, where both apply, against the WHATWG `URL` parser.
-
-| function                                                                                                           | RFC                        | notes                                                                                                                                                                                                                                                                                                                                                                        |
-| ------------------------------------------------------------------------------------------------------------------ | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `isUnreserved` `isReserved` `isGenDelim` `isSubDelim` `isPchar` `isSegmentNzNc` `isQueryChar`                      | 3986 §2, §3.3–3.5          | per code point                                                                                                                                                                                                                                                                                                                                                               |
-| `percentEncode(text, keep?)`                                                                                       | §2.1, §2.5                 | UTF-8, uppercase hex. `keep` is a set name — RFC 3986: `"unreserved" "pchar" "segment-nz-nc" "path" "query" "fragment" "userinfo"`; WHATWG: `"whatwg-c0-control" "whatwg-fragment" "whatwg-query" "whatwg-special-query" "whatwg-path" "whatwg-userinfo" "whatwg-component" "form"` — or a predicate. `%` is always encoded — input is text.                                 |
-| `percentDecode(text, { plusAsSpace })`                                                                             | §2.1                       | malformed `%` left alone, bad UTF-8 → U+FFFD                                                                                                                                                                                                                                                                                                                                 |
-| `normalizePercentEncoding`                                                                                         | §6.2.2.1–2                 | uppercase hex, decode unreserved only                                                                                                                                                                                                                                                                                                                                        |
-| `encodePathSegment(seg, { noColon })` `encodePath(path, { relative })` `encodeQuery` `encodeFragment` `encodeForm` | §3.3–3.5, §4.2             | `noColon` / `relative` give `segment-nz-nc` for the first segment of a relative-path reference                                                                                                                                                                                                                                                                               |
-| `removeDotSegments(path)`                                                                                          | §5.2.4                     | the literal two-buffer algorithm; `..` above the root is discarded (erratum 4547, same as WHATWG)                                                                                                                                                                                                                                                                            |
-| `normalizePath(path, { trailingSlash })`                                                                           | §6.2.2                     | dot segments are removed from absolute paths only; a relative path keeps its `..`                                                                                                                                                                                                                                                                                            |
-| `parseUri` / `serializeUri`                                                                                        | Appendix B, §5.3           | a scheme must match the §3.1 ABNF (`1:2` is a relative reference); the serializer inserts `/.` or `./` where §3 / §4.2 require it so its output always re-parses to the same components                                                                                                                                                                                      |
-| `resolveUri(base, ref, { strict, allowRelativeBase })`                                                             | §5.1, §5.2                 | strict by default (`http:g` → `http:g`; `strict: false` gives `http://a/b/c/g`); the base must be an absolute-URI — its fragment is ignored — unless `allowRelativeBase` is set; the base path is dot-normalised first (erratum 4789)                                                                                                                                        |
-| `normalizeUri(uri, { defaultPorts, schemeBased, userinfo })`                                                       | §6.2.2, §6.2.3             | lowercase scheme and ASCII host letters (RFC 3987 §5.3.2.1 — non-ASCII host characters are left alone), uppercase hex, dot segments, default ports (`http 80` … `ftp 21`), empty path → `/` for any scheme with an authority; `schemeBased: false` stops at §6.2.2; `userinfo: "strip-password" \| "strip"` for logs and storage (§7.5)                                      |
-| `isIPv4Address` `isIPv6Address` `isIPvFuture` `isIPLiteral` `isRegName` `isHost` `parseHost`                       | §3.2.2, §7.4, Appendix A   | the full `IPv6address` ABNF (all nine forms, `ls32` with an IPv4 tail); `0x7f.0.0.1` and `2130706433` are reg-names, not addresses                                                                                                                                                                                                                                           |
-| `isUriReference` `isUri` `isAbsoluteUri` `isRelativeReference` `classifyReference` `pathForm`                      | §3.3, §4.1–4.3, Appendix A | validating parser built on the ABNF: `1:2` and `this:that` are not relative references, `http://a b/` is nothing                                                                                                                                                                                                                                                             |
-| `isIriReference` `isIri`                                                                                           | 3987 §2.2                  | same, with `ucschar` allowed and `iprivate` allowed in the query                                                                                                                                                                                                                                                                                                             |
-| `isSameDocumentReference(base, ref, { normalize })`                                                                | §4.4                       | `#s`, `""`, `?q` against `http://a/b?q`                                                                                                                                                                                                                                                                                                                                      |
-| `equivalentUris(a, b, { level, base, ignoreFragment, defaultPorts })`                                              | §6.1, §6.2; 3987 §5.3.1    | the comparison ladder — `simple`, `syntax` (§6.2.2), `scheme` (§6.2.3, default); never maps IRIs to URIs                                                                                                                                                                                                                                                                     |
-| `relativize(base, target)`                                                                                         | §5.2 (inverse)             | shortest reference that resolves back to `target`: `g`, `../g`, `?y`, `#s`, `//g/`, `./this:that`; a different scheme returns `target` unchanged                                                                                                                                                                                                                             |
-| `punycodeEncode` `punycodeDecode` `domainToAscii` `domainToUnicode`                                                | RFC 3492, RFC 3986 §3.2.2  | zero-dependency Punycode; `domainToAscii` lowercases and NFC-normalises non-ASCII labels (no full UTS #46 mapping)                                                                                                                                                                                                                                                           |
-| `extractUri(text)`                                                                                                 | Appendix C                 | strips `<>`, quotes, `URL:` prefixes, trailing punctuation and line-wrap whitespace                                                                                                                                                                                                                                                                                          |
-| `isUcschar` `isIprivate` `isIunreserved` `isIpchar` `isBidiControl` `hasBidiControls`                              | 3987 §2.2, §4.1            | bidi controls are the Unicode `Bidi_Control` set (the RFC list plus U+061C and U+2066–2069)                                                                                                                                                                                                                                                                                  |
-| `iriToUri(iri, { bidi, nfc, strict, host })`                                                                       | 3987 §3.1                  | UTF-8 percent-encoding without touching the characters (§3.1 step 1c); `nfc: true` for text from non-Unicode sources; `strict: true` throws on characters no IRI may contain; `host: "punycode"` converts an `ireg-name` to IDNA form (`例え.jp` → `xn--r8jz45g.jp`) so browsers and HTTP clients accept it; bidi formatting characters throw (`bidi: "strip"` removes them) |
-| `uriToIri(uri)`                                                                                                    | 3987 §3.2                  | decodes well-formed UTF-8 `ucschar` and percent-encoded unreserved ASCII; `iprivate` only inside the query; reserved, bidi controls and everything else stay encoded                                                                                                                                                                                                         |
+Unicode slugs keep letters, digits and combining marks, are NFKC-normalised, never start with a mark and contain no invisible or bidi-control characters. Two optional guards for user-supplied titles:
 
 ```ts
-import { normalizeUri, percentEncode, removeDotSegments, resolveUri } from "cizgile/uri"
-
-removeDotSegments("/a/b/c/./../../g") // "/a/g"
-resolveUri("http://a/b/c/d;p?q", "../../g") // "http://a/g"
-normalizeUri("HTTP://www.EXAMPLE.com:80/%7e%41/./b/../c") // "http://www.example.com/~A/c"
-percentEncode("À ア", "pchar") // "%C3%80%20%E3%82%A2"
+slugify("pаypal", { unicode: true, scripts: "single" }) // throws — that "а" is Cyrillic
+slugify("مرحبا 123", { unicode: true, bidi: "encode" }) // "%D9%85%D8%B1%D8%AD%D8%A8%D8%A7-123"
 ```
 
-Not implemented on purpose: RFC 6874 IPv6 zone identifiers (`[fe80::a%25en1]`) — RFC 9844 reverted
-that change to the URI syntax.
+`scripts` applies the UTS #39 restriction levels (`"single"`, `"highly-restrictive"`, `"moderately-restrictive"`, `"any"`); `bidi` enforces RFC 3987 §4.2 (`"allow"`, `"encode"`, `"throw"`).
 
-## `cizgile/transliterate`
+### Unique slugs
 
 ```ts
-import { transliterate, cyrillic, greek, latin, symbols, locales } from "cizgile/transliterate"
+import { createSlugger } from "cizgile"
+
+const slug = createSlugger()
+slug("Hello") // "hello"
+slug("Hello") // "hello-2"
+slug("hello-2") // "hello-2-2"  — never a duplicate
+slug.reset()
+```
+
+### Validation
+
+```ts
+import { isSlug } from "cizgile"
+
+isSlug("hello-world") // true
+isSlug("Hello World") // false
+isSlug("hello_world", { separator: "_" }) // true
+isSlug("你好-world", { unicode: true }) // true
+```
+
+`isSlug` accepts exactly what `slugify` would produce under the same options.
+
+### All options
+
+| option                      | default   | what it does                                                                                                                  |
+| --------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `separator`                 | `"-"`     | Joins words. Any URL-safe punctuation (`- _ . ~ !$&'()*+,;= @`) or `""`.                                                      |
+| `lowercase`                 | `true`    | `false` keeps the original case.                                                                                              |
+| `unicode`                   | `false`   | Keep letters from every script instead of transliterating to ASCII.                                                           |
+| `locale`                    | —         | Language-specific rules: a locale id or a `Locale` object.                                                                    |
+| `transliterate`             | `true`    | `false` skips the tables (accents still fold); an array adds script tables.                                                   |
+| `decamelize`                | `false`   | `fooBar` → `foo-bar`, `HTMLParser` → `html-parser`.                                                                           |
+| `replacements`              | `[]`      | `[from, to]` pairs applied first; spaces in `to` become separators.                                                           |
+| `remove`                    | `/['’]/g` | Characters to delete rather than turn into separators (`don't` → `dont`).                                                     |
+| `preserveCharacters`        | `[]`      | Extra URL-safe characters to keep, e.g. `["."]` for version numbers.                                                          |
+| `preserveLeadingUnderscore` | `false`   | `_draft` → `_draft`.                                                                                                          |
+| `preserveTrailingSeparator` | `false`   | Keep a trailing separator while the user is still typing.                                                                     |
+| `maxLength`                 | —         | Cut at a word boundary, never inside a character (emoji sequences, combining marks). Counts UTF-16 code units like `.length`. |
+| `scripts`                   | `"any"`   | Unicode mode: UTS #39 mixed-script restriction level.                                                                         |
+| `bidi`                      | `"allow"` | Unicode mode: RFC 3987 §4.2 direction rule — `"encode"` or `"throw"` on violation.                                            |
+
+The pipeline runs in this order: strip control/format characters → NFC → `replacements` → NFKC → `decamelize` → transliterate (locale → your tables → Latin → symbols → strip accents) → lowercase → `remove` → separators → `maxLength` → guards. Output is idempotent: `slugify(slugify(x)) === slugify(x)`.
+
+## Transliteration on its own
+
+```ts
+import { transliterate, cyrillic, locales } from "cizgile/transliterate"
 
 transliterate("Straße Ærø") // "Strasse AEro"
 transliterate("Привет", { tables: [cyrillic] }) // "Privet"
-transliterate("Привет") // "Привет"  — unknown scripts are kept
-transliterate("Привет", { unknown: "drop" }) // ""
 transliterate("Ängsö", { locale: locales.sv }) // "Aengsoe"
+transliterate("你好") // "你好" — unknown scripts are kept (use unknown: "drop" to remove)
 ```
 
-Tables: `latin` `symbols` `cyrillic` `cyrillicUk` `cyrillicBg` `cyrillicMk` `cyrillicSr` `greek`
-`arabic` `persian` `urdu` `pashto` `armenian` `georgian` `dhivehi`, plus `allScripts`. Locales:
-`az bg da de es fi fr hu it mk nb nl pt ru sr sv tr uk vi` and the `locales` map. Lookup order is
-locale table → locale scripts → your tables → Latin → symbols → decompose and strip marks. Table keys
-are single NFC code points; a few multi-character keys (Armenian `ու`) are matched longest-first.
-Where a script spells a letter differently at the start of a word (Armenian `ե`/`ո`, Ukrainian
-`є ї й ю я`), the capital carries the word-initial form and the lowercase the medial one.
-`defineLocale(base, overrides)` and `mergeTables(...tables)` return new objects; nothing is mutated.
+Tables: `latin symbols cyrillic cyrillicUk cyrillicBg cyrillicMk cyrillicSr greek arabic persian urdu pashto armenian georgian dhivehi`, plus `allScripts`. Where a letter is spelled differently at the start of a word (Armenian `ե`, Ukrainian `є ї й ю я`), the capital carries the word-initial form. `defineLocale` and `mergeTables` return new objects — nothing global is ever mutated.
+
+## URL toolkit
+
+Everything in `cizgile/uri` follows RFC 3986 / RFC 3987 to the letter and is tested against the RFC's own examples and the WHATWG `URL` parser.
+
+```ts
+import {
+  resolveUri,
+  relativize,
+  normalizeUri,
+  equivalentUris,
+  encodePathSegment,
+  percentEncode,
+  percentDecode,
+  isUri,
+  isAbsoluteUri,
+  isIPv6Address,
+  extractUri,
+  iriToUri,
+  uriToIri,
+  domainToAscii,
+} from "cizgile/uri"
+
+resolveUri("http://a/b/c/d;p?q", "../../g") // "http://a/g"
+relativize("http://a/b/c/d;p?q", "http://a/b/g") // "../g"
+normalizeUri("HTTP://www.EXAMPLE.com:80/%7e%41/./b/../c") // "http://www.example.com/~A/c"
+equivalentUris("http://example.com", "http://example.com:80/") // true
+encodePathSegment("a/b?c") // "a%2Fb%3Fc"
+percentEncode("À ア") // "%C3%80%20%E3%82%A2"
+isAbsoluteUri("http://a/b#c") // false — fragments are not allowed in an absolute-URI
+isIPv6Address("::ffff:192.0.2.1") // true
+extractUri("<http://a/b>.") // "http://a/b"
+iriToUri("http://例え.jp/résumé", { host: "punycode" }) // "http://xn--r8jz45g.jp/r%C3%A9sum%C3%A9"
+```
+
+<details>
+<summary><b>Full reference</b></summary>
+
+**Characters and percent-encoding (RFC 3986 §2)**
+`isUnreserved` `isReserved` `isGenDelim` `isSubDelim` `isPchar` `isSegmentNzNc` `isQueryChar` `isScheme` — per code point.
+`percentEncode(text, keep?)` — UTF-8, uppercase hex. `keep` names a set: RFC `"unreserved" "pchar" "segment-nz-nc" "path" "query" "fragment" "userinfo"`, WHATWG `"whatwg-c0-control" "whatwg-fragment" "whatwg-query" "whatwg-special-query" "whatwg-path" "whatwg-userinfo" "whatwg-component" "form"`, or a predicate.
+`percentDecode(text, { plusAsSpace })`, `normalizePercentEncoding(text)`.
+`encodePathSegment(seg, { noColon })`, `encodePath(path, { relative })`, `encodeQuery`, `encodeFragment`, `encodeForm`.
+
+**Hosts (§3.2.2)**
+`isIPv4Address` `isIPv6Address` `isIPvFuture` `isIPLiteral` `isRegName` `isHost` `parseHost` `parseAuthority` `serializeAuthority`. `0x7f.0.0.1` and `2130706433` are registered names, not addresses (§7.4).
+
+**Parsing and validation (§4, Appendix A/B)**
+`parseUri` `serializeUri` — components stay distinct from "absent"; the serializer inserts `/.` or `./` where the grammar requires it.
+`isUriReference` `isUri` `isAbsoluteUri` `isRelativeReference` `classifyReference` `pathForm` — validating parser built from the ABNF.
+`isIriReference` `isIri` `isIunreserved` `isIpchar` — the same for IRIs (RFC 3987 §2.2).
+`extractUri(text)` — Appendix C: strips `<>`, quotes, `URL:` prefixes, trailing punctuation and line-wrap whitespace.
+
+**Resolution (§5)**
+`resolveUri(base, ref, { strict, allowRelativeBase })` — every §5.4 example passes; strict by default (`http:g` stays `http:g`).
+`relativize(base, target)` — shortest reference that resolves back to `target`.
+`removeDotSegments(path)` — the literal two-buffer algorithm. `mergePaths(base, refPath)`.
+`isSameDocumentReference(base, ref, { normalize })`.
+
+**Normalisation and comparison (§6)**
+`normalizeUri(uri, { defaultPorts, schemeBased, userinfo })` — case, percent-encoding, dot segments, default ports, empty path → `/`; `userinfo: "strip-password" | "strip"` for logs.
+`normalizePath(path, { trailingSlash })`.
+`equivalentUris(a, b, { level, base, ignoreFragment })` — `"simple"`, `"syntax"` or `"scheme"` (default). Never maps IRIs to URIs (RFC 3987 §5.3.1).
+
+**IRIs (RFC 3987)**
+`isUcschar` `isIprivate` `isBidiControl` `hasBidiControls`.
+`iriToUri(iri, { bidi, nfc, strict, host })` — percent-encodes without altering characters (§3.1 step 1c); `host: "punycode"` converts the domain; `strict` rejects characters no IRI may contain.
+`uriToIri(uri)` — decodes only what §3.2 allows, per component.
+`punycodeEncode` `punycodeDecode` `domainToAscii` `domainToUnicode` — RFC 3492, no dependencies.
+
+Deliberately not implemented: RFC 6874 IPv6 zone identifiers (reverted by RFC 9844) and the network-based normalisation of §6.2.4.
+
+</details>
+
+## For AI agents
+
+If you are an assistant writing code with this library, these are the facts that matter:
+
+- Import paths: `cizgile` (slugs), `cizgile/transliterate` (tables, locales), `cizgile/uri` (URLs). ESM only, no default exports, no side effects, no runtime dependencies.
+- `slugify(text, options?)` returns `""` for input with nothing usable — it never throws on ordinary text. It throws `RangeError`/`TypeError` only for invalid options (`separator: "/"`, `preserveCharacters` containing the separator, a non-global `remove` regex, a negative `maxLength`) and, in unicode mode, when `scripts` or `bidi: "throw"` rejects the result.
+- The ASCII output is always a valid path segment; put it in a URL as-is. For `unicode: true` output, call `iriToUri(slug)` before putting it on the wire.
+- Cyrillic and other non-Latin scripts are opt-in: pass `transliterate: [cyrillic]` or a locale object such as `uk` from `cizgile/transliterate`. Without them, Cyrillic text produces `""` in ASCII mode.
+- `createSlugger()` is the way to get unique slugs in a document or import job; do not append counters yourself.
+- Use `resolveUri`, `normalizeUri` and `equivalentUris` instead of string concatenation or `new URL()` when you need RFC behaviour (strict scheme handling, no special-scheme rewriting, no host IDNA unless you ask for it).
+- Every exported function has an explicit TypeScript signature; the `.d.mts` files in `dist/` are the authoritative API.
 
 ## How it compares
 
@@ -221,45 +257,34 @@ Where a script spells a letter differently at the start of a word (Armenian `ե`
 | `"jack & jill"`             | `jack-and-jill`      | `jack-jill`      | `jack-jill`          | `jack-and-jill`         |
 | `"don't"`                   | `dont`               | `dont`           | `don-t`              | `dont`                  |
 | `"fooBar"`                  | `foobar`             | `foobar`         | `foobar`             | `foo-bar`               |
-| `"^très\|Jolie-- "`         | `tres-jolie`         | `tres-jolie`     | `tres-jolie`         | `tres-jolie`            |
-| `"Straße"` (`locale: "de"`) | `strasse`            | `strae`          | `strasse`            | `strasse`               |
-| `"5µm"`                     | `5-u-m`              | `5m`             | `5-m`                | `5-m`                   |
-| `"Привет"`                  | `""` (opt-in tables) | `""`             | `""`                 | `privet`                |
 | `"snake_case"`              | `snake-case`         | `snake_case`     | `snake_case`         | `snake-case`            |
+| `"Straße"` (`locale: "de"`) | `strasse`            | `strae`          | `strasse`            | `strasse`               |
+| `"Привет"`                  | `""` (opt-in tables) | `""`             | `""`                 | `privet`                |
 
-`decamelize` is off by default (Django/Rails behaviour) and `&` is spelled out (sindresorhus
-behaviour); both are one option away.
+`decamelize` is off by default (Django/Rails behaviour) and `&` is spelled out (sindresorhus behaviour); both are one option away.
 
-## Spec coverage
+## Specifications
 
-RFC 3986 (with errata 2033, 4547, 5428), RFC 3987, RFC 8820 (informational; no fixed prefixes are
-imposed), RFC 6874 → RFC 9844 (zone ids intentionally unsupported), WHATWG URL percent-encode sets,
-Google Search Central URL structure guidance. Out of scope: CJK, Hebrew, Devanagari, Thai and Hangul
-transliteration — those scripts are kept in `unicode: true` and dropped in ASCII mode.
+RFC 3986 (with errata 2033, 4547, 4789, 5428), RFC 3987, RFC 3492, RFC 8820, RFC 9844, the WHATWG URL Standard's percent-encode sets, Unicode UTS #39 restriction levels and UAX #29 grapheme boundaries, Google Search Central's URL guidance. The test suite runs every example those documents contain.
 
 ## Development
 
 ```sh
 bun install
-bun run test      # oxlint --type-aware, oxfmt --check, tsc --noEmit, vitest under node, then vitest under bun
-bun run test:bun  # the suite on the Bun runtime only
+bun run test      # oxlint, oxfmt, tsc, vitest under node, then vitest under bun
 bun run build     # rolldown → dist/*.mjs + dist/*.d.mts
 bun run coverage
-bun run release   # test + build, then bumpp --commit --tag --push --all; the v* tag triggers the npm publish workflow
+bun run release   # bumpp: bump, tag, push — the tag publishes to npm
 ```
-
-Node ≥ 20.19 or any runtime with `String.prototype.normalize` and Unicode property escapes.
 
 ## Credits
 
-cizgile stands on the shoulders of people who solved pieces of this problem first:
-
-- [simov/slugify](https://github.com/simov/slugify) — the charmap + per-locale override idea, and most of the Cyrillic, Greek, Arabic and symbol values.
-- [sindresorhus/slugify](https://github.com/sindresorhus/slugify) and [sindresorhus/transliterate](https://github.com/sindresorhus/transliterate) — `decamelize`, `customReplacements`, the counter slugger, and the Armenian, Georgian, Vietnamese and Dhivehi tables.
-- [Django](https://github.com/django/django) `django.utils.text.slugify` and [Rails](https://github.com/rails/rails) `ActiveSupport::Inflector#parameterize` — the reference behaviours the parity tests are written against.
-- [WHATWG URL Standard](https://url.spec.whatwg.org/) — the percent-encode sets and the parser every `cizgile/uri` result is cross-checked with.
-- [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986) by Berners-Lee, Fielding and Masinter, and [RFC 3987](https://datatracker.ietf.org/doc/html/rfc3987) by Duerst and Suignard — the specifications this library exists to implement faithfully.
-- [Rolldown](https://rolldown.rs), [Oxc](https://oxc.rs), [Vitest](https://vitest.dev), [Bun](https://bun.sh) and [TypeScript](https://www.typescriptlang.org) — the toolchain.
+- [simov/slugify](https://github.com/simov/slugify) — the charmap + per-locale override idea and most Cyrillic, Greek, Arabic and symbol values.
+- [sindresorhus/slugify](https://github.com/sindresorhus/slugify) and [sindresorhus/transliterate](https://github.com/sindresorhus/transliterate) — `decamelize`, custom replacements, the counter slugger, and the Armenian, Georgian and Dhivehi tables.
+- [Django](https://github.com/django/django) and [Rails](https://github.com/rails/rails) — the reference behaviours the parity tests are written against.
+- The [WHATWG URL Standard](https://url.spec.whatwg.org/) — percent-encode sets and the parser every result is cross-checked with.
+- [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986) by Berners-Lee, Fielding and Masinter, and [RFC 3987](https://datatracker.ietf.org/doc/html/rfc3987) by Duerst and Suignard.
+- [Rolldown](https://rolldown.rs), [Oxc](https://oxc.rs), [Vitest](https://vitest.dev), [Bun](https://bun.sh) and [TypeScript](https://www.typescriptlang.org).
 
 ## License
 
