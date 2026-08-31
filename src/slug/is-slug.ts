@@ -20,7 +20,7 @@ function patternFor(options: IsSlugOptions): RegExp {
 }
 
 export function isSlug(input: string, options: IsSlugOptions = {}): boolean {
-  if (typeof input !== "string" || input === "") return false
+  if (typeof input !== "string" || input === "" || input === "." || input === "..") return false
   const o = resolveOptions(options)
   if (o.maxLength !== undefined && input.length > o.maxLength) return false
   if (o.separator !== "" && input.includes(o.separator + o.separator)) return false

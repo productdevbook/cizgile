@@ -1,6 +1,7 @@
 import { DEFAULT_TABLES } from "../transliterate/core"
 import { latinLocales } from "../transliterate/locales-latin"
 import type { LatinLocaleId, Locale, TransliterationTable } from "../transliterate/types"
+import { isSegmentNzNc } from "../uri/charset"
 import { escapeClassChar, uniqueChars } from "./charset"
 
 export interface SlugifyOptions {
@@ -84,10 +85,12 @@ function resolveTables(
 
 function build(options: SlugifyOptions): ResolvedOptions {
   const separator = options.separator ?? "-"
-  if (/[\p{L}\p{N}\p{M}]/u.test(separator) || /[/?#%]/.test(separator)) {
-    throw new RangeError(
-      `slugify: separator ${JSON.stringify(separator)} may not contain letters, digits, "/", "?", "#" or "%"`,
-    )
+  for (const ch of separator) {
+    if (/[\p{L}\p{N}\p{M}]/u.test(ch) || !isSegmentNzNc(ch.codePointAt(0) ?? 0)) {
+      throw new RangeError(
+        `slugify: separator ${JSON.stringify(separator)} may only contain RFC 3986 unreserved, sub-delims or "@" characters that are not letters or digits`,
+      )
+    }
   }
   const lowercase = options.lowercase ?? true
   const unicode = options.unicode ?? false
@@ -103,6 +106,11 @@ function build(options: SlugifyOptions): ResolvedOptions {
     if (separatorChars.includes(ch)) {
       throw new TypeError(
         `slugify: preserveCharacters may not contain the separator ${JSON.stringify(ch)}`,
+      )
+    }
+    if (!isSegmentNzNc(ch.codePointAt(0) ?? 0)) {
+      throw new TypeError(
+        `slugify: preserveCharacters entry ${JSON.stringify(ch)} is not allowed in an RFC 3986 path segment (segment-nz-nc)`,
       )
     }
   }

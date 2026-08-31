@@ -26,6 +26,18 @@ describe("truncateSlug", () => {
     expect(truncateSlug("helloworld", 4, "")).toBe("hell")
   })
 
+  it("never splits a grapheme cluster (UAX #29)", () => {
+    expect(truncateSlug("क्षत्रिय", 2)).toBe("")
+    expect(truncateSlug("क्षत्रिय", 3)).toBe("क्ष")
+    expect(truncateSlug("👨‍👩‍👧x", 3)).toBe("")
+    expect(truncateSlug("👨‍👩‍👧x", 8)).toBe("👨‍👩‍👧")
+    expect(truncateSlug("👍🏽x", 2)).toBe("")
+    expect(truncateSlug("👍🏽x", 4)).toBe("👍🏽")
+    expect(truncateSlug("\u1112\u1161\u11ab", 2)).toBe("")
+    expect(truncateSlug("\u1112\u1161\u11ab", 3)).toBe("\u1112\u1161\u11ab")
+    expect(truncateSlug("e\u0301\uFE0Fx", 2)).toBe("")
+  })
+
   it("never splits a surrogate pair or a base from its marks", () => {
     expect(truncateSlug("a😀b", 2)).toBe("a")
     expect(truncateSlug("a😀b", 3)).toBe("a😀")

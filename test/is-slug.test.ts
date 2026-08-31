@@ -37,9 +37,13 @@ describe("isSlug options", () => {
 
   it("preserveCharacters", () => {
     expect(isSlug("v1.2", { preserveCharacters: ["."] })).toBe(true)
+    expect(isSlug(".", { preserveCharacters: ["."] })).toBe(false)
+    expect(isSlug("..", { preserveCharacters: ["."] })).toBe(false)
+    expect(isSlug("..a", { preserveCharacters: ["."] })).toBe(true)
     expect(isSlug("a_b", { preserveCharacters: ["_"] })).toBe(true)
-    expect(isSlug("a^b", { preserveCharacters: ["^"] })).toBe(true)
-    expect(isSlug("a]b", { preserveCharacters: ["]"] })).toBe(true)
+    expect(isSlug("a+b", { preserveCharacters: ["+"] })).toBe(true)
+    expect(isSlug("a(b", { preserveCharacters: ["("] })).toBe(true)
+    expect(() => isSlug("a^b", { preserveCharacters: ["^"] })).toThrow(TypeError)
   })
 
   it("preserveLeadingUnderscore / preserveTrailingSeparator", () => {

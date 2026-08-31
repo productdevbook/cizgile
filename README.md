@@ -44,20 +44,20 @@ Armenian, Georgian and Dhivehi are opt-in and tree-shake away when unused.
 
 Every option, with its default:
 
-| option                      | default   | meaning                                                                                                                                           |
-| --------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `separator`                 | `"-"`     | Any string of non-alphanumerics; `""` joins words. `/`, `?`, `#`, `%` are rejected (they would break a path segment).                             |
-| `lowercase`                 | `true`    | `false` keeps case (`"Donald E. Knuth"` → `Donald-E-Knuth`).                                                                                      |
-| `unicode`                   | `false`   | `true` keeps every letter, digit and combining mark (Django `allow_unicode`), output in NFKC.                                                     |
-| `locale`                    | —         | `"az" "da" "de" "es" "fi" "fr" "hu" "it" "nb" "nl" "pt" "sv" "tr" "vi"`, or a `Locale` object (Cyrillic locales live in `cizgile/transliterate`). |
-| `transliterate`             | `true`    | `false` skips the tables (diacritics still fold); an array of tables is consulted before the Latin defaults.                                      |
-| `decamelize`                | `false`   | `fooBar` → `foo-bar`, `HTMLParser` → `html-parser`, `APIs` stays.                                                                                 |
-| `replacements`              | `[]`      | Literal `[from, to]` pairs applied first; surrounding spaces become separators (`["&", " and "]`).                                                |
-| `remove`                    | `/['’]/g` | Global regex stripped after transliteration (`don't` → `dont`); `false` to keep.                                                                  |
-| `preserveCharacters`        | `[]`      | Extra single characters allowed in the output (`["."]` keeps `v1.2.3`). May not contain the separator.                                            |
-| `preserveLeadingUnderscore` | `false`   | `_foo bar` → `_foo-bar`.                                                                                                                          |
-| `preserveTrailingSeparator` | `false`   | `foo bar-` → `foo-bar-` (useful while typing into an input).                                                                                      |
-| `maxLength`                 | —         | Cuts at the last separator inside the limit; never mid-word unless there is no separator, never inside a surrogate pair or before a mark.         |
+| option                      | default   | meaning                                                                                                                                                                                                                                                                                                                             |
+| --------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `separator`                 | `"-"`     | Any string of RFC 3986 unreserved / sub-delims / `@` characters that are not letters or digits (`-` `_` `.` `~` `!` `$` `&` `'` `(` `)` `*` `+` `,` `;` `=` `@`); `""` joins words. Anything else — `/ ? # % : [ ]`, non-ASCII — throws, so every slug stays a single `segment-nz-nc`.                                              |
+| `lowercase`                 | `true`    | `false` keeps case (`"Donald E. Knuth"` → `Donald-E-Knuth`).                                                                                                                                                                                                                                                                        |
+| `unicode`                   | `false`   | `true` keeps every letter, digit and combining mark (Django `allow_unicode`), output in NFKC.                                                                                                                                                                                                                                       |
+| `locale`                    | —         | `"az" "da" "de" "es" "fi" "fr" "hu" "it" "nb" "nl" "pt" "sv" "tr" "vi"`, or a `Locale` object (Cyrillic locales live in `cizgile/transliterate`).                                                                                                                                                                                   |
+| `transliterate`             | `true`    | `false` skips the tables (diacritics still fold); an array of tables is consulted before the Latin defaults.                                                                                                                                                                                                                        |
+| `decamelize`                | `false`   | `fooBar` → `foo-bar`, `HTMLParser` → `html-parser`, `APIs` stays.                                                                                                                                                                                                                                                                   |
+| `replacements`              | `[]`      | Literal `[from, to]` pairs applied first; surrounding spaces become separators (`["&", " and "]`).                                                                                                                                                                                                                                  |
+| `remove`                    | `/['’]/g` | Global regex stripped after transliteration (`don't` → `dont`); `false` to keep.                                                                                                                                                                                                                                                    |
+| `preserveCharacters`        | `[]`      | Extra single characters allowed in the output (`["."]` keeps `v1.2.3`); same character rule as `separator`, and may not contain the separator. A result that would be the dot-segment `.` or `..` becomes `""`.                                                                                                                     |
+| `preserveLeadingUnderscore` | `false`   | `_foo bar` → `_foo-bar`.                                                                                                                                                                                                                                                                                                            |
+| `preserveTrailingSeparator` | `false`   | `foo bar-` → `foo-bar-` (useful while typing into an input).                                                                                                                                                                                                                                                                        |
+| `maxLength`                 | —         | Limit in UTF-16 code units (what `String#length` counts — the percent-encoded wire form can be up to 3× longer per unit). Cuts at the last separator inside the limit, never mid-word unless there is no separator, and never inside a grapheme cluster (surrogate pairs, combining marks, ZWJ emoji, skin tones, conjoining jamo). |
 
 The pipeline, in order — the order is what makes the edge cases come out right:
 
@@ -121,8 +121,8 @@ percent-encoded) and `uriToIri` gets the slug back byte-for-byte.
 
 `true` when `value` is exactly what `slugify` would have produced under the same `separator`,
 `lowercase`, `unicode`, `preserveCharacters`, `preserveLeadingUnderscore`, `preserveTrailingSeparator`
-and `maxLength`. Empty strings, leading/trailing/doubled separators, wrong case and non-NFKC input
-are rejected.
+and `maxLength`. Empty strings, the dot-segments `.` and `..`, leading/trailing/doubled separators, wrong
+case and non-NFKC input are rejected.
 
 ### `createSlugger(defaults?)`
 
@@ -133,7 +133,9 @@ form arrives on its own (`foo-2` after `foo-2` becomes `foo-2-2`), results stay 
 
 ### `truncateSlug(slug, maxLength, separator = "-")`
 
-The truncation step on its own: `truncateSlug("hello-world", 8)` → `hello`.
+The truncation step on its own: `truncateSlug("hello-world", 8)` → `hello`. Grapheme boundaries come from
+`Intl.Segmenter` when the runtime has it (Node ≥ 16, Bun, evergreen browsers) with a code-point heuristic as
+fallback.
 
 ## `cizgile/uri`
 
@@ -201,6 +203,7 @@ Where a script spells a letter differently at the start of a word (Armenian `ե`
 | `"Straße"` (`locale: "de"`) | `strasse`            | `strae`          | `strasse`            | `strasse`               |
 | `"5µm"`                     | `5-u-m`              | `5m`             | `5-m`                | `5-m`                   |
 | `"Привет"`                  | `""` (opt-in tables) | `""`             | `""`                 | `privet`                |
+| `"snake_case"`              | `snake-case`         | `snake_case`     | `snake_case`         | `snake-case`            |
 
 `decamelize` is off by default (Django/Rails behaviour) and `&` is spelled out (sindresorhus
 behaviour); both are one option away.

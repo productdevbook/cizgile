@@ -87,6 +87,7 @@ export function slugify(input: string, options: SlugifyOptions = {}): string {
   const hadTrailingSeparator = o.separator !== "" && s.endsWith(o.separator)
   s = collapse(s, o.separator)
   if (o.maxLength !== undefined) s = truncateSlug(s, o.maxLength, o.separator)
+  if (s === "." || s === "..") s = ""
   if (o.preserveLeadingUnderscore && hadLeadingUnderscore && s !== "" && !s.startsWith("_")) {
     s = "_" + s
   }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { isSlug, slugify, type SlugifyOptions } from "../src"
 import { cyrillic, greek } from "../src/transliterate"
-import { encodePathSegment, isSegmentNzNc } from "../src/uri"
+import { encodePathSegment, isSegmentNzNc, removeDotSegments } from "../src/uri"
 import { CORPUS } from "./fixtures/corpus"
 
 function mulberry32(seed: number): () => number {
@@ -65,6 +65,7 @@ const OPTION_SETS: ReadonlyArray<readonly [string, SlugifyOptions]> = [
   ["maxLength 10", { maxLength: 10 }],
   ["maxLength 1", { maxLength: 1 }],
   ["preserve dot", { preserveCharacters: ["."] }],
+  ["preserve dot, short", { preserveCharacters: ["."], maxLength: 2 }],
   ["tr", { locale: "tr" }],
   ["de", { locale: "de" }],
   ["decamelize", { decamelize: true }],
@@ -120,6 +121,27 @@ describe.each(OPTION_SETS)("property: %s", (_name, options) => {
       expect(slug).toMatch(shape)
       expect(encodePathSegment(slug)).toBe(slug)
       for (const ch of slug) expect(isSegmentNzNc(ch.codePointAt(0) ?? 0)).toBe(true)
+    }
+  })
+
+  it("is never a dot-segment and survives removeDotSegments unchanged", () => {
+    for (const input of INPUTS) {
+      const slug = slugify(input, options)
+      expect(slug).not.toBe(".")
+      expect(slug).not.toBe("..")
+      expect(removeDotSegments("/" + slug)).toBe("/" + slug)
+    }
+  })
+
+  it("unicode slugs are whole grapheme clusters", () => {
+    if (!options.unicode || options.maxLength === undefined) return
+    const seg = new Intl.Segmenter("und", { granularity: "grapheme" })
+    for (const input of INPUTS) {
+      const slug = slugify(input, options)
+      const clusters = [...seg.segment(input.normalize("NFKC"))].map((c) => c.segment)
+      for (const cluster of [...seg.segment(slug)].map((c) => c.segment)) {
+        expect(clusters.some((c) => c.includes(cluster)) || cluster.length === 1).toBe(true)
+      }
     }
   })
 

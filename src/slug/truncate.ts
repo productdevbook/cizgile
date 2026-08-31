@@ -1,7 +1,46 @@
-import { isMark } from "./charset"
+let segmenter: Intl.Segmenter | null | undefined
 
-function isLowSurrogate(code: number | undefined): boolean {
-  return code !== undefined && code >= 0xdc00 && code <= 0xdfff
+function graphemeSegmenter(): Intl.Segmenter | undefined {
+  if (segmenter === undefined) {
+    segmenter =
+      typeof Intl !== "undefined" && "Segmenter" in Intl
+        ? new Intl.Segmenter("und", { granularity: "grapheme" })
+        : null
+  }
+  return segmenter ?? undefined
+}
+
+function isClusterExtender(cp: number): boolean {
+  return (
+    (cp >= 0xdc00 && cp <= 0xdfff) ||
+    cp === 0x200d ||
+    (cp >= 0xfe00 && cp <= 0xfe0f) ||
+    (cp >= 0x1f3fb && cp <= 0x1f3ff) ||
+    (cp >= 0x1160 && cp <= 0x11ff) ||
+    (cp >= 0xe0020 && cp <= 0xe007f) ||
+    /\p{M}/u.test(String.fromCodePoint(cp))
+  )
+}
+
+function graphemeBoundary(text: string, limit: number): number {
+  const seg = graphemeSegmenter()
+  if (seg !== undefined) {
+    let boundary = 0
+    for (const { index, segment } of seg.segment(text)) {
+      if (index + segment.length > limit) break
+      boundary = index + segment.length
+    }
+    return boundary
+  }
+  let cut = limit
+  while (cut > 0 && cut < text.length) {
+    if (text.codePointAt(cut - 1) === 0x200d || isClusterExtender(text.codePointAt(cut) ?? 0)) {
+      cut -= 1
+    } else {
+      break
+    }
+  }
+  return cut
 }
 
 function stripTrailingSeparator(text: string, separator: string): string {
@@ -25,14 +64,6 @@ export function truncateSlug(slug: string, maxLength: number, separator = "-"): 
     const last = cut.lastIndexOf(separator)
     if (last > 0) cut = cut.slice(0, last)
   }
-  while (cut.length > 0) {
-    const next = slug.slice(cut.length, cut.length + 2)
-    const nextChar = String.fromCodePoint(next.codePointAt(0) ?? 0x20)
-    if (isLowSurrogate(next.codePointAt(0)) || isMark(nextChar)) {
-      cut = cut.slice(0, -1)
-    } else {
-      break
-    }
-  }
+  cut = slug.slice(0, graphemeBoundary(slug, cut.length))
   return stripTrailingSeparator(cut, separator)
 }
