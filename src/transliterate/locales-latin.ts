@@ -172,18 +172,111 @@ export const nl: Locale = {
   },
 }
 
+export const pl: Locale = {
+  id: "pl",
+  table: {
+    "&": " i ",
+  },
+}
+
+export const ro: Locale = {
+  id: "ro",
+  table: {
+    "&": " si ",
+  },
+}
+
+export const cs: Locale = {
+  id: "cs",
+  table: {
+    "&": " a ",
+  },
+}
+
+export const sk: Locale = {
+  id: "sk",
+  table: {
+    "&": " a ",
+  },
+}
+
+export const sl: Locale = {
+  id: "sl",
+  table: {
+    "&": " in ",
+  },
+}
+
+export const hr: Locale = {
+  id: "hr",
+  table: {
+    "&": " i ",
+  },
+}
+
+export const is: Locale = {
+  id: "is",
+  table: {
+    Þ: "Th",
+    þ: "th",
+    Ð: "D",
+    ð: "d",
+    "&": " og ",
+  },
+}
+
+export const et: Locale = {
+  id: "et",
+  table: {
+    "&": " ja ",
+  },
+}
+
+export const lv: Locale = {
+  id: "lv",
+  table: {
+    "&": " un ",
+  },
+}
+
+export const lt: Locale = {
+  id: "lt",
+  table: {
+    "&": " ir ",
+  },
+}
+
+export const ca: Locale = {
+  id: "ca",
+  table: {
+    "·": "",
+    "&": " i ",
+  },
+}
+
 export const latinLocales: Readonly<Record<LatinLocaleId, Locale>> = {
   az,
+  ca,
+  cs,
   da,
   de,
   es,
+  et,
   fi,
   fr,
+  hr,
   hu,
+  is,
   it,
+  lt,
+  lv,
   nb,
   nl,
+  pl,
   pt,
+  ro,
+  sk,
+  sl,
   sv,
   tr,
   vi,

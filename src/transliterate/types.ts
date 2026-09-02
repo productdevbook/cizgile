@@ -9,21 +9,32 @@ export interface Locale {
 
 export type LatinLocaleId =
   | "az"
+  | "ca"
+  | "cs"
   | "da"
   | "de"
   | "es"
+  | "et"
   | "fi"
   | "fr"
+  | "hr"
   | "hu"
+  | "is"
   | "it"
+  | "lt"
+  | "lv"
   | "nb"
   | "nl"
+  | "pl"
   | "pt"
+  | "ro"
+  | "sk"
+  | "sl"
   | "sv"
   | "tr"
   | "vi"
 
-export type CyrillicLocaleId = "bg" | "mk" | "ru" | "sr" | "uk"
+export type CyrillicLocaleId = "be" | "bg" | "kk" | "mk" | "ru" | "sr" | "uk"
 
 export type OtherLocaleId = "el" | "he" | "ja" | "ko"
 

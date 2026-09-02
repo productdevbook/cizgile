@@ -1,12 +1,15 @@
 import { describe, expect, it } from "vitest"
 import { slugify } from "../src"
+import { transliterate } from "../src/transliterate"
 import {
+  be,
   bg,
   cyrillic,
   defineLocale,
   el,
   he,
   ja,
+  kk,
   ko,
   locales,
   mk,
@@ -112,23 +115,36 @@ describe("Cyrillic locales (Locale objects from cizgile/transliterate)", () => {
     expect(Object.keys(locales).toSorted()).toEqual(
       [
         "az",
+        "be",
         "bg",
+        "ca",
+        "cs",
         "da",
         "de",
         "el",
         "es",
+        "et",
         "fi",
         "fr",
         "he",
+        "hr",
         "hu",
+        "is",
         "it",
         "ja",
+        "kk",
         "ko",
+        "lt",
+        "lv",
         "mk",
         "nb",
         "nl",
+        "pl",
         "pt",
+        "ro",
         "ru",
+        "sk",
+        "sl",
         "sr",
         "sv",
         "tr",
@@ -136,6 +152,35 @@ describe("Cyrillic locales (Locale objects from cizgile/transliterate)", () => {
         "vi",
       ].toSorted(),
     )
+  })
+})
+
+describe("Central and Northern European locale ids", () => {
+  it.each([
+    ["pl", "Zażółć & jaźń", "zazolc-i-jazn"],
+    ["ro", "Ștefan & Țară", "stefan-si-tara"],
+    ["cs", "Příliš & žluťoučký", "prilis-a-zlutoucky"],
+    ["sk", "Ľubomír & Ďurčo", "lubomir-a-durco"],
+    ["sl", "Črnomelj & Žužemberk", "crnomelj-in-zuzemberk"],
+    ["hr", "Đakovo & Šibenik", "dakovo-i-sibenik"],
+    ["is", "Þór & Ægir", "thor-og-aegir"],
+    ["et", "Jõgeva & Võru", "jogeva-ja-voru"],
+    ["lv", "Rīga & Ķekava", "riga-un-kekava"],
+    ["lt", "Šiauliai & Ąžuolas", "siauliai-ir-azuolas"],
+    ["ca", "Col·legi & Girona", "collegi-i-girona"],
+  ] as const)("%s: %j → %j", (locale, input, expected) => {
+    expect(slugify(input, { locale })).toBe(expected)
+  })
+
+  it("Icelandic keeps thorn readable in transliterate()", () => {
+    expect(transliterate("Þór", { locale: locales.is })).toBe("Thor")
+  })
+})
+
+describe("Kazakh and Belarusian locales", () => {
+  it("cover the extra Cyrillic letters", () => {
+    expect(slugify("Қазақстан & Әлем", { locale: kk })).toBe("qazaqstan-zhane-alem")
+    expect(slugify("Ўладзімір & Іван", { locale: be })).toBe("uladzimir-i-ivan")
   })
 })
 

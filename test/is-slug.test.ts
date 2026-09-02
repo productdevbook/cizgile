@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { isSlug } from "../src"
+import { isSlug, slugify } from "../src"
 
 describe("isSlug defaults", () => {
   it.each(["a", "abc", "abc-123", "a-b-c", "0", "hello-world"])("accepts %j", (input) => {
@@ -68,5 +68,15 @@ describe("isSlug options", () => {
     expect(isSlug("ﬁ", { unicode: true })).toBe(false)
     expect(isSlug("a-́b", { unicode: true })).toBe(false)
     expect(isSlug("Привет", { unicode: true })).toBe(false)
+  })
+})
+
+describe("isSlug with a locale", () => {
+  it("lowercases the way slugify does under the same locale", () => {
+    expect(slugify("ILIK", { locale: "tr", unicode: true })).toBe("ılık")
+    expect(isSlug("ılık", { locale: "tr", unicode: true })).toBe(true)
+    expect(isSlug("ilik", { locale: "tr", unicode: true })).toBe(true)
+    expect(isSlug("ILIK", { locale: "tr", unicode: true })).toBe(false)
+    expect(isSlug("istanbul", { locale: "tr" })).toBe(true)
   })
 })

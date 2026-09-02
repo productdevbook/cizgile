@@ -31,8 +31,22 @@ export const sr: Locale = {
   tables: [cyrillicSr, cyrillic],
 }
 
+export const kk: Locale = {
+  id: "kk",
+  table: { "&": " zhane " },
+  tables: [cyrillic],
+}
+
+export const be: Locale = {
+  id: "be",
+  table: { "&": " i " },
+  tables: [cyrillic],
+}
+
 export const cyrillicLocales: Readonly<Record<CyrillicLocaleId, Locale>> = {
+  be,
   bg,
+  kk,
   mk,
   ru,
   sr,

@@ -28,6 +28,7 @@ export type IsSlugOptions = Pick<
   | "separator"
   | "lowercase"
   | "unicode"
+  | "locale"
   | "preserveCharacters"
   | "preserveLeadingUnderscore"
   | "preserveTrailingSeparator"
@@ -80,6 +81,11 @@ function escapeRegExp(text: string): string {
 }
 
 const DEFAULT_REMOVE = /['’]/g
+
+export function lowercaseOf(text: string, o: ResolvedOptions): string {
+  if (o.unicode && o.locale?.lowercase !== undefined) return o.locale.lowercase(text)
+  return text.replaceAll("İ", "i").toLowerCase()
+}
 
 let cache: WeakMap<SlugifyOptions, ResolvedOptions> | undefined
 

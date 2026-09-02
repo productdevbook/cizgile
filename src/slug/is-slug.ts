@@ -1,7 +1,7 @@
 import { isBidiSafeComponent } from "./bidi"
 import { escapeRegExp } from "./charset"
 import { checkScripts } from "./scripts"
-import { type IsSlugOptions, resolveOptions } from "./options"
+import { type IsSlugOptions, lowercaseOf, resolveOptions } from "./options"
 
 let cache: WeakMap<IsSlugOptions, RegExp> | undefined
 
@@ -30,7 +30,7 @@ export function isSlug(input: string, options: IsSlugOptions = DEFAULT_OPTIONS):
   if (o.separator !== "" && input.includes(o.separator + o.separator)) return false
   if (o.unicode) {
     if (input !== input.normalize("NFKC")) return false
-    if (o.lowercase && input !== input.toLowerCase()) return false
+    if (o.lowercase && input !== lowercaseOf(input, o)) return false
     if (o.scripts !== "any" && !checkScripts(input, o.scripts).ok) return false
     if (o.bidi !== "allow" && !isBidiSafeComponent(input)) return false
   }

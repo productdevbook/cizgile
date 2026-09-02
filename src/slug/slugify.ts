@@ -1,41 +1,11 @@
-import { fold } from "../transliterate/core"
-import type { TransliterationTable } from "../transliterate/types"
+import { applyCompat, fold } from "../transliterate/core"
 import { stripControls } from "./charset"
 import { decamelize } from "./decamelize"
-import { type ResolvedOptions, resolveOptions, type SlugifyOptions } from "./options"
+import { lowercaseOf, type ResolvedOptions, resolveOptions, type SlugifyOptions } from "./options"
 import { truncateSlug } from "./truncate"
 import { iriToUri } from "../uri/iri"
 import { isBidiSafeComponent } from "./bidi"
 import { checkScripts } from "./scripts"
-
-let compatCache: WeakMap<TransliterationTable, ReadonlyArray<readonly [string, string]>> | undefined
-
-function compatEntries(table: TransliterationTable): ReadonlyArray<readonly [string, string]> {
-  compatCache ??= new WeakMap()
-  const cached = compatCache.get(table)
-  if (cached !== undefined) return cached
-  const out: Array<readonly [string, string]> = []
-  for (const [key, value] of Object.entries(table)) {
-    if (key.normalize("NFKC") !== key) out.push([key, value])
-  }
-  compatCache.set(table, out)
-  return out
-}
-
-function applyCompat(text: string, tables: readonly TransliterationTable[]): string {
-  let out = text
-  for (const table of tables) {
-    for (const [key, value] of compatEntries(table)) {
-      if (out.includes(key)) out = out.split(key).join(value)
-    }
-  }
-  return out
-}
-
-function lowercaseOf(text: string, o: ResolvedOptions): string {
-  if (o.unicode && o.locale?.lowercase !== undefined) return o.locale.lowercase(text)
-  return text.replaceAll("İ", "i").toLowerCase()
-}
 
 const NON_ASCII = /[^\x00-\x7F]/
 

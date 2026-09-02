@@ -6,6 +6,7 @@ export interface TransliterateOptions {
   readonly locale?: Locale
   readonly tables?: readonly TransliterationTable[]
   readonly unknown?: "keep" | "drop"
+  readonly nfkc?: boolean
 }
 
 export const DEFAULT_TABLES: readonly TransliterationTable[] = [latin, symbols]
@@ -190,6 +191,35 @@ export function fold(
   return out
 }
 
+let compatCache: WeakMap<TransliterationTable, ReadonlyArray<readonly [string, string]>> | undefined
+
+function compatEntries(table: TransliterationTable): ReadonlyArray<readonly [string, string]> {
+  compatCache ??= new WeakMap()
+  const cached = compatCache.get(table)
+  if (cached !== undefined) return cached
+  const out: Array<readonly [string, string]> = []
+  for (const [key, value] of Object.entries(table)) {
+    if (key.normalize("NFKC") !== key) out.push([key, value])
+  }
+  compatCache.set(table, out)
+  return out
+}
+
+export function applyCompat(text: string, tables: readonly TransliterationTable[]): string {
+  let out = text
+  for (const table of tables) {
+    for (const [key, value] of compatEntries(table)) {
+      if (out.includes(key)) out = out.split(key).join(value)
+    }
+  }
+  return out
+}
+
 export function transliterate(input: string, options: TransliterateOptions = {}): string {
-  return fold(input.normalize("NFC"), resolveTables(options), options.unknown === "drop")
+  const tables = resolveTables(options)
+  let text = input.normalize("NFC")
+  if (options.nfkc === true && NON_ASCII.test(text)) {
+    text = applyCompat(text, tables).normalize("NFKC")
+  }
+  return fold(text, tables, options.unknown === "drop")
 }

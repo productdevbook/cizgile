@@ -60,6 +60,18 @@ describe("transliterate()", () => {
     }
   })
 
+  it("folds compatibility characters only when asked", () => {
+    expect(transliterate("ﬁnal x² Ⅷ ① ㎞")).toBe("ﬁnal x² Ⅷ ① ㎞")
+    expect(transliterate("ﬁnal x² Ⅷ ① ㎞", { nfkc: true })).toBe("final x2 VIII 1 km")
+    expect(transliterate("ǆungla ŉ", { nfkc: true })).toBe("dzungla n")
+    expect(transliterate("plain ascii", { nfkc: true })).toBe("plain ascii")
+  })
+
+  it("spells out the added currency signs and drops the added quotes", () => {
+    expect(transliterate("₿ ₱ ₸ ₾ ‰")).toBe(" bitcoin   peso   tenge   lari   permille ")
+    expect(transliterate("¿Qué? ‹x› 5′10″")).toBe(" Que?  x  5 10 ")
+  })
+
   it("keeps the marks of unknown scripts and strips only foldable ones", () => {
     expect(transliterate("नमस्ते दुनिया")).toBe("नमस्ते दुनिया")
     expect(transliterate("สวัสดี")).toBe("สวัสดี")
