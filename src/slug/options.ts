@@ -1,6 +1,7 @@
 import { type CompiledTables, compileTables, DEFAULT_TABLES } from "../transliterate/core"
 import { symbols } from "../transliterate/symbols"
 import { latinLocales } from "../transliterate/locales-latin"
+import { registeredLocale, registryVersion } from "../transliterate/registry"
 import type { LatinLocaleId, Locale, TransliterationTable } from "../transliterate/types"
 import { isSegmentNzNc } from "../uri/charset"
 import { escapeClassChar, uniqueChars } from "./charset"
@@ -15,8 +16,8 @@ export interface SlugifyOptions {
   readonly lowercase?: boolean
   /** Keeps letters from every script instead of transliterating to ASCII; `false` by default. */
   readonly unicode?: boolean
-  /** Language rules: a Latin locale id such as `"tr"`, or a `Locale` object from `cizgile/transliterate`. */
-  readonly locale?: LatinLocaleId | Locale
+  /** Language rules: a Latin locale id such as `"tr"`, the id of a locale passed to `registerLocale`, or a `Locale` object from `cizgile/transliterate`. */
+  readonly locale?: LatinLocaleId | (string & {}) | Locale
   /** `false` skips the Latin and symbol tables (the locale table and accent folding still apply); `"none"` skips every letter table and keeps only accent folding and the symbol words; an array adds script tables such as `cyrillic`. */
   readonly transliterate?: boolean | "none" | readonly TransliterationTable[]
   /** Splits camelCase before slugging: `"fooBar"` becomes `"foo-bar"`; `false` by default. */
@@ -113,13 +114,15 @@ export function lowercaseOf(text: string, o: ResolvedOptions): string {
 
 let cache: WeakMap<SlugifyOptions, ResolvedOptions> | undefined
 
-function resolveLocale(locale: LatinLocaleId | Locale | undefined): Locale | undefined {
+function resolveLocale(locale: string | Locale | undefined): Locale | undefined {
   if (locale === undefined) return undefined
   if (typeof locale === "string") {
-    const found = latinLocales[locale] as Locale | undefined
+    const found =
+      (latinLocales as Readonly<Record<string, Locale | undefined>>)[locale] ??
+      registeredLocale(locale)
     if (found === undefined) {
       throw new TypeError(
-        `slugify: unknown locale "${locale}"; pass a Locale object exported by cizgile/transliterate`,
+        `slugify: unknown locale "${locale}"; pass a Locale object exported by cizgile/transliterate, or register it with registerLocale()`,
       )
     }
     return found
@@ -285,16 +288,19 @@ function optionsKey(options: SlugifyOptions): string {
 
 export function resolveOptions(options: SlugifyOptions = DEFAULT_OPTIONS): ResolvedOptions {
   cache ??= new WeakMap()
-  const cached = cache.get(options)
-  if (cached !== undefined) return cached
+  const registered = typeof options.locale === "string" && !(options.locale in latinLocales)
+  if (!registered) {
+    const cached = cache.get(options)
+    if (cached !== undefined) return cached
+  }
   byKey ??= new Map()
-  const key = optionsKey(options)
+  const key = registered ? `${registryVersion()}:${optionsKey(options)}` : optionsKey(options)
   let resolved = byKey.get(key)
   if (resolved === undefined) {
     resolved = build(options)
     if (byKey.size > 512) byKey.clear()
     byKey.set(key, resolved)
   }
-  cache.set(options, resolved)
+  if (!registered) cache.set(options, resolved)
   return resolved
 }

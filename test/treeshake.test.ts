@@ -37,7 +37,7 @@ const BUDGET_BYTES: ReadonlyArray<readonly [string, string, number]> = [
     `import { transliterate } from "${SRC}/transliterate.ts"; console.log(transliterate("x"))`,
     4_500,
   ],
-  ["every script table", `import * as m from "${SRC}/transliterate.ts"; console.log(m)`, 17_000],
+  ["every script table", `import * as m from "${SRC}/transliterate.ts"; console.log(m)`, 18_500],
   [
     "resolveUri and percentEncode",
     `import { resolveUri, percentEncode } from "${SRC}/uri.ts"; console.log(resolveUri("http://a/b", "c"), percentEncode("x"))`,

@@ -16,6 +16,9 @@ export const de: Locale = {
     ü: "ue",
     ß: "ss",
     ẞ: "SS",
+    "%": " prozent ",
+    $: " dollar ",
+    "£": " pfund ",
     "&": " und ",
   },
 }
@@ -36,6 +39,9 @@ export const tr: Locale = {
     ö: "o",
     Ü: "U",
     ü: "u",
+    "%": " yuzde ",
+    $: " dolar ",
+    "£": " sterlin ",
     "&": " ve ",
   },
   lowercase: turkishLowercase,
@@ -59,6 +65,9 @@ export const az: Locale = {
     ü: "u",
     Ə: "E",
     ə: "e",
+    "%": " faiz ",
+    $: " dollar ",
+    "£": " funt ",
     "&": " ve ",
   },
   lowercase: turkishLowercase,
@@ -74,6 +83,9 @@ export const da: Locale = {
     å: "aa",
     Æ: "Ae",
     æ: "ae",
+    "%": " procent ",
+    $: " dollar ",
+    "£": " pund ",
     "&": " og ",
   },
 }
@@ -88,6 +100,9 @@ export const nb: Locale = {
     å: "aa",
     Æ: "Ae",
     æ: "ae",
+    "%": " prosent ",
+    $: " dollar ",
+    "£": " pund ",
     "&": " og ",
   },
 }
@@ -102,6 +117,9 @@ export const sv: Locale = {
     ö: "oe",
     Å: "Aa",
     å: "aa",
+    "%": " procent ",
+    $: " dollar ",
+    "£": " pund ",
     "&": " och ",
   },
 }
@@ -116,6 +134,9 @@ export const fi: Locale = {
     ö: "oe",
     Å: "Aa",
     å: "aa",
+    "%": " prosenttia ",
+    $: " dollari ",
+    "£": " punta ",
     "&": " ja ",
   },
 }
@@ -124,6 +145,9 @@ export const fi: Locale = {
 export const hu: Locale = {
   id: "hu",
   table: {
+    "%": " szazalek ",
+    $: " dollar ",
+    "£": " font ",
     "&": " es ",
   },
 }
@@ -134,6 +158,9 @@ export const vi: Locale = {
   table: {
     Đ: "D",
     đ: "d",
+    "%": " phan tram ",
+    $: " do la ",
+    "£": " bang ",
     "&": " va ",
   },
 }
@@ -144,6 +171,9 @@ export const es: Locale = {
   table: {
     Ñ: "N",
     ñ: "n",
+    "%": " por ciento ",
+    $: " dolar ",
+    "£": " libra ",
     "&": " y ",
   },
 }
@@ -156,6 +186,9 @@ export const fr: Locale = {
     œ: "oe",
     Æ: "Ae",
     æ: "ae",
+    "%": " pour cent ",
+    $: " dollar ",
+    "£": " livre ",
     "&": " et ",
   },
 }
@@ -164,6 +197,9 @@ export const fr: Locale = {
 export const pt: Locale = {
   id: "pt",
   table: {
+    "%": " por cento ",
+    $: " dolar ",
+    "£": " libra ",
     "&": " e ",
   },
 }
@@ -172,6 +208,9 @@ export const pt: Locale = {
 export const it: Locale = {
   id: "it",
   table: {
+    "%": " per cento ",
+    $: " dollaro ",
+    "£": " sterlina ",
     "&": " e ",
   },
 }
@@ -182,6 +221,9 @@ export const nl: Locale = {
   table: {
     Ĳ: "IJ",
     ĳ: "ij",
+    "%": " procent ",
+    $: " dollar ",
+    "£": " pond ",
     "&": " en ",
   },
 }
@@ -190,6 +232,9 @@ export const nl: Locale = {
 export const pl: Locale = {
   id: "pl",
   table: {
+    "%": " procent ",
+    $: " dolar ",
+    "£": " funt ",
     "&": " i ",
   },
 }
@@ -198,6 +243,9 @@ export const pl: Locale = {
 export const ro: Locale = {
   id: "ro",
   table: {
+    "%": " la suta ",
+    $: " dolar ",
+    "£": " lira ",
     "&": " si ",
   },
 }
@@ -206,6 +254,9 @@ export const ro: Locale = {
 export const cs: Locale = {
   id: "cs",
   table: {
+    "%": " procent ",
+    $: " dolar ",
+    "£": " libra ",
     "&": " a ",
   },
 }
@@ -214,6 +265,9 @@ export const cs: Locale = {
 export const sk: Locale = {
   id: "sk",
   table: {
+    "%": " percent ",
+    $: " dolar ",
+    "£": " libra ",
     "&": " a ",
   },
 }
@@ -222,6 +276,9 @@ export const sk: Locale = {
 export const sl: Locale = {
   id: "sl",
   table: {
+    "%": " odstotkov ",
+    $: " dolar ",
+    "£": " funt ",
     "&": " in ",
   },
 }
@@ -230,6 +287,9 @@ export const sl: Locale = {
 export const hr: Locale = {
   id: "hr",
   table: {
+    "%": " posto ",
+    $: " dolar ",
+    "£": " funta ",
     "&": " i ",
   },
 }
@@ -242,6 +302,9 @@ export const is: Locale = {
     þ: "th",
     Ð: "D",
     ð: "d",
+    "%": " prosent ",
+    $: " dollari ",
+    "£": " pund ",
     "&": " og ",
   },
 }
@@ -250,6 +313,9 @@ export const is: Locale = {
 export const et: Locale = {
   id: "et",
   table: {
+    "%": " protsenti ",
+    $: " dollar ",
+    "£": " nael ",
     "&": " ja ",
   },
 }
@@ -258,6 +324,9 @@ export const et: Locale = {
 export const lv: Locale = {
   id: "lv",
   table: {
+    "%": " procenti ",
+    $: " dolars ",
+    "£": " marcina ",
     "&": " un ",
   },
 }
@@ -266,6 +335,9 @@ export const lv: Locale = {
 export const lt: Locale = {
   id: "lt",
   table: {
+    "%": " procentai ",
+    $: " doleris ",
+    "£": " svaras ",
     "&": " ir ",
   },
 }
@@ -275,6 +347,9 @@ export const ca: Locale = {
   id: "ca",
   table: {
     "·": "",
+    "%": " per cent ",
+    $: " dolar ",
+    "£": " lliura ",
     "&": " i ",
   },
 }

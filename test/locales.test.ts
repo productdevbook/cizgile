@@ -5,6 +5,13 @@ import {
   be,
   bg,
   cyrillic,
+  greek,
+  hangul,
+  hebrew,
+  kana,
+  registeredLocale,
+  registerLocale,
+  unregisterLocale,
   defineLocale,
   el,
   he,
@@ -192,6 +199,42 @@ describe("Greek, Hebrew, Japanese and Korean locales", () => {
     expect(slugify("서울 & 부산", { locale: ko })).toBe("seoul-mit-busan")
     expect(slugify("東京タワー", { locale: ja })).toBe("tawa")
     expect(slugify("東京タワー", { locale: ja, unicode: true })).toBe("東京タワー")
+  })
+})
+
+describe("locale symbol words (%, $, £)", () => {
+  it("spells the symbols in the locale's language and drops them without one", () => {
+    expect(slugify("50% off $5 for £2")).toBe("50-off-5-for-pound-2")
+    expect(slugify("50% off $5 for £2", { locale: "de" })).toBe(
+      "50-prozent-off-dollar-5-for-pfund-2",
+    )
+    expect(slugify("50% off", { locale: "fr" })).toBe("50-pour-cent-off")
+    expect(slugify("%50 indirim", { locale: "tr" })).toBe("yuzde-50-indirim")
+    expect(slugify("50% скидка", { locale: ru })).toBe("50-protsent-skidka")
+    expect(slugify("50% off", { locale: "de", unicode: true })).toBe("50-prozent-off")
+    expect(slugify("50% off", { locale: "de", transliterate: "none" })).toBe("50-prozent-off")
+    for (const locale of Object.values(locales)) {
+      if (locale.tables?.some((t) => t === hebrew || t === kana || t === hangul || t === greek))
+        continue
+      for (const key of ["%", "$", "£", "&"]) {
+        expect(locale.table[key], `${locale.id} ${key}`).toMatch(/^ [a-z ]+ $/)
+      }
+    }
+  })
+})
+
+describe("registerLocale", () => {
+  it("lets slugify take a registered id as a string, and forgets it on unregister", () => {
+    expect(() => slugify("Привет", { locale: "ru" })).toThrow(TypeError)
+    registerLocale(ru, uk)
+    expect(slugify("Привет мир", { locale: "ru" })).toBe("privet-mir")
+    expect(slugify("Київ", { locale: "uk" })).toBe("kyiv")
+    expect(registeredLocale("ru")).toBe(ru)
+    expect(unregisterLocale("ru")).toBe(true)
+    expect(unregisterLocale("ru")).toBe(false)
+    expect(() => slugify("Привет", { locale: "ru" })).toThrow(TypeError)
+    expect(slugify("Straße", { locale: "de" })).toBe("strasse")
+    unregisterLocale("uk")
   })
 })
 

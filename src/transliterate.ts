@@ -48,6 +48,7 @@ export {
   tr,
   vi,
 } from "./transliterate/locales-latin"
+export { registeredLocale, registerLocale, unregisterLocale } from "./transliterate/registry"
 export { symbols } from "./transliterate/symbols"
 export type {
   CyrillicLocaleId,

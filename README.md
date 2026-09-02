@@ -69,7 +69,7 @@ slugify("C++ & Rust", { replacements: [["C++", "cpp"]] }) // "cpp-and-rust"
 
 ### Languages and scripts
 
-Locale ids for Latin-script languages; Cyrillic locales and other scripts come from `cizgile/transliterate` so they only end up in your bundle when you use them.
+Locale ids for Latin-script languages; Cyrillic locales and other scripts come from `cizgile/transliterate` so they only end up in your bundle when you use them (or register them once with `registerLocale` and use their ids as strings).
 
 ```ts
 import { slugify } from "cizgile"
@@ -89,7 +89,7 @@ const swiss = defineLocale(de, { id: "de-CH", table: { ß: "ss" } })
 slugify("Straße", { locale: swiss }) // "strasse"
 ```
 
-Locale ids: `az ca cs da de es et fi fr hr hu is it lt lv nb nl pl pt ro sk sl sv tr vi`. Locale objects: those plus `be bg kk mk ru sr uk` (Cyrillic) and `el he ja ko` (Greek, Hebrew, kana, Hangul).
+Locale ids: `az ca cs da de es et fi fr hr hu is it lt lv nb nl pl pt ro sk sl sv tr vi`. Locale objects: those plus `be bg kk mk ru sr uk` (Cyrillic) and `el he ja ko` (Greek, Hebrew, kana, Hangul). `registerLocale(ru, uk)` makes those ids usable as strings too. Every Latin and Cyrillic locale spells `&`, `%`, `$` and `£` in its language: `slugify("50% off", { locale: "de" })` is `"50-prozent-off"`, without a locale `"50-off"`.
 
 ### Unicode slugs
 
