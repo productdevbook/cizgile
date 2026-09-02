@@ -1,7 +1,7 @@
 import sindresorhus from "@sindresorhus/slugify"
 import simov from "slugify"
 import { bench, describe } from "vitest"
-import { createSlugger, isSlug, slugify } from "../src"
+import { checkScripts, createSlugger, decamelize, isSlug, slugify, truncateSlug } from "../src"
 import { cyrillic } from "../src/transliterate"
 
 const ASCII = "The Quick Brown Fox Jumps Over the Lazy Dog, Again & Again!"
@@ -90,5 +90,24 @@ describe("helpers", () => {
   })
   bench("createSlugger()", () => {
     slugger("Hello World")
+  })
+})
+
+describe("slug helpers", () => {
+  const SLUG = slugify(LONG)
+  bench("truncateSlug (2.5 KB slug, 80 units)", () => {
+    truncateSlug(SLUG, 80)
+  })
+  bench("truncateSlug (bytes)", () => {
+    truncateSlug(SLUG, 80, "-", "bytes")
+  })
+  bench("decamelize", () => {
+    decamelize("getHTTPResponseCodeForXMLHttpRequest")
+  })
+  bench("checkScripts (Latin)", () => {
+    checkScripts("hello-world-again")
+  })
+  bench("checkScripts (mixed)", () => {
+    checkScripts("hello-мир-world")
   })
 })

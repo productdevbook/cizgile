@@ -30,7 +30,7 @@ slugify("Straße Über Ärger", { locale: "de" }) // "strasse-ueber-aerger"
 slugify("你好 World", { unicode: true }) // "你好-world"
 ```
 
-No dependencies. ESM only. Node 20+, Bun, Deno, browsers, edge workers.
+No dependencies. ESM only. Node 20+, Bun and Deno are exercised in CI; the code touches no host API, so browsers and edge workers run it as-is.
 
 ## Why cizgile
 
@@ -306,6 +306,10 @@ nothing after the first call.
 
 RFC 3986 (with errata 2033, 4547, 4789, 5428), RFC 3987, RFC 3492 (all nineteen §7.1 sample strings), RFC 8820, RFC 9844, the UTS #46 mapping step, the WHATWG URL Standard's percent-encode sets, Unicode UTS #39 restriction levels and UAX #29 grapheme boundaries, Google Search Central's URL guidance. The test suite runs every example those documents contain.
 
+## Changelog
+
+Release notes live on the [GitHub Releases page](https://github.com/productdevbook/cizgile/releases); each release lists the commits since the previous tag. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to work on the library and [SECURITY.md](SECURITY.md) for reporting a vulnerability.
+
 ## Development
 
 ```sh
@@ -313,6 +317,8 @@ bun install
 bun run test      # oxlint, oxfmt, tsc, vitest under node, then vitest under bun
 bun run build     # rolldown → dist/*.mjs + dist/*.d.mts
 bun run coverage
+bun run bench     # vitest bench against @sindresorhus/slugify, simov/slugify and the built-ins
+bun run bench:baseline  # rewrite bench/baseline.json (cizgile/reference ratios the Bench workflow checks)
 bun run release   # bumpp: bump, tag, push — the tag publishes to npm
 ```
 
@@ -321,7 +327,7 @@ bun run release   # bumpp: bump, tag, push — the tag publishes to npm
 - [simov/slugify](https://github.com/simov/slugify) — the charmap + per-locale override idea and most Cyrillic, Greek, Arabic and symbol values.
 - [sindresorhus/slugify](https://github.com/sindresorhus/slugify) and [sindresorhus/transliterate](https://github.com/sindresorhus/transliterate) — `decamelize`, custom replacements, the counter slugger, and the Armenian, Georgian and Dhivehi tables.
 - [Django](https://github.com/django/django) and [Rails](https://github.com/rails/rails) — the reference behaviours the parity tests are written against.
-- The [WHATWG URL Standard](https://url.spec.whatwg.org/) — percent-encode sets and the parser every result is cross-checked with.
+- The [WHATWG URL Standard](https://url.spec.whatwg.org/) — percent-encode sets and the parser every result is cross-checked with, and the RFC 3986-compatible subset of its [`urltestdata.json`](https://github.com/web-platform-tests/wpt/blob/master/url/resources/urltestdata.json) (web-platform-tests, BSD 3-Clause) vendored as a fixture.
 - [RFC 3986](https://datatracker.ietf.org/doc/html/rfc3986) by Berners-Lee, Fielding and Masinter, and [RFC 3987](https://datatracker.ietf.org/doc/html/rfc3987) by Duerst and Suignard.
 - [Rolldown](https://rolldown.rs), [Oxc](https://oxc.rs), [Vitest](https://vitest.dev), [Bun](https://bun.sh) and [TypeScript](https://www.typescriptlang.org).
 

@@ -63,7 +63,8 @@
     "release": "bun run test && bun run build && bumpp --commit --tag --push --all",
     "prepack": "bun run build",
     "test:bun": "bun --bun vitest run",
-    "bench": "vitest bench --run"
+    "bench": "vitest bench --run",
+    "bench:baseline": "vitest bench --run --outputJson bench/results.json && node bench/compare.mjs bench/results.json bench/baseline.json write"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",

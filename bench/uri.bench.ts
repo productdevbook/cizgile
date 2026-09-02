@@ -6,7 +6,11 @@ import {
   isUriReference,
   normalizeUri,
   percentDecode,
+  parseHost,
+  parseUri,
   percentEncode,
+  punycodeDecode,
+  punycodeEncode,
   relativize,
   removeDotSegments,
   resolveUri,
@@ -88,5 +92,40 @@ describe("IRI", () => {
 describe("transliterate", () => {
   bench("transliterate Latin", () => {
     transliterate("Déjà Vu: Crème Brûlée à la Straße, Łódź & Ærø")
+  })
+})
+
+describe("parsing", () => {
+  const URI = "https://user:pw@www.example.com:8443/a/b/c/d/e?x=1&y=2&z=three#section-4"
+  const LONG_URI = `https://example.com/${"segment/".repeat(200)}?${"k=v&".repeat(100)}`
+  bench("parseUri", () => {
+    parseUri(URI)
+  })
+  bench("parseUri { authority: true }", () => {
+    parseUri(URI, { authority: true })
+  })
+  bench("parseUri (3 KB)", () => {
+    parseUri(LONG_URI)
+  })
+  bench("new URL() (built-in)", () => {
+    sink.push(new URL(URI).href)
+  })
+  bench("parseHost (reg-name)", () => {
+    parseHost("www.example.com")
+  })
+  bench("parseHost (IPv6)", () => {
+    parseHost("[2001:db8::7]")
+  })
+})
+
+describe("punycode (RFC 3492)", () => {
+  bench("punycodeEncode", () => {
+    punycodeEncode("bücher")
+  })
+  bench("punycodeDecode", () => {
+    punycodeDecode("bcher-kva")
+  })
+  bench("punycodeEncode (CJK)", () => {
+    punycodeEncode("他们为什么不说中文")
   })
 })

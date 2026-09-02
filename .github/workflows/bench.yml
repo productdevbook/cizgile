@@ -1,0 +1,34 @@
+name: Bench
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 6 * * 1"
+  pull_request:
+    paths:
+      - "src/**"
+      - "bench/**"
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - run: bun install --frozen-lockfile
+      - name: Bench
+        run: bunx vitest bench --run --outputJson bench/results.json
+      - name: Compare with the committed baseline
+        run: node bench/compare.mjs bench/results.json bench/baseline.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bench-results
+          path: bench/results.json

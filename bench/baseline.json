@@ -1,0 +1,20 @@
+{
+  "bench/slugify.bench.ts > slugify ASCII > cizgile": 3.717,
+  "bench/slugify.bench.ts > slugify Latin with diacritics > cizgile": 2.224,
+  "bench/slugify.bench.ts > slugify Turkish locale > cizgile { locale: 'tr' }": 1.022,
+  "bench/slugify.bench.ts > slugify Cyrillic > cizgile { transliterate: [cyrillic] }": 1.842,
+  "bench/slugify.bench.ts > slugify long text (2.5 KB) > cizgile": 1.248,
+  "bench/slugify.bench.ts > slugify long text (2.5 KB) > cizgile { maxLength: 80 }": 1.064,
+  "bench/uri.bench.ts > percent-encoding > percentEncode": 0.298,
+  "bench/uri.bench.ts > percent-encoding > percentEncode (ASCII path segment)": 0.621,
+  "bench/uri.bench.ts > percent-encoding > encodePathSegment": 0.29,
+  "bench/uri.bench.ts > percent-encoding > percentDecode": 0.242,
+  "bench/uri.bench.ts > resolution > resolveUri": 0.906,
+  "bench/uri.bench.ts > resolution > removeDotSegments": 2.06,
+  "bench/uri.bench.ts > resolution > relativize": 0.504,
+  "bench/uri.bench.ts > parsing > parseUri": 3.472,
+  "bench/uri.bench.ts > parsing > parseUri { authority: true }": 1.473,
+  "bench/uri.bench.ts > parsing > parseUri (3 KB)": 0.64,
+  "bench/uri.bench.ts > parsing > parseHost (reg-name)": 4.838,
+  "bench/uri.bench.ts > parsing > parseHost (IPv6)": 3.257
+}
