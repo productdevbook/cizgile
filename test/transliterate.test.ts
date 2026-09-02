@@ -7,8 +7,16 @@ import {
   cyrillicUk,
   de,
   defineLocale,
+  bengali,
   devanagari,
   georgian,
+  gujarati,
+  gurmukhi,
+  kannada,
+  malayalam,
+  oriya,
+  tamil,
+  telugu,
   greek,
   hangul,
   hebrew,
@@ -85,6 +93,24 @@ describe("transliterate()", () => {
     expect(transliterate("१२३ ॐ। संस्कृतम्", { tables: [devanagari] })).toBe("123 om  sanskritam")
     expect(transliterate("मुंबई", { tables: [devanagari] })).toBe("munbai")
     for (const [key, value] of Object.entries(devanagari)) {
+      expect(value, key).toMatch(/^[a-z0-9 ]*$/)
+      expect(key.normalize("NFC"), key).toBe(key)
+    }
+  })
+
+  it.each([
+    ["bengali", bengali, "বাংলা ভারত ঢাকা", "bangla bharata dhaka"],
+    ["gurmukhi", gurmukhi, "ਪੰਜਾਬੀ ਲੁਧਿਆਣਾ", "panjabi ludhiana"],
+    ["gujarati", gujarati, "ગુજરાતી અમદાવાદ", "gujarati amadavada"],
+    ["oriya", oriya, "ଓଡ଼ିଆ ଭୁବନେଶ୍ୱର", "oria bhubaneshwra"],
+    ["tamil", tamil, "தமிழ் சென்னை", "tamil chennai"],
+    ["telugu", telugu, "తెలుగు హైదరాబాద్", "telugu haidarabad"],
+    ["kannada", kannada, "ಕನ್ನಡ ಬೆಂಗಳೂರು", "kannada bengaluru"],
+    ["malayalam", malayalam, "മലയാളം കേരളം", "malayalam keralam"],
+  ] as const)("%s shares the Devanagari layout", (_name, table, input, expected) => {
+    expect(transliterate(input, { tables: [table] })).toBe(expected)
+    expect(transliterate(input)).toBe(input)
+    for (const [key, value] of Object.entries(table)) {
       expect(value, key).toMatch(/^[a-z0-9 ]*$/)
       expect(key.normalize("NFC"), key).toBe(key)
     }

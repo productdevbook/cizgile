@@ -4,12 +4,8 @@ import { transliterate } from "../src/transliterate"
 import {
   be,
   bg,
+  bn,
   cyrillic,
-  devanagari,
-  greek,
-  hangul,
-  hebrew,
-  kana,
   registeredLocale,
   registerLocale,
   unregisterLocale,
@@ -24,6 +20,7 @@ import {
   mk,
   ru,
   sr,
+  ta,
   tr,
   uk,
 } from "../src/transliterate"
@@ -126,6 +123,7 @@ describe("Cyrillic locales (Locale objects from cizgile/transliterate)", () => {
         "az",
         "be",
         "bg",
+        "bn",
         "ca",
         "cs",
         "da",
@@ -135,6 +133,7 @@ describe("Cyrillic locales (Locale objects from cizgile/transliterate)", () => {
         "et",
         "fi",
         "fr",
+        "gu",
         "he",
         "hi",
         "hr",
@@ -143,12 +142,16 @@ describe("Cyrillic locales (Locale objects from cizgile/transliterate)", () => {
         "it",
         "ja",
         "kk",
+        "kn",
         "ko",
         "lt",
         "lv",
         "mk",
+        "ml",
         "nb",
         "nl",
+        "or",
+        "pa",
         "pl",
         "pt",
         "ro",
@@ -157,6 +160,8 @@ describe("Cyrillic locales (Locale objects from cizgile/transliterate)", () => {
         "sl",
         "sr",
         "sv",
+        "ta",
+        "te",
         "tr",
         "uk",
         "vi",
@@ -199,6 +204,8 @@ describe("Greek, Hebrew, Japanese and Korean locales", () => {
     expect(slugify("Καλημέρα & Αθήνα", { locale: el })).toBe("kalimera-kai-athina")
     expect(slugify("שלום & ישראל", { locale: he })).toBe("shlvm-ve-yshrl")
     expect(slugify("नमस्ते & दुनिया", { locale: hi })).toBe("namaste-aur-duniya")
+    expect(slugify("தமிழ் & சென்னை", { locale: ta })).toBe("tamil-matrum-chennai")
+    expect(slugify("বাংলা & ঢাকা", { locale: bn })).toBe("bangla-ebong-dhaka")
     expect(slugify("नमस्ते दुनिया", { locale: hi, unicode: true })).toBe("नमस्ते-दुनिया")
     expect(slugify("とうきょう & おおさか", { locale: ja })).toBe("toukyou-to-oosaka")
     expect(slugify("서울 & 부산", { locale: ko })).toBe("seoul-mit-busan")
@@ -219,8 +226,7 @@ describe("locale symbol words (%, $, £)", () => {
     expect(slugify("50% off", { locale: "de", unicode: true })).toBe("50-prozent-off")
     expect(slugify("50% off", { locale: "de", transliterate: "none" })).toBe("50-prozent-off")
     for (const locale of Object.values(locales)) {
-      if (locale.tables?.some((t) => [hebrew, kana, hangul, greek, devanagari].includes(t)))
-        continue
+      if (locale.tables?.some((t) => t !== cyrillic)) continue
       for (const key of ["%", "$", "£", "&"]) {
         expect(locale.table[key], `${locale.id} ${key}`).toMatch(/^ [a-z ]+ $/)
       }

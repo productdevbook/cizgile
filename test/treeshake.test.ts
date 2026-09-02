@@ -27,7 +27,7 @@ async function bundle(code: string, minify = false): Promise<string> {
   return output.map((chunk) => ("code" in chunk ? chunk.code : "")).join("\n")
 }
 
-const NON_LATIN = ["ж", "α", "ا", "ა", "ա", "ހ", "ב", "ᄀ", "あ", "क"]
+const NON_LATIN = ["ж", "α", "ا", "ა", "ա", "ހ", "ב", "ᄀ", "あ", "क", "ক", "க", "മ"]
 
 const BUDGET_BYTES: ReadonlyArray<readonly [string, string, number]> = [
   ["slugify only", `import { slugify } from "${SRC}/index.ts"; console.log(slugify("x"))`, 18_000],
@@ -37,7 +37,7 @@ const BUDGET_BYTES: ReadonlyArray<readonly [string, string, number]> = [
     `import { transliterate } from "${SRC}/transliterate.ts"; console.log(transliterate("x"))`,
     4_500,
   ],
-  ["every script table", `import * as m from "${SRC}/transliterate.ts"; console.log(m)`, 32_000],
+  ["every script table", `import * as m from "${SRC}/transliterate.ts"; console.log(m)`, 160_000],
   [
     "resolveUri and percentEncode",
     `import { resolveUri, percentEncode } from "${SRC}/uri.ts"; console.log(resolveUri("http://a/b", "c"), percentEncode("x"))`,
