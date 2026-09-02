@@ -1,0 +1,24 @@
+name: Feature
+description: An option, function, locale or table that does not exist yet.
+labels: ["feature"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What
+      description: What you want to be able to write, as code.
+      render: js
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: The situation that needs it and what you do today instead.
+    validations:
+      required: true
+  - type: input
+    id: prior
+    attributes:
+      label: Prior art
+      placeholder: "simov/slugify option x, Django y, ..."

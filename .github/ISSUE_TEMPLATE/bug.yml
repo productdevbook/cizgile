@@ -1,0 +1,39 @@
+name: Bug
+description: The output is not what the documentation or the specification says.
+labels: ["bug"]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      placeholder: "0.2.0"
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: A `node -e` line or a few lines of code that show the input and the call.
+      render: js
+      placeholder: |
+        import { slugify } from "cizgile"
+        slugify("...", { ... })
+    validations:
+      required: true
+  - type: input
+    id: actual
+    attributes:
+      label: Actual output
+    validations:
+      required: true
+  - type: input
+    id: expected
+    attributes:
+      label: Expected output
+    validations:
+      required: true
+  - type: input
+    id: runtime
+    attributes:
+      label: Runtime
+      placeholder: "Node 24.1, Bun 1.4, Deno 2.x, browser ..."

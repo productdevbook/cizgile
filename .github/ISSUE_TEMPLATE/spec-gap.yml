@@ -1,0 +1,31 @@
+name: Specification gap
+description: Behaviour that differs from an RFC, the WHATWG URL Standard or a Unicode annex.
+labels: ["spec-gap"]
+body:
+  - type: input
+    id: section
+    attributes:
+      label: Specification and section
+      placeholder: "RFC 3986 section 5.2.4, WHATWG URL 4.4, UTS #46 4.1"
+    validations:
+      required: true
+  - type: textarea
+    id: text
+    attributes:
+      label: What the text says
+      description: Quote the sentence or the ABNF.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Input and current output
+      render: js
+    validations:
+      required: true
+  - type: input
+    id: expected
+    attributes:
+      label: Output the text requires
+    validations:
+      required: true
