@@ -17,12 +17,19 @@ import { transliterate } from "../src/transliterate"
 const BASE = "http://a/b/c/d;p?q"
 const TEXT = "Crème Brûlée & Straße / Łódź ? 100%"
 const ENCODED = percentEncode(TEXT)
+const ASCII = "the-quick-brown-fox-jumps-over-the-lazy-dog-2024-edition"
 const IRI = "http://例え.jp/résumé/ünïcödé?q=ア#frag"
 const sink: string[] = []
 
 describe("percent-encoding", () => {
   bench("percentEncode", () => {
     percentEncode(TEXT)
+  })
+  bench("percentEncode (ASCII path segment)", () => {
+    percentEncode(ASCII, "pchar")
+  })
+  bench("encodeURIComponent (built-in, ASCII)", () => {
+    encodeURIComponent(ASCII)
   })
   bench("encodeURIComponent (built-in)", () => {
     encodeURIComponent(TEXT)

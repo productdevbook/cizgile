@@ -1,18 +1,26 @@
-import { type EncodeSet, isUnreserved, resolveEncodeSet } from "./charset"
-import { hexByte, readHexByte, readUtf8, utf8Bytes } from "./utf8"
+import { type EncodeSet, isUnreserved, keepPredicate } from "./charset"
+import { encodeUtf8, hexByte, readHexByte, readUtf8 } from "./utf8"
 
 export function percentEncode(input: string, keep: EncodeSet = "unreserved"): string {
-  const keepFn = resolveEncodeSet(keep)
+  const keepFn = keepPredicate(keep)
   const plusForSpace = keep === "form"
-  let out = ""
-  for (const ch of input) {
+  const length = input.length
+  let i = 0
+  while (i < length) {
+    const code = input.codePointAt(i) ?? 0
+    if (code >= 0x80 || !keepFn(code)) break
+    i += 1
+  }
+  if (i === length) return input
+  let out = input.slice(0, i)
+  for (const ch of input.slice(i)) {
     const cp = ch.codePointAt(0) ?? 0
     if (cp < 0x80 && keepFn(cp)) {
       out += ch
     } else if (plusForSpace && cp === 0x20) {
       out += "+"
     } else {
-      for (const byte of utf8Bytes(cp)) out += hexByte(byte)
+      out += encodeUtf8(cp)
     }
   }
   return out
@@ -39,6 +47,7 @@ function decodeBytes(bytes: readonly number[]): string {
 }
 
 export function percentDecode(input: string, options: PercentDecodeOptions = {}): string {
+  if (!input.includes("%") && !(options.plusAsSpace === true && input.includes("+"))) return input
   let out = ""
   let i = 0
   const bytes: number[] = []
@@ -62,6 +71,7 @@ export function percentDecode(input: string, options: PercentDecodeOptions = {})
 }
 
 export function normalizePercentEncoding(input: string): string {
+  if (!input.includes("%")) return input
   let out = ""
   let i = 0
   while (i < input.length) {

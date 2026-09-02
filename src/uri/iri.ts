@@ -2,7 +2,7 @@ import { isReserved, isSubDelim, isUnreserved } from "./charset"
 import { parseAuthority, serializeAuthority } from "./normalize"
 import { parseUri, serializeUri } from "./parse"
 import { domainToAscii } from "./punycode"
-import { hexByte, readHexByte, readUtf8, utf8Bytes } from "./utf8"
+import { encodeUtf8, readHexByte, readUtf8 } from "./utf8"
 
 export function isUcschar(cp: number): boolean {
   return (
@@ -88,7 +88,7 @@ export function iriToUri(iri: string, options: IriToUriOptions = {}): string {
         `iriToUri: U+${cp.toString(16).toUpperCase().padStart(4, "0")} is not allowed in an IRI`,
       )
     }
-    for (const byte of utf8Bytes(cp)) out += hexByte(byte)
+    out += encodeUtf8(cp)
   }
   return out
 }

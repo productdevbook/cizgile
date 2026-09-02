@@ -21,6 +21,12 @@ function inChars(chars: string, cp: number): boolean {
   return cp < 0x80 && chars.indexOf(String.fromCodePoint(cp)) !== -1
 }
 
+function table(predicate: (cp: number) => boolean): Uint8Array {
+  const out = new Uint8Array(128)
+  for (let cp = 0; cp < 128; cp++) if (predicate(cp)) out[cp] = 1
+  return out
+}
+
 export function isAlpha(cp: number): boolean {
   return (cp >= 0x41 && cp <= 0x5a) || (cp >= 0x61 && cp <= 0x7a)
 }
@@ -37,16 +43,25 @@ export function isScheme(text: string): boolean {
   return /^[A-Za-z][A-Za-z0-9+.-]*$/.test(text)
 }
 
+const UNRESERVED = table((cp) => isAlpha(cp) || isDigit(cp) || inChars("-._~", cp))
+const GEN_DELIMS = table((cp) => inChars(":/?#[]@", cp))
+const SUB_DELIMS = table((cp) => inChars("!$&'()*+,;=", cp))
+const PCHAR = table(
+  (cp) => UNRESERVED[cp] === 1 || SUB_DELIMS[cp] === 1 || cp === 0x3a || cp === 0x40,
+)
+const SEGMENT_NZ_NC = table((cp) => UNRESERVED[cp] === 1 || SUB_DELIMS[cp] === 1 || cp === 0x40)
+const QUERY = table((cp) => PCHAR[cp] === 1 || cp === 0x2f || cp === 0x3f)
+
 export function isUnreserved(cp: number): boolean {
-  return isAlpha(cp) || isDigit(cp) || inChars("-._~", cp)
+  return cp < 0x80 && UNRESERVED[cp] === 1
 }
 
 export function isGenDelim(cp: number): boolean {
-  return inChars(":/?#[]@", cp)
+  return cp < 0x80 && GEN_DELIMS[cp] === 1
 }
 
 export function isSubDelim(cp: number): boolean {
-  return inChars("!$&'()*+,;=", cp)
+  return cp < 0x80 && SUB_DELIMS[cp] === 1
 }
 
 export function isReserved(cp: number): boolean {
@@ -54,15 +69,15 @@ export function isReserved(cp: number): boolean {
 }
 
 export function isPchar(cp: number): boolean {
-  return isUnreserved(cp) || isSubDelim(cp) || cp === 0x3a || cp === 0x40
+  return cp < 0x80 && PCHAR[cp] === 1
 }
 
 export function isSegmentNzNc(cp: number): boolean {
-  return isUnreserved(cp) || isSubDelim(cp) || cp === 0x40
+  return cp < 0x80 && SEGMENT_NZ_NC[cp] === 1
 }
 
 export function isQueryChar(cp: number): boolean {
-  return isPchar(cp) || cp === 0x2f || cp === 0x3f
+  return cp < 0x80 && QUERY[cp] === 1
 }
 
 function isWhatwgC0Safe(cp: number): boolean {
@@ -117,4 +132,18 @@ const SETS: Readonly<Record<EncodeSetName, (codePoint: number) => boolean>> = {
 
 export function resolveEncodeSet(set: EncodeSet): (codePoint: number) => boolean {
   return typeof set === "function" ? set : SETS[set]
+}
+
+let tablePredicates: Map<EncodeSetName, (codePoint: number) => boolean> | undefined
+
+export function keepPredicate(set: EncodeSet): (codePoint: number) => boolean {
+  if (typeof set === "function") return set
+  tablePredicates ??= new Map()
+  let out = tablePredicates.get(set)
+  if (out === undefined) {
+    const safe = table(SETS[set])
+    out = (cp) => cp < 0x80 && safe[cp] === 1
+    tablePredicates.set(set, out)
+  }
+  return out
 }
