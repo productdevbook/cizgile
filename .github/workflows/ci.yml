@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: ["24", "lts/*"]
+        node: ["20", "24", "lts/*"]
     name: ci (node ${{ matrix.node }})
     steps:
       - uses: actions/checkout@v5
@@ -46,6 +46,8 @@ jobs:
         run: bun run build
       - name: Pack
         run: npm pack --dry-run
+      - name: Package lint
+        run: bunx publint && bunx attw --pack . --profile esm-only
       - name: Smoke (node)
         run: node -e "import('./dist/index.mjs').then(m => { if (m.slugify('Hello World') !== 'hello-world') process.exit(1) })"
       - name: Smoke (bun)
