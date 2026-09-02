@@ -1,6 +1,5 @@
 import { isReserved, isSubDelim, isUnreserved } from "./charset"
-import { parseAuthority, serializeAuthority } from "./normalize"
-import { parseUri, serializeUri } from "./parse"
+import { parseAuthority, parseUri, serializeAuthority, serializeUri } from "./parse"
 import { domainToAscii } from "./punycode"
 import { encodeUtf8, readHexByte, readUtf8 } from "./utf8"
 

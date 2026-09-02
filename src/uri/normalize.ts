@@ -1,7 +1,8 @@
-import { parseUri, serializeUri } from "./parse"
-import { isIPLiteral, normalizeIPv6Address } from "./host"
+import { parseAuthority, parseUri, serializeAuthority, serializeUri } from "./parse"
+import { isHost, isIPLiteral, normalizeIPv6Address } from "./host"
 import { removeDotSegments } from "./path"
 import { normalizePercentEncoding } from "./percent"
+import { domainToAscii, domainToUnicode } from "./punycode"
 
 /** Options for `normalizeUri`. */
 export interface NormalizeUriOptions {
@@ -11,6 +12,16 @@ export interface NormalizeUriOptions {
   readonly schemeBased?: boolean
   /** Redacts credentials, for logs; `"keep"` by default. */
   readonly userinfo?: "keep" | "strip-password" | "strip"
+  /** What to do with a trailing slash on a path longer than `/`; `"keep"` by default. */
+  readonly trailingSlash?: "keep" | "add" | "remove"
+  /** Drop a `?` with nothing after it; `"keep"` by default. */
+  readonly emptyQuery?: "keep" | "remove"
+  /** Drop a `#` with nothing after it; `"keep"` by default. */
+  readonly emptyFragment?: "keep" | "remove"
+  /** Convert a registered-name host to its `xn--` form or back to Unicode; `"keep"` by default. */
+  readonly host?: "keep" | "idna" | "unicode"
+  /** Throw a `TypeError` on a host or port the RFC 3986 grammar rejects instead of passing it through. */
+  readonly strict?: boolean
 }
 
 /** Default ports of the common schemes, used by `normalizeUri` and `equivalentUris`. */
@@ -20,49 +31,6 @@ export const DEFAULT_PORTS: Readonly<Record<string, number>> = {
   ws: 80,
   wss: 443,
   ftp: 21,
-}
-
-/** The parts of an RFC 3986 `authority`. */
-export interface AuthorityComponents {
-  /** Without the trailing `@`. */
-  userinfo?: string
-  /** As written, brackets included for IP literals. */
-  host: string
-  /** Digits only, without the colon; `""` when the colon was present but empty. */
-  port?: string
-}
-
-/** Splits an authority into userinfo, host and port. */
-export function parseAuthority(authority: string): AuthorityComponents {
-  const at = authority.lastIndexOf("@")
-  const out: AuthorityComponents = { host: "" }
-  let hostPort = authority
-  if (at !== -1) {
-    out.userinfo = authority.slice(0, at)
-    hostPort = authority.slice(at + 1)
-  }
-  const bracket = hostPort.startsWith("[") ? hostPort.indexOf("]") : -1
-  const colon = hostPort.lastIndexOf(":")
-  if (hostPort.startsWith("[") && bracket === -1) {
-    out.host = hostPort
-    return out
-  }
-  if (colon !== -1 && colon > bracket && /^:\d*$/.test(hostPort.slice(colon))) {
-    out.host = hostPort.slice(0, colon)
-    out.port = hostPort.slice(colon + 1)
-  } else {
-    out.host = hostPort
-  }
-  return out
-}
-
-/** Recomposes an authority from its parts. */
-export function serializeAuthority(components: AuthorityComponents): string {
-  let out = ""
-  if (components.userinfo !== undefined) out += components.userinfo + "@"
-  out += components.host
-  if (components.port !== undefined) out += ":" + components.port
-  return out
 }
 
 /** RFC 3986 section 6.2 syntax-based and scheme-based normalisation: case, percent-encoding, dot segments, default ports, empty path. */
@@ -84,7 +52,16 @@ export function normalizeUri(input: string, options: NormalizeUriOptions = {}): 
       a.userinfo = normalizePercentEncoding(a.userinfo)
     }
     a.host = normalizePercentEncoding(a.host.replace(/[A-Z]+/g, (m) => m.toLowerCase()))
+    if (options.strict === true) {
+      if (!isHost(a.host))
+        throw new TypeError(`normalizeUri: invalid host ${JSON.stringify(a.host)}`)
+      if (a.port !== undefined && !/^\d*$/.test(a.port)) {
+        throw new TypeError(`normalizeUri: invalid port ${JSON.stringify(a.port)}`)
+      }
+    }
     if (isIPLiteral(a.host)) a.host = `[${normalizeIPv6Address(a.host.slice(1, -1))}]`
+    else if (options.host === "idna") a.host = domainToAscii(a.host)
+    else if (options.host === "unicode") a.host = domainToUnicode(a.host)
     if (a.port !== undefined && (a.port === "" || Number(a.port) === defaultPort)) delete a.port
     c.authority = serializeAuthority(a)
   }
@@ -93,7 +70,15 @@ export function normalizeUri(input: string, options: NormalizeUriOptions = {}): 
   if (c.scheme !== undefined || c.authority !== undefined) c.path = removeDotSegments(c.path)
   if (schemeBased && c.scheme !== undefined && c.authority !== undefined && c.path === "")
     c.path = "/"
+  const trailing = options.trailingSlash ?? "keep"
+  if (trailing === "remove" && c.path.length > 1 && c.path.endsWith("/")) {
+    c.path = c.path.replace(/\/+$/, "")
+  } else if (trailing === "add" && c.path !== "" && !c.path.endsWith("/")) {
+    c.path += "/"
+  }
   if (c.query !== undefined) c.query = normalizePercentEncoding(c.query)
   if (c.fragment !== undefined) c.fragment = normalizePercentEncoding(c.fragment)
+  if (options.emptyQuery === "remove" && c.query === "") delete c.query
+  if (options.emptyFragment === "remove" && c.fragment === "") delete c.fragment
   return serializeUri(c)
 }

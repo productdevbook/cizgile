@@ -1,5 +1,5 @@
+import { stripFragment } from "./helpers"
 import { normalizeUri, type NormalizeUriOptions } from "./normalize"
-import { parseUri, serializeUri } from "./parse"
 import { resolveUri } from "./resolve"
 
 /** The RFC 3986 section 6.2 comparison ladder: string, syntax-based or scheme-based normalisation. */
@@ -17,15 +17,9 @@ export interface EquivalentUrisOptions {
   readonly defaultPorts?: NormalizeUriOptions["defaultPorts"]
 }
 
-function withoutFragment(uri: string): string {
-  const c = parseUri(uri)
-  delete c.fragment
-  return serializeUri(c)
-}
-
 function prepare(uri: string, options: EquivalentUrisOptions): string {
   let out = options.base === undefined ? uri : resolveUri(options.base, uri)
-  if (options.ignoreFragment === true) out = withoutFragment(out)
+  if (options.ignoreFragment === true) out = stripFragment(out)
   switch (options.level ?? "scheme") {
     case "simple":
       return out
@@ -55,8 +49,8 @@ export function isSameDocumentReference(
   reference: string,
   options: SameDocumentOptions = {},
 ): boolean {
-  const target = withoutFragment(resolveUri(base, reference))
-  const origin = withoutFragment(base)
+  const target = stripFragment(resolveUri(base, reference))
+  const origin = stripFragment(base)
   return options.normalize === true
     ? normalizeUri(target) === normalizeUri(origin)
     : target === origin

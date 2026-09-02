@@ -191,12 +191,18 @@ import {
   isAbsoluteUri,
   isIPv6Address,
   extractUri,
+  getOrigin,
+  sortQuery,
+  joinPaths,
   iriToUri,
   uriToIri,
   domainToAscii,
 } from "cizgile/uri"
 
 resolveUri("http://a/b/c/d;p?q", "../../g") // "http://a/g"
+getOrigin("HTTP://Example.com:80/a?b") // "http://example.com"
+sortQuery("http://a/p?b=2&a=1") // "http://a/p?a=1&b=2"
+joinPaths("/api/", "/v1", "../v2/") // "/api/v2/"
 relativize("http://a/b/c/d;p?q", "http://a/b/g") // "../g"
 normalizeUri("HTTP://www.EXAMPLE.com:80/%7e%41/./b/../c") // "http://www.example.com/~A/c"
 equivalentUris("http://example.com", "http://example.com:80/") // true
@@ -221,10 +227,11 @@ iriToUri("http://例え.jp/résumé", { host: "punycode" }) // "http://xn--r8jz4
 `isIPv4Address` `isIPv6Address` `isIPvFuture` `isIPLiteral` `isRegName` `isHost` `parseHost` `parseAuthority` `serializeAuthority` `normalizeIPv6Address` (RFC 5952). `0x7f.0.0.1` and `2130706433` are registered names, not addresses (§7.4).
 
 **Parsing and validation (§4, Appendix A/B)**
-`parseUri` `serializeUri` — components stay distinct from "absent"; the serializer inserts `/.` or `./` where the grammar requires it.
+`parseUri(uri, { authority })` `serializeUri` — components stay distinct from "absent"; `authority: true` also gives `userinfo`, `host`, `port` and `portNumber`, and the serializer accepts those in place of `authority` and inserts `/.` or `./` where the grammar requires it.
 `isUriReference` `isUri` `isAbsoluteUri` `isRelativeReference` `classifyReference` `pathForm` — validating parser built from the ABNF.
 `isIriReference` `isIri` `isIunreserved` `isIpchar` — the same for IRIs (RFC 3987 §2.2).
 `extractUri(text)` — Appendix C: strips `<>`, quotes, `URL:` prefixes, trailing punctuation and line-wrap whitespace; a markdown link or an `href`/`src` attribute yields its URL.
+`findUris(text)` — the URIs in ordinary prose (`scheme://`, `www.`, `mailto:` and friends) with their offsets, trailing punctuation trimmed.
 
 **Resolution (§5)**
 `resolveUri(base, ref, { strict, allowRelativeBase })` — every §5.4 example passes; strict by default (`http:g` stays `http:g`).
@@ -233,7 +240,10 @@ iriToUri("http://例え.jp/résumé", { host: "punycode" }) // "http://xn--r8jz4
 `isSameDocumentReference(base, ref, { normalize })`.
 
 **Normalisation and comparison (§6)**
-`normalizeUri(uri, { defaultPorts, schemeBased, userinfo })` — case, percent-encoding, dot segments, default ports, empty path → `/`, IPv6 hosts in RFC 5952 form (`[0:0:0:0:0:0:0:1]` → `[::1]`); `userinfo: "strip-password" | "strip"` for logs.
+`normalizeUri(uri, { defaultPorts, schemeBased, userinfo, trailingSlash, emptyQuery, emptyFragment, host, strict })` — case, percent-encoding, dot segments, default ports, empty path → `/`, IPv6 hosts in RFC 5952 form (`[0:0:0:0:0:0:0:1]` → `[::1]`); `userinfo: "strip-password" | "strip"` for logs; `trailingSlash: "add" | "remove"`, `emptyQuery`/`emptyFragment: "remove"`, `host: "idna" | "unicode"` and `strict` (throw on a bad host or port) are opt-in.
+`getOrigin(uri)` `isSameOrigin(a, b)` — RFC 6454 origins with default-port elision. `stripFragment(uri)`.
+`parseQuery(query)` `stringifyQuery(pairs)` `sortQuery(uri)` — `application/x-www-form-urlencoded` pairs in order, and a URI with its parameters sorted by name then value.
+`joinPaths(...pieces)` — single slashes, no dot segments, the first piece's leading and the last piece's trailing slash kept.
 `normalizePath(path, { trailingSlash })`.
 `equivalentUris(a, b, { level, base, ignoreFragment, defaultPorts })` — `"simple"`, `"syntax"` or `"scheme"` (default). Never maps IRIs to URIs (RFC 3987 §5.3.1).
 

@@ -1,8 +1,7 @@
 import { isScheme, isSubDelim, isUnreserved } from "./charset"
 import { isHost } from "./host"
 import { isBidiControl, isIprivate, isUcschar } from "./iri"
-import { parseAuthority } from "./normalize"
-import { parseUri, type UriComponents } from "./parse"
+import { parseAuthority, parseUri, type UriComponents } from "./parse"
 import { readHexByte } from "./utf8"
 
 /** The RFC 3986 section 3.3 path productions. */

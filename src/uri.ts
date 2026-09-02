@@ -30,7 +30,17 @@ export {
   type EncodePathSegmentOptions,
   encodeQuery,
 } from "./uri/encode"
-export { extractUri } from "./uri/extract"
+export { extractUri, findUris, type FoundUri } from "./uri/extract"
+export {
+  getOrigin,
+  isSameOrigin,
+  joinPaths,
+  parseQuery,
+  type QueryPair,
+  sortQuery,
+  stringifyQuery,
+  stripFragment,
+} from "./uri/helpers"
 export {
   type HostKind,
   isHost,
@@ -54,15 +64,16 @@ export {
   isUcschar,
   uriToIri,
 } from "./uri/iri"
+export { DEFAULT_PORTS, normalizeUri, type NormalizeUriOptions } from "./uri/normalize"
 export {
   type AuthorityComponents,
-  DEFAULT_PORTS,
-  normalizeUri,
-  type NormalizeUriOptions,
   parseAuthority,
+  type ParseUriOptions,
+  parseUri,
   serializeAuthority,
-} from "./uri/normalize"
-export { parseUri, serializeUri, type UriComponents } from "./uri/parse"
+  serializeUri,
+  type UriComponents,
+} from "./uri/parse"
 export { normalizePath, type NormalizePathOptions, removeDotSegments } from "./uri/path"
 export {
   normalizePercentEncoding,
