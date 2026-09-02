@@ -42,11 +42,11 @@ No dependencies. ESM only. Node 20+, Bun, Deno, browsers, edge workers.
 
 ## Three entry points
 
-| import                  | what you get                                                                                  |
-| ----------------------- | --------------------------------------------------------------------------------------------- |
-| `cizgile`               | `slugify`, `isSlug`, `createSlugger`, `truncateSlug`, `decamelize`, script and bidi guards    |
-| `cizgile/transliterate` | `transliterate`, per-script tables, locales, `defineLocale`                                   |
-| `cizgile/uri`           | percent-encoding, `resolveUri`, `normalizeUri`, `relativize`, validators, IRI ↔ URI, punycode |
+| import                  | what you get                                                                                          |
+| ----------------------- | ----------------------------------------------------------------------------------------------------- |
+| `cizgile`               | `slugify`, `isSlug`, `createSlugger`, `truncateSlug`, `measure`, `decamelize`, script and bidi guards |
+| `cizgile/transliterate` | `transliterate`, per-script tables, locales, `defineLocale`                                           |
+| `cizgile/uri`           | percent-encoding, `resolveUri`, `normalizeUri`, `relativize`, validators, IRI ↔ URI, punycode         |
 
 ## Slugs
 
@@ -62,6 +62,8 @@ slugify("Hello World", { separator: "_" }) // "hello_world"
 slugify("Donald E. Knuth", { lowercase: false }) // "Donald-E-Knuth"
 slugify("getHTTPResponse", { decamelize: true }) // "get-http-response"
 slugify("the quick brown fox", { maxLength: 9 }) // "the-quick"
+slugify("Ünïcödé Büro", { unicode: true, maxLength: 11, maxLengthUnit: "bytes" }) // "ünïcödé"
+slugify("!!!", { fallback: "untitled" }) // "untitled"
 slugify("C++ & Rust", { replacements: [["C++", "cpp"]] }) // "cpp-and-rust"
 ```
 
@@ -136,22 +138,24 @@ isSlug("你好-world", { unicode: true }) // true
 
 ### All options
 
-| option                      | default   | what it does                                                                                                                          |
-| --------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `separator`                 | `"-"`     | Joins words. Any URL-safe punctuation (`- _ . ~ !$&'()*+,;= @`), several of them (`"--"`), or `""`.                                   |
-| `lowercase`                 | `true`    | `false` keeps the original case.                                                                                                      |
-| `unicode`                   | `false`   | Keep letters from every script instead of transliterating to ASCII.                                                                   |
-| `locale`                    | —         | Language-specific rules: a locale id or a `Locale` object.                                                                            |
-| `transliterate`             | `true`    | `false` skips the Latin and symbol tables (the locale table and accent folding still apply); an array adds script tables.             |
-| `decamelize`                | `false`   | `fooBar` → `foo-bar`, `HTMLParser` → `html-parser`.                                                                                   |
-| `replacements`              | `[]`      | `[from, to]` pairs applied first; spaces in `to` become separators.                                                                   |
-| `remove`                    | `/['’]/g` | A global regex of characters to delete rather than turn into separators (`don't` → `dont`); `false` keeps them.                       |
-| `preserveCharacters`        | `[]`      | Extra URL-safe single characters to keep, e.g. `["."]` for version numbers. The separator or anything outside `segment-nz-nc` throws. |
-| `preserveLeadingUnderscore` | `false`   | `_draft` → `_draft`.                                                                                                                  |
-| `preserveTrailingSeparator` | `false`   | Keep a trailing separator while the user is still typing.                                                                             |
-| `maxLength`                 | —         | Cut at a word boundary, never inside a character (emoji sequences, combining marks). Counts UTF-16 code units like `.length`.         |
-| `scripts`                   | `"any"`   | Unicode mode: UTS #39 mixed-script restriction level.                                                                                 |
-| `bidi`                      | `"allow"` | Unicode mode: RFC 3987 §4.2 direction rule — `"encode"` or `"throw"` on violation.                                                    |
+| option                      | default   | what it does                                                                                                                                                                       |
+| --------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `separator`                 | `"-"`     | Joins words. Any URL-safe punctuation (`- _ . ~ !$&'()*+,;= @`), several of them (`"--"`), or `""`.                                                                                |
+| `lowercase`                 | `true`    | `false` keeps the original case.                                                                                                                                                   |
+| `unicode`                   | `false`   | Keep letters from every script instead of transliterating to ASCII.                                                                                                                |
+| `locale`                    | —         | Language-specific rules: a locale id or a `Locale` object.                                                                                                                         |
+| `transliterate`             | `true`    | `false` skips the Latin and symbol tables (the locale table and accent folding still apply); `"none"` keeps only accent folding and the symbol words; an array adds script tables. |
+| `decamelize`                | `false`   | `fooBar` → `foo-bar`, `HTMLParser` → `html-parser`.                                                                                                                                |
+| `replacements`              | `[]`      | `[from, to]` pairs applied first; spaces in `to` become separators.                                                                                                                |
+| `remove`                    | `/['’]/g` | A global regex of characters to delete rather than turn into separators (`don't` → `dont`); `false` keeps them.                                                                    |
+| `preserveCharacters`        | `[]`      | Extra URL-safe single characters to keep, e.g. `["."]` for version numbers. The separator or anything outside `segment-nz-nc` throws.                                              |
+| `preserveLeadingUnderscore` | `false`   | `_draft` → `_draft`.                                                                                                                                                               |
+| `preserveTrailingSeparator` | `false`   | Keep a trailing separator while the user is still typing.                                                                                                                          |
+| `maxLength`                 | —         | Cut at a word boundary, never inside a character (emoji sequences, combining marks).                                                                                               |
+| `maxLengthUnit`             | `"units"` | What `maxLength` counts: UTF-16 code units like `.length`, `"code-points"`, `"graphemes"`, or UTF-8 `"bytes"` for a column or filename budget.                                     |
+| `fallback`                  | —         | Used when the result would be `""`: a string or a function of the input, slugified with the same options (`"untitled"`, then `untitled-2` in a slugger).                           |
+| `scripts`                   | `"any"`   | Unicode mode: UTS #39 mixed-script restriction level.                                                                                                                              |
+| `bidi`                      | `"allow"` | Unicode mode: RFC 3987 §4.2 direction rule — `"encode"` or `"throw"` on violation.                                                                                                 |
 
 The pipeline runs in this order: strip control/format characters → NFC → `replacements` → NFKC → `decamelize` → transliterate (locale → your tables → Latin → symbols → strip accents) → lowercase → `remove` → separators → `maxLength` → guards. Output is idempotent: `slugify(slugify(x)) === slugify(x)`.
 
@@ -214,7 +218,7 @@ iriToUri("http://例え.jp/résumé", { host: "punycode" }) // "http://xn--r8jz4
 `encodePathSegment(seg, { noColon })`, `encodePath(path, { relative })`, `encodeQuery`, `encodeFragment`, `encodeForm`.
 
 **Hosts (§3.2.2)**
-`isIPv4Address` `isIPv6Address` `isIPvFuture` `isIPLiteral` `isRegName` `isHost` `parseHost` `parseAuthority` `serializeAuthority`. `0x7f.0.0.1` and `2130706433` are registered names, not addresses (§7.4).
+`isIPv4Address` `isIPv6Address` `isIPvFuture` `isIPLiteral` `isRegName` `isHost` `parseHost` `parseAuthority` `serializeAuthority` `normalizeIPv6Address` (RFC 5952). `0x7f.0.0.1` and `2130706433` are registered names, not addresses (§7.4).
 
 **Parsing and validation (§4, Appendix A/B)**
 `parseUri` `serializeUri` — components stay distinct from "absent"; the serializer inserts `/.` or `./` where the grammar requires it.
@@ -229,7 +233,7 @@ iriToUri("http://例え.jp/résumé", { host: "punycode" }) // "http://xn--r8jz4
 `isSameDocumentReference(base, ref, { normalize })`.
 
 **Normalisation and comparison (§6)**
-`normalizeUri(uri, { defaultPorts, schemeBased, userinfo })` — case, percent-encoding, dot segments, default ports, empty path → `/`; `userinfo: "strip-password" | "strip"` for logs.
+`normalizeUri(uri, { defaultPorts, schemeBased, userinfo })` — case, percent-encoding, dot segments, default ports, empty path → `/`, IPv6 hosts in RFC 5952 form (`[0:0:0:0:0:0:0:1]` → `[::1]`); `userinfo: "strip-password" | "strip"` for logs.
 `normalizePath(path, { trailingSlash })`.
 `equivalentUris(a, b, { level, base, ignoreFragment, defaultPorts })` — `"simple"`, `"syntax"` or `"scheme"` (default). Never maps IRIs to URIs (RFC 3987 §5.3.1).
 

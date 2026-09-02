@@ -5,6 +5,7 @@ import type { LatinLocaleId, Locale, TransliterationTable } from "../translitera
 import { isSegmentNzNc } from "../uri/charset"
 import { escapeClassChar, uniqueChars } from "./charset"
 import type { ScriptRestriction } from "./scripts"
+import type { LengthUnit } from "./truncate"
 
 /** Options for `slugify` and `createSlugger`. Every option has a default; an empty object is the everyday call. */
 export interface SlugifyOptions {
@@ -16,8 +17,8 @@ export interface SlugifyOptions {
   readonly unicode?: boolean
   /** Language rules: a Latin locale id such as `"tr"`, or a `Locale` object from `cizgile/transliterate`. */
   readonly locale?: LatinLocaleId | Locale
-  /** `false` skips the Latin and symbol tables (the locale table and accent folding still apply); an array adds script tables such as `cyrillic`. */
-  readonly transliterate?: boolean | readonly TransliterationTable[]
+  /** `false` skips the Latin and symbol tables (the locale table and accent folding still apply); `"none"` skips every letter table and keeps only accent folding and the symbol words; an array adds script tables such as `cyrillic`. */
+  readonly transliterate?: boolean | "none" | readonly TransliterationTable[]
   /** Splits camelCase before slugging: `"fooBar"` becomes `"foo-bar"`; `false` by default. */
   readonly decamelize?: boolean
   /** `[from, to]` pairs applied before anything else; spaces in `to` become separators. */
@@ -30,8 +31,12 @@ export interface SlugifyOptions {
   readonly preserveLeadingUnderscore?: boolean
   /** Keeps a trailing separator, for input still being typed. */
   readonly preserveTrailingSeparator?: boolean
-  /** Cuts at a word boundary, never inside a grapheme cluster. Counts UTF-16 code units like `.length`. */
+  /** Cuts at a word boundary, never inside a grapheme cluster. Counts in `maxLengthUnit`, UTF-16 code units like `.length` by default. */
   readonly maxLength?: number
+  /** What `maxLength` counts: `"units"` (default), `"code-points"`, `"graphemes"` or UTF-8 `"bytes"`. */
+  readonly maxLengthUnit?: LengthUnit
+  /** Used when the result would be `""`: a string, or a function of the input; the value is slugified with the same options. */
+  readonly fallback?: string | ((input: string) => string)
   /** Unicode mode only: the UTS #39 restriction level the result must satisfy; `"any"` by default. */
   readonly scripts?: ScriptRestriction
   /** Unicode mode only: what to do when the result mixes text directions (RFC 3987 section 4.2); `"allow"` by default. */
@@ -49,6 +54,7 @@ export type IsSlugOptions = Pick<
   | "preserveLeadingUnderscore"
   | "preserveTrailingSeparator"
   | "maxLength"
+  | "maxLengthUnit"
   | "scripts"
   | "bidi"
 >
@@ -66,6 +72,8 @@ export interface ResolvedOptions {
   readonly preserveLeadingUnderscore: boolean
   readonly preserveTrailingSeparator: boolean
   readonly maxLength: number | undefined
+  readonly maxLengthUnit: LengthUnit
+  readonly fallback: string | ((input: string) => string) | undefined
   readonly scripts: ScriptRestriction
   readonly bidi: "allow" | "encode" | "throw"
   readonly allowedClass: string
@@ -120,11 +128,14 @@ function resolveLocale(locale: LatinLocaleId | Locale | undefined): Locale | und
 }
 
 function resolveTables(
-  option: boolean | readonly TransliterationTable[] | undefined,
+  option: boolean | "none" | readonly TransliterationTable[] | undefined,
   unicode: boolean,
   locale: Locale | undefined,
 ): readonly TransliterationTable[] | undefined {
   if (unicode) return undefined
+  if (option === "none") {
+    return (locale === undefined ? [symbols] : [locale.table, symbols]).map(symbolEntries)
+  }
   const out: TransliterationTable[] = []
   if (locale !== undefined) {
     out.push(locale.table)
@@ -178,6 +189,14 @@ function build(options: SlugifyOptions): ResolvedOptions {
   if (maxLength !== undefined && (!Number.isInteger(maxLength) || maxLength < 0)) {
     throw new RangeError("slugify: maxLength must be a non-negative integer")
   }
+  const maxLengthUnit = options.maxLengthUnit ?? "units"
+  if (!["units", "code-points", "graphemes", "bytes"].includes(maxLengthUnit)) {
+    throw new TypeError(`slugify: unknown maxLengthUnit ${JSON.stringify(maxLengthUnit)}`)
+  }
+  const fallback = options.fallback
+  if (fallback !== undefined && typeof fallback !== "string" && typeof fallback !== "function") {
+    throw new TypeError("slugify: fallback must be a string or a function")
+  }
   const wordExtra = preserveCharacters.map(escapeClassChar).join("")
   const wordClass = unicode
     ? `\\p{L}\\p{N}\\p{M}${wordExtra}`
@@ -207,6 +226,8 @@ function build(options: SlugifyOptions): ResolvedOptions {
     preserveLeadingUnderscore: options.preserveLeadingUnderscore ?? false,
     preserveTrailingSeparator: options.preserveTrailingSeparator ?? false,
     maxLength,
+    maxLengthUnit,
+    fallback,
     scripts: options.scripts ?? "any",
     bidi: options.bidi ?? "allow",
     allowedClass,
@@ -241,6 +262,7 @@ function optionsKey(options: SlugifyOptions): string {
   const locale = options.locale
   const transliterate = options.transliterate
   const remove = options.remove
+  const fallback = options.fallback
   return JSON.stringify([
     options.separator,
     options.lowercase,
@@ -254,6 +276,8 @@ function optionsKey(options: SlugifyOptions): string {
     options.preserveLeadingUnderscore,
     options.preserveTrailingSeparator,
     options.maxLength,
+    options.maxLengthUnit,
+    typeof fallback === "function" ? `#${objectId(fallback)}` : fallback,
     options.scripts,
     options.bidi,
   ])

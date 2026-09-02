@@ -30,6 +30,60 @@ function isClusterExtender(cp: number): boolean {
   )
 }
 
+/** How `maxLength` counts: UTF-16 code units (like `.length`), code points, grapheme clusters, or UTF-8 bytes. */
+export type LengthUnit = "units" | "code-points" | "graphemes" | "bytes"
+
+function utf8Length(cp: number): number {
+  return cp < 0x80 ? 1 : cp < 0x800 ? 2 : cp < 0x10000 ? 3 : 4
+}
+
+/** The length of `text` in the given unit. */
+export function measure(text: string, unit: LengthUnit = "units"): number {
+  if (unit === "units") return text.length
+  let count = 0
+  if (unit === "graphemes") {
+    const seg = graphemeSegmenter()
+    if (seg !== undefined) {
+      for (const _ of seg.segment(text)) count += 1
+      return count
+    }
+    let index = 0
+    for (const ch of text) {
+      const cp = ch.codePointAt(0) ?? 0
+      if (!(isClusterExtender(cp) || isJoinerBefore(text, index)) || index === 0) count += 1
+      index += ch.length
+    }
+    return count
+  }
+  for (const ch of text) count += unit === "bytes" ? utf8Length(ch.codePointAt(0) ?? 0) : 1
+  return count
+}
+
+function prefixEnd(text: string, limit: number, unit: LengthUnit): number {
+  if (unit === "units") return Math.min(limit, text.length)
+  let used = 0
+  if (unit === "graphemes") {
+    const seg = graphemeSegmenter()
+    if (seg !== undefined) {
+      let end = 0
+      for (const { index, segment } of seg.segment(text)) {
+        if (used === limit) break
+        used += 1
+        end = index + segment.length
+      }
+      return end
+    }
+  }
+  let end = 0
+  for (const ch of text) {
+    const cost = unit === "bytes" ? utf8Length(ch.codePointAt(0) ?? 0) : 1
+    if (used + cost > limit) break
+    used += cost
+    end += ch.length
+  }
+  return unit === "graphemes" ? graphemeBoundary(text, end, { fallback: true }) : end
+}
+
 export interface GraphemeBoundaryOptions {
   readonly fallback?: boolean
 }
@@ -69,15 +123,21 @@ function stripTrailingSeparator(text: string, separator: string): string {
   return out
 }
 
-/** Cuts `slug` to at most `maxLength` UTF-16 code units at a `separator` boundary, never inside a grapheme cluster. */
-export function truncateSlug(slug: string, maxLength: number, separator = "-"): string {
+/** Cuts `slug` to at most `maxLength` in the given `unit` (UTF-16 code units by default) at a `separator` boundary, never inside a grapheme cluster. */
+export function truncateSlug(
+  slug: string,
+  maxLength: number,
+  separator = "-",
+  unit: LengthUnit = "units",
+): string {
   if (!Number.isInteger(maxLength) || maxLength < 0) {
     throw new RangeError("truncateSlug: maxLength must be a non-negative integer")
   }
-  if (slug.length <= maxLength) return slug
+  if (measure(slug, unit) <= maxLength) return slug
   if (maxLength === 0) return ""
-  let cut = slug.slice(0, maxLength)
-  if (separator !== "" && !slug.startsWith(separator, maxLength)) {
+  const limit = prefixEnd(slug, maxLength, unit)
+  let cut = slug.slice(0, limit)
+  if (separator !== "" && !slug.startsWith(separator, limit)) {
     const last = cut.lastIndexOf(separator)
     if (last > 0) cut = cut.slice(0, last)
   }

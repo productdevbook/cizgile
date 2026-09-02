@@ -67,3 +67,21 @@ describe("createSlugger", () => {
     expect(slug("x")).toBe("x-2")
   })
 })
+
+describe("fallback and units in a slugger", () => {
+  it("counts from the fallback and honours the byte budget", () => {
+    const slug = createSlugger({ fallback: "untitled" })
+    expect(slug("!!!")).toBe("untitled")
+    expect(slug("???")).toBe("untitled-2")
+    expect(slug("Untitled")).toBe("untitled-3")
+    const bytes = createSlugger({ unicode: true, maxLength: 13, maxLengthUnit: "bytes" })
+    expect(bytes("ünïcödé")).toBe("ünïcödé")
+    expect(bytes("ünïcödé")).toBe("ünïcödé-2")
+    expect(bytes("ünïcödé")).toBe("ünïcödé-3")
+    expect(bytes("ünïcödé x")).toBe("ünïcödé-x")
+    expect(bytes("ünïcödé x")).toBe("ünïcödé-4")
+    const tight = createSlugger({ unicode: true, maxLength: 12, maxLengthUnit: "bytes" })
+    expect(tight("ünïcödé")).toBe("ünïcödé")
+    expect(tight("ünïcödé")).toBe("ünïcöd-2")
+  })
+})

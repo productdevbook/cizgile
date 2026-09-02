@@ -10,5 +10,5 @@ export {
   type ScriptRestriction,
 } from "./slug/scripts"
 export { slugify } from "./slug/slugify"
-export { truncateSlug } from "./slug/truncate"
+export { type LengthUnit, measure, truncateSlug } from "./slug/truncate"
 export type { LatinLocaleId, Locale, LocaleId, TransliterationTable } from "./transliterate/types"

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { truncateSlug } from "../src"
+import { isSlug, measure, slugify, truncateSlug } from "../src"
 import { graphemeBoundary } from "../src/slug/truncate"
 
 describe("truncateSlug", () => {
@@ -68,5 +68,40 @@ describe("truncateSlug", () => {
   it("rejects invalid limits", () => {
     expect(() => truncateSlug("x", -1)).toThrow(RangeError)
     expect(() => truncateSlug("x", 1.5)).toThrow(RangeError)
+  })
+})
+
+describe("maxLength units", () => {
+  it("measures in code units, code points, graphemes and bytes", () => {
+    expect(measure("Ünïcödé")).toBe(7)
+    expect(measure("Ünïcödé", "bytes")).toBe(11)
+    expect(measure("👍🏽 ok", "units")).toBe(7)
+    expect(measure("👍🏽 ok", "code-points")).toBe(5)
+    expect(measure("👍🏽 ok", "graphemes")).toBe(4)
+    expect(measure("👍🏽 ok", "bytes")).toBe(11)
+    expect(measure("नमस्ते", "graphemes")).toBe(3)
+  })
+
+  it("truncates to a byte budget on separator and grapheme boundaries", () => {
+    expect(truncateSlug("ünï-cödé-x", 9, "-", "bytes")).toBe("ünï")
+    expect(truncateSlug("ünï-cödé-x", 12, "-", "bytes")).toBe("ünï-cödé")
+    expect(truncateSlug("abc-def", 5, "-", "bytes")).toBe("abc")
+    expect(truncateSlug("👍🏽-ok", 5, "-", "code-points")).toBe("👍🏽-ok")
+    expect(truncateSlug("👍🏽-ok", 4, "-", "code-points")).toBe("👍🏽")
+    expect(truncateSlug("👍🏽-ok", 1, "-", "graphemes")).toBe("👍🏽")
+    expect(truncateSlug("👍🏽-ok", 2, "-", "graphemes")).toBe("👍🏽")
+    expect(truncateSlug("नमस्ते-x", 1, "-", "graphemes")).toBe("न")
+    expect(truncateSlug("abc", 0, "-", "bytes")).toBe("")
+  })
+
+  it("slugify and isSlug agree on the unit", () => {
+    const slug = slugify("Ünïcödé Büro", { unicode: true, maxLength: 11, maxLengthUnit: "bytes" })
+    expect(slug).toBe("ünïcödé")
+    expect(isSlug(slug, { unicode: true, maxLength: 11, maxLengthUnit: "bytes" })).toBe(true)
+    expect(isSlug("ünïcödé-büro", { unicode: true, maxLength: 11, maxLengthUnit: "bytes" })).toBe(
+      false,
+    )
+    expect(slugify("nähe", { unicode: true, maxLength: 2, maxLengthUnit: "graphemes" })).toBe("nä")
+    expect(() => slugify("x", { maxLengthUnit: "chars" as never })).toThrow(TypeError)
   })
 })

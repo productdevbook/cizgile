@@ -50,12 +50,17 @@ export function slugify(input: string, options?: SlugifyOptions): string {
   if (o.leadingMarks !== undefined && !ascii) s = s.replace(o.leadingMarks, "$1")
   const hadTrailingSeparator = o.separator !== "" && s.endsWith(o.separator)
   s = collapse(s, o)
-  if (o.maxLength !== undefined) s = truncateSlug(s, o.maxLength, o.separator)
+  if (o.maxLength !== undefined) s = truncateSlug(s, o.maxLength, o.separator, o.maxLengthUnit)
   if (s === "." || s === "..") s = ""
   if (o.preserveLeadingUnderscore && hadLeadingUnderscore && s !== "" && !s.startsWith("_")) {
     s = "_" + s
   }
   if (o.preserveTrailingSeparator && hadTrailingSeparator && s !== "") s += o.separator
+  if (s === "" && o.fallback !== undefined) {
+    const text = typeof o.fallback === "string" ? o.fallback : o.fallback(input)
+    const { fallback: _fallback, ...rest } = options ?? {}
+    return slugify(text, rest)
+  }
   if (o.unicode && s !== "") {
     if (o.scripts !== "any") {
       const check = checkScripts(s, o.scripts)

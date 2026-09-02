@@ -1,6 +1,6 @@
 import type { SlugifyOptions } from "./options"
 import { slugify } from "./slugify"
-import { truncateSlug } from "./truncate"
+import { type LengthUnit, measure, truncateSlug } from "./truncate"
 
 /** A `slugify` that remembers what it handed out; see `createSlugger`. */
 export interface Slugger {
@@ -19,11 +19,12 @@ function withSuffix(
   separator: string,
   n: number,
   maxLength: number | undefined,
+  unit: LengthUnit,
 ): string {
   const suffix = separator + String(n)
-  if (maxLength === undefined || base.length + suffix.length <= maxLength) return base + suffix
-  const room = maxLength - suffix.length
-  const head = room > 0 ? truncateSlug(base, room, separator) : ""
+  if (maxLength === undefined || measure(base + suffix, unit) <= maxLength) return base + suffix
+  const room = maxLength - measure(suffix, unit)
+  const head = room > 0 ? truncateSlug(base, room, separator, unit) : ""
   return head === "" ? String(n).slice(0, maxLength) : head + suffix
 }
 
@@ -45,7 +46,7 @@ export function createSlugger(defaults: SlugifyOptions = {}): Slugger {
     let candidate: string
     do {
       n += 1
-      candidate = withSuffix(base, separator, n, merged.maxLength)
+      candidate = withSuffix(base, separator, n, merged.maxLength, merged.maxLengthUnit ?? "units")
     } while (issued.has(candidate))
     counters.set(base, n)
     issued.add(candidate)
