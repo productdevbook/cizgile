@@ -1,3 +1,5 @@
+import sindresorhus, { type Options as SindresorhusOptions } from "@sindresorhus/slugify"
+import simov from "slugify"
 import { describe, expect, it } from "vitest"
 import { slugify } from "../src"
 
@@ -69,5 +71,47 @@ describe("simov/slugify parity", () => {
     ["Đà Nẵng", { locale: "vi" }, "da-nang"],
   ] as const)("%j %j → %j", (input, options, expected) => {
     expect(slugify(input, options)).toBe(expected)
+  })
+})
+
+describe("the installed upstream packages still produce the parity expectations", () => {
+  it.each<[string, SindresorhusOptions, string]>([
+    ["I ♥ Dogs", {}, "i-love-dogs"],
+    ["  Déjà Vu!  ", {}, "deja-vu"],
+    ["fooBar 123 $#%", { decamelize: true }, "foo-bar-123"],
+    ["Foo & Bar", {}, "foo-and-bar"],
+    ["unicorn & rainbow", {}, "unicorn-and-rainbow"],
+    ["🦄 & 🌈", {}, "unicorn-and"],
+    ["BAR and baz", { separator: "_" }, "bar_and_baz"],
+    ["Déjà Vu!", { separator: "" }, "dejavu"],
+    ["Déjà Vu!", { lowercase: false }, "Deja-Vu"],
+    ["fooBar", { decamelize: false }, "foobar"],
+    ["_foo_bar", { preserveLeadingUnderscore: true }, "_foo-bar"],
+    ["foo-bar-", { preserveTrailingDash: true }, "foo-bar-"],
+    ["foo.bar", { preserveCharacters: ["."] }, "foo.bar"],
+    ["foo.bar", {}, "foo-bar"],
+    ["Don't Panic", {}, "dont-panic"],
+  ])("@sindresorhus/slugify %j %j → %j", (input, options, expected) => {
+    expect(sindresorhus(input, options)).toBe(expected)
+  })
+
+  it("documented divergences from @sindresorhus/slugify", () => {
+    expect(sindresorhus("я люблю единорогов")).toBe("ya-lyublyu-edinorogov")
+    expect(slugify("я люблю единорогов")).toBe("")
+    expect(sindresorhus("You're a Star")).toBe("you-re-a-star")
+    expect(slugify("You're a Star")).toBe("youre-a-star")
+  })
+
+  it.each([
+    ["some string", { lower: true, strict: true }, "some-string"],
+    ["some string", { lower: true, strict: true, replacement: "_" }, "some_string"],
+    ["some *string!", { lower: true, remove: /[*+~.()'"!:@]/g }, "some-string"],
+    ["Some String", { strict: true }, "Some-String"],
+    ["  leading and trailing  ", { lower: true, strict: true }, "leading-and-trailing"],
+    ["Über Straße", { lower: true, strict: true }, "uber-strasse"],
+    ["Über Straße", { lower: true, strict: true, locale: "de" }, "ueber-strasse"],
+    ["Đà Nẵng", { lower: true, strict: true, locale: "vi" }, "da-nang"],
+  ] as const)("simov/slugify %j %j → %j", (input, options, expected) => {
+    expect(simov(input, options)).toBe(expected)
   })
 })
