@@ -3,7 +3,7 @@ import { stripControls } from "./charset"
 import { decamelize } from "./decamelize"
 import { lowercaseOf, type ResolvedOptions, resolveOptions, type SlugifyOptions } from "./options"
 import { truncateSlug } from "./truncate"
-import { iriToUri } from "../uri/iri"
+import { percentEncode } from "../uri/percent"
 import { isBidiSafeComponent } from "./bidi"
 import { checkScripts } from "./scripts"
 
@@ -71,7 +71,7 @@ export function slugify(input: string, options?: SlugifyOptions): string {
           `slugify: ${JSON.stringify(s)} mixes text directions (RFC 3987 section 4.2)`,
         )
       }
-      s = iriToUri(s)
+      s = percentEncode(s, "segment-nz-nc")
     }
   }
   return s

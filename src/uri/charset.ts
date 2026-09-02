@@ -49,14 +49,16 @@ export function isScheme(text: string): boolean {
   return /^[A-Za-z][A-Za-z0-9+.-]*$/.test(text)
 }
 
-const UNRESERVED = table((cp) => isAlpha(cp) || isDigit(cp) || inChars("-._~", cp))
-const GEN_DELIMS = table((cp) => inChars(":/?#[]@", cp))
-const SUB_DELIMS = table((cp) => inChars("!$&'()*+,;=", cp))
-const PCHAR = table(
+const UNRESERVED = /* @__PURE__ */ table((cp) => isAlpha(cp) || isDigit(cp) || inChars("-._~", cp))
+const GEN_DELIMS = /* @__PURE__ */ table((cp) => inChars(":/?#[]@", cp))
+const SUB_DELIMS = /* @__PURE__ */ table((cp) => inChars("!$&'()*+,;=", cp))
+const PCHAR = /* @__PURE__ */ table(
   (cp) => UNRESERVED[cp] === 1 || SUB_DELIMS[cp] === 1 || cp === 0x3a || cp === 0x40,
 )
-const SEGMENT_NZ_NC = table((cp) => UNRESERVED[cp] === 1 || SUB_DELIMS[cp] === 1 || cp === 0x40)
-const QUERY = table((cp) => PCHAR[cp] === 1 || cp === 0x2f || cp === 0x3f)
+const SEGMENT_NZ_NC = /* @__PURE__ */ table(
+  (cp) => UNRESERVED[cp] === 1 || SUB_DELIMS[cp] === 1 || cp === 0x40,
+)
+const QUERY = /* @__PURE__ */ table((cp) => PCHAR[cp] === 1 || cp === 0x2f || cp === 0x3f)
 
 /** RFC 3986 section 2.3 `unreserved`: letters, digits, `- . _ ~`. */
 export function isUnreserved(cp: number): boolean {

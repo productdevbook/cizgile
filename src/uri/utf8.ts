@@ -27,14 +27,6 @@ export function encodeUtf8(codePoint: number): string {
   )
 }
 
-export function utf8Bytes(codePoint: number): number[] {
-  const cp = codePoint >= 0xd800 && codePoint <= 0xdfff ? 0xfffd : codePoint
-  if (cp < 0x80) return [cp]
-  if (cp < 0x800) return [0xc0 | (cp >> 6), 0x80 | (cp & 63)]
-  if (cp < 0x10000) return [0xe0 | (cp >> 12), 0x80 | ((cp >> 6) & 63), 0x80 | (cp & 63)]
-  return [0xf0 | (cp >> 18), 0x80 | ((cp >> 12) & 63), 0x80 | ((cp >> 6) & 63), 0x80 | (cp & 63)]
-}
-
 export interface Utf8Char {
   readonly codePoint: number
   readonly length: number
