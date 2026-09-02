@@ -72,6 +72,10 @@ describe("transliterate()", () => {
     expect(transliterate("¿Qué? ‹x› 5′10″")).toBe(" Que?  x  5 10 ")
   })
 
+  it("spells the Latin letters that have no decomposition", () => {
+    expect(transliterate("Ƿƿ Ȝȝ Ʌʌ Ƣƣ Ȣȣ Ʈʈ Ɲɲ Ɂɂ Ƨƨ")).toBe("Ww Ghgh Vv Ghgh Ouou Tt Nn  Ss")
+  })
+
   it("keeps the marks of unknown scripts and strips only foldable ones", () => {
     expect(transliterate("नमस्ते दुनिया")).toBe("नमस्ते दुनिया")
     expect(transliterate("สวัสดี")).toBe("สวัสดี")
