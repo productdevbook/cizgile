@@ -49,6 +49,61 @@ export function isIPv6Address(text: string): boolean {
   return left >= 0 && right >= 0 && left + right <= 7
 }
 
+function splitGroups(part: string): string[] {
+  return part === "" ? [] : part.split(":")
+}
+
+function zeroRun(groups: readonly string[]): readonly [number, number] {
+  let bestStart = -1
+  let bestLength = 0
+  let i = 0
+  while (i < groups.length) {
+    if (groups[i] !== "0") {
+      i += 1
+      continue
+    }
+    let j = i
+    while (j < groups.length && groups[j] === "0") j += 1
+    if (j - i > bestLength) {
+      bestStart = i
+      bestLength = j - i
+    }
+    i = j
+  }
+  return [bestStart, bestLength]
+}
+
+/** RFC 5952 canonical text of an IPv6 address: lowercase, no leading zeros, the longest zero run as `::`, an embedded IPv4 tail kept. Anything that is not an IPv6 address is returned as is. */
+export function normalizeIPv6Address(text: string): string {
+  if (!isIPv6Address(text)) return text
+  const lower = text.toLowerCase()
+  const lastColon = lower.lastIndexOf(":")
+  const tail = lower.includes(".", lastColon) ? lower.slice(lastColon + 1) : undefined
+  const body = tail === undefined ? lower : lower.slice(0, lastColon + 1)
+  const total = tail === undefined ? 8 : 6
+  const gap = body.indexOf("::")
+  let groups: string[]
+  if (gap === -1) {
+    groups = splitGroups(body.replace(/:$/, ""))
+  } else {
+    const left = splitGroups(body.slice(0, gap))
+    const right = splitGroups(body.slice(gap + 2).replace(/:$/, ""))
+    groups = [
+      ...left,
+      ...Array.from({ length: total - left.length - right.length }, () => "0"),
+      ...right,
+    ]
+  }
+  groups = groups.map((group) => group.replace(/^0+(?=.)/, ""))
+  const [start, length] = zeroRun(groups)
+  const out =
+    length >= 2
+      ? `${groups.slice(0, start).join(":")}::${groups.slice(start + length).join(":")}`
+      : groups.join(":")
+  if (tail === undefined) return out
+  return out.endsWith(":") ? out + tail : `${out}:${tail}`
+}
+
 /** RFC 3986 `IPvFuture`: `v` + hex + `.` + unreserved or sub-delims. */
 export function isIPvFuture(text: string): boolean {
   return IPV_FUTURE.test(text)

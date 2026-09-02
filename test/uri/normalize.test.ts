@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest"
-import { normalizeUri, parseAuthority, serializeAuthority } from "../../src/uri"
+import {
+  equivalentUris,
+  normalizeIPv6Address,
+  normalizeUri,
+  parseAuthority,
+  serializeAuthority,
+} from "../../src/uri"
 
 describe("normalizeUri (RFC 3986 §6.2.2, §6.2.3)", () => {
   it.each([
@@ -93,5 +99,42 @@ describe("parseAuthority / serializeAuthority", () => {
   ])("%j", (input, expected) => {
     expect(parseAuthority(input)).toEqual(expected)
     expect(serializeAuthority(parseAuthority(input))).toBe(input)
+  })
+})
+
+describe("IPv6 hosts (RFC 5952)", () => {
+  it.each([
+    ["0:0:0:0:0:0:0:1", "::1"],
+    ["2001:0DB8:0000:0000:0000:0000:0000:0001", "2001:db8::1"],
+    ["2001:db8:0:0:1:0:0:1", "2001:db8::1:0:0:1"],
+    ["2001:db8::0:1", "2001:db8::1"],
+    ["1:0:0:0:0:0:0:0", "1::"],
+    ["0:0:0:0:0:0:0:0", "::"],
+    ["::ffff:192.0.2.1", "::ffff:192.0.2.1"],
+    ["0:0:0:0:0:FFFF:192.0.2.1", "::ffff:192.0.2.1"],
+    ["1:2:3:4:5:6:1.2.3.4", "1:2:3:4:5:6:1.2.3.4"],
+    ["::1.2.3.4", "::1.2.3.4"],
+    ["fe80:0:0:0:1:0:0:0", "fe80::1:0:0:0"],
+    ["2001:db8:0:1:1:1:1:1", "2001:db8:0:1:1:1:1:1"],
+    ["not-an-address", "not-an-address"],
+  ])("%s → %s", (input, expected) => {
+    expect(normalizeIPv6Address(input)).toBe(expected)
+  })
+
+  it.each([
+    "0:0:0:0:0:0:0:1",
+    "2001:0DB8:0000:0000:0000:0000:0000:0001",
+    "2001:db8:0:0:1:0:0:1",
+    "1:0:0:0:0:0:0:0",
+    "fe80:0:0:0:1:0:0:0",
+  ])("%s agrees with the WHATWG parser", (input) => {
+    expect(`[${normalizeIPv6Address(input)}]`).toBe(new URL(`http://[${input}]/`).hostname)
+  })
+
+  it("normalizeUri and equivalentUris use the canonical form", () => {
+    expect(normalizeUri("http://[0:0:0:0:0:0:0:1]:80/")).toBe("http://[::1]/")
+    expect(normalizeUri("http://[2001:DB8::0:1]/")).toBe("http://[2001:db8::1]/")
+    expect(normalizeUri("http://[v1.fe80::a+en1]/")).toBe("http://[v1.fe80::a+en1]/")
+    expect(equivalentUris("http://[::1]/", "http://[0:0:0:0:0:0:0:1]/")).toBe(true)
   })
 })

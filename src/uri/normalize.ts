@@ -1,4 +1,5 @@
 import { parseUri, serializeUri } from "./parse"
+import { isIPLiteral, normalizeIPv6Address } from "./host"
 import { removeDotSegments } from "./path"
 import { normalizePercentEncoding } from "./percent"
 
@@ -83,6 +84,7 @@ export function normalizeUri(input: string, options: NormalizeUriOptions = {}): 
       a.userinfo = normalizePercentEncoding(a.userinfo)
     }
     a.host = normalizePercentEncoding(a.host.replace(/[A-Z]+/g, (m) => m.toLowerCase()))
+    if (isIPLiteral(a.host)) a.host = `[${normalizeIPv6Address(a.host.slice(1, -1))}]`
     if (a.port !== undefined && (a.port === "" || Number(a.port) === defaultPort)) delete a.port
     c.authority = serializeAuthority(a)
   }

@@ -39,6 +39,7 @@ export {
   isIPv6Address,
   isIPvFuture,
   isRegName,
+  normalizeIPv6Address,
   type ParsedHost,
   parseHost,
 } from "./uri/host"
