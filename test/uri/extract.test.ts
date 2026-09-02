@@ -22,6 +22,12 @@ describe("extractUri (RFC 3986 Appendix C)", () => {
     ["http://a/b/(paren)", "http://a/b/(paren)"],
     ["http://a/b#frag.", "http://a/b#frag"],
     ["http://example.com/long-\n  name", "http://example.com/long-name"],
+    ["[text](http://a/b)", "http://a/b"],
+    ["[text](<http://a/b c>)", "http://a/bc"],
+    ['[text](http://a/b "title")', "http://a/b"],
+    ['<a href="http://a/b">x</a>', "http://a/b"],
+    ["<img src='http://a/i.png'>", "http://a/i.png"],
+    ['href = "http://a/b?x=1"', "http://a/b?x=1"],
   ])("%j → %j", (input, expected) => {
     expect(extractUri(input)).toBe(expected)
     expect(isUriReference(extractUri(input))).toBe(true)

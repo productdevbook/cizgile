@@ -7,6 +7,8 @@ const INITIAL_BIAS = 72
 const INITIAL_N = 128
 const DELIMITER = "-"
 const PREFIX = "xn--"
+const MAX_INT = 0x7fffffff
+const LABEL_SEPARATORS = /[.\u3002\uFF0E\uFF61]/
 
 function adapt(delta: number, numPoints: number, firstTime: boolean): number {
   let d = firstTime ? Math.floor(delta / DAMP) : delta >> 1
@@ -89,6 +91,7 @@ export function punycodeDecode(input: string): string {
       index += 1
       if (d < 0) throw new RangeError("punycodeDecode: invalid digit")
       i += d * w
+      if (i > MAX_INT) throw new RangeError("punycodeDecode: overflow")
       const t = k <= bias ? T_MIN : k >= bias + T_MAX ? T_MAX : k - bias
       if (d < t) break
       w *= BASE - t
@@ -109,39 +112,80 @@ function isAsciiLabel(label: string): boolean {
   return true
 }
 
+function lowercaseCodePoints(text: string): string {
+  let out = ""
+  for (const ch of text) out += ch.toLowerCase()
+  return out
+}
+
 function mapLabel(label: string): string {
+  return lowercaseCodePoints(label.replace(/\p{Cf}/gu, "").normalize("NFKC")).normalize("NFC")
+}
+
+function invalid(fn: string, label: string, reason: string): RangeError {
+  return new RangeError(`${fn}: label ${JSON.stringify(label)} ${reason}`)
+}
+
+function decodeLabel(fn: string, label: string): string {
+  let decoded: string
+  try {
+    decoded = punycodeDecode(label.slice(PREFIX.length))
+  } catch {
+    throw invalid(fn, label, "is not valid Punycode")
+  }
+  if (
+    decoded === "" ||
+    isAsciiLabel(decoded) ||
+    /[\p{C}\p{Z}]/u.test(decoded) ||
+    mapLabel(decoded) !== decoded ||
+    PREFIX + punycodeEncode(decoded) !== label
+  ) {
+    throw invalid(fn, label, "is not a valid A-label")
+  }
+  return decoded
+}
+
+function checkAsciiLabel(fn: string, label: string, original: string): string {
+  if (label.length > 63) throw invalid(fn, original, "exceeds 63 octets")
+  if (!/^[a-z0-9-]*$/.test(label))
+    throw invalid(fn, original, "contains characters outside letters, digits and hyphen")
+  if (label.startsWith("-") || label.endsWith("-")) {
+    throw invalid(fn, original, "may not start or end with a hyphen")
+  }
+  if (label.startsWith(PREFIX)) decodeLabel(fn, label)
+  else if (label.slice(2, 4) === "--")
+    throw invalid(fn, original, "has hyphens in positions 3 and 4")
   return label
-    .replace(/\p{Cf}/gu, "")
-    .normalize("NFKC")
-    .toLowerCase()
-    .normalize("NFC")
-    .replace(/[\u3002\uFF0E\uFF61]/g, ".")
+}
+
+function checkDomain(fn: string, labels: readonly string[], host: string): string {
+  if (labels.length > 1 && labels[labels.length - 1] === "") labels = labels.slice(0, -1)
+  for (const label of labels) if (label === "") throw invalid(fn, host, "contains an empty label")
+  const out = labels.join(".")
+  if (out.length > 253) throw new RangeError(`${fn}: ${JSON.stringify(host)} exceeds 253 octets`)
+  return out
 }
 
 export function domainToAscii(host: string): string {
-  if (host.startsWith("[")) return host
-  return host
-    .split(/[.\u3002\uFF0E\uFF61]/)
-    .map((label) => {
-      if (isAsciiLabel(label)) return label
-      const mapped = mapLabel(label)
-      if (mapped.includes(".")) return domainToAscii(mapped)
-      if (isAsciiLabel(mapped)) return mapped
-      const encoded = PREFIX + punycodeEncode(mapped)
-      if (encoded.length > 63)
-        throw new RangeError(`domainToAscii: label ${JSON.stringify(label)} exceeds 63 octets`)
-      return encoded
-    })
-    .join(".")
+  if (host === "" || host.startsWith("[")) return host
+  const labels = host.split(LABEL_SEPARATORS).flatMap((label) => {
+    if (isAsciiLabel(label)) return [checkAsciiLabel("domainToAscii", label.toLowerCase(), label)]
+    const mapped = mapLabel(label)
+    if (mapped.includes(".")) return domainToAscii(mapped).split(".")
+    if (isAsciiLabel(mapped)) return [checkAsciiLabel("domainToAscii", mapped, label)]
+    return [checkAsciiLabel("domainToAscii", PREFIX + punycodeEncode(mapped), label)]
+  })
+  const out = checkDomain("domainToAscii", labels, host)
+  return host.endsWith(".") && out !== "" ? `${out}.` : out
 }
 
 export function domainToUnicode(host: string): string {
-  if (host.startsWith("[")) return host
-  return host
-    .split(".")
-    .map((label) => {
-      const lower = label.toLowerCase()
-      return lower.startsWith(PREFIX) ? punycodeDecode(lower.slice(PREFIX.length)) : label
-    })
-    .join(".")
+  if (host === "" || host.startsWith("[")) return host
+  const labels = host.split(".").map((label) => {
+    const lower = label.toLowerCase()
+    if (!isAsciiLabel(lower)) return lower
+    return lower.startsWith(PREFIX) ? decodeLabel("domainToUnicode", lower) : lower
+  })
+  const out = checkDomain("domainToUnicode", labels, host)
+  return host.endsWith(".") && out !== "" ? `${out}.` : out
 }

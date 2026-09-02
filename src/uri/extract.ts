@@ -9,9 +9,15 @@ const WRAPPERS: ReadonlyArray<readonly [string, string]> = [
 
 const TRAILING_PUNCTUATION = /[.,;:!?'"]+$/
 const LEADING_PUNCTUATION = /^[(<["'{]+/
+const MARKDOWN_LINK = /^\[[^\]]*\]\(\s*(?:<([^>]*)>|([^)\s]+))(?:\s+["'][^"']*["'])?\s*\)$/
+const HTML_ATTRIBUTE = /\b(?:href|src|action|content)\s*=\s*(["'])(.*?)\1/i
 
 export function extractUri(text: string): string {
   let out = text.trim().replace(/^url:\s*/i, "")
+  const markdown = MARKDOWN_LINK.exec(out)
+  if (markdown !== null) return extractUri(markdown[1] ?? markdown[2] ?? "")
+  const attribute = HTML_ATTRIBUTE.exec(out)
+  if (attribute !== null) return extractUri(attribute[2] ?? "")
   let wrapped = true
   while (wrapped) {
     wrapped = false

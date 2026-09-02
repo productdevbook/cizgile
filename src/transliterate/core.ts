@@ -16,6 +16,7 @@ export interface CompiledTables {
   readonly map: ReadonlyMap<string, string>
   readonly sequences: Sequences
   readonly ascii: RegExp | undefined
+  readonly folded: Map<string, string | null>
 }
 
 const NON_ASCII = /[^\x00-\x7F]/
@@ -61,7 +62,7 @@ function build(tables: readonly TransliterationTable[]): CompiledTables {
     asciiKeys.length === 0
       ? undefined
       : new RegExp(`[${asciiKeys.map((k) => k.replace(/[\]\\^-]/g, "\\$&")).join("")}]`, "g")
-  return { map, sequences: multi, ascii }
+  return { map, sequences: multi, ascii, folded: new Map() }
 }
 
 export function compileTables(tables: readonly TransliterationTable[]): CompiledTables {
@@ -106,17 +107,37 @@ export function stripMarks(input: string): string {
     .normalize("NFC")
 }
 
-let markCache: Map<string, string> | undefined
+const MARK = /^\p{M}+$/u
 
-function stripMarksCached(ch: string): string {
-  markCache ??= new Map()
-  let base = markCache.get(ch)
-  if (base === undefined) {
-    base = stripMarks(ch)
-    if (markCache.size > 8192) markCache.clear()
-    markCache.set(ch, base)
+function foldPieces(ch: string, map: ReadonlyMap<string, string>): string | null {
+  const decomposed = ch.normalize("NFD")
+  if (decomposed !== ch) {
+    let out = ""
+    let complete = true
+    for (const piece of decomposed) {
+      const value = map.get(piece)
+      if (value === undefined) {
+        complete = false
+        break
+      }
+      out += value
+    }
+    if (complete) return out
   }
-  return base
+  const base = stripMarks(ch)
+  if (base === ch) return null
+  const mapped = map.get(base)
+  if (mapped !== undefined) return mapped
+  return (base.codePointAt(0) ?? 0x80) < 0x80 ? base : null
+}
+
+function foldChar(ch: string, compiled: CompiledTables): string | null {
+  const cached = compiled.folded.get(ch)
+  if (cached !== undefined) return cached
+  const value = foldPieces(ch, compiled.map)
+  if (compiled.folded.size > 8192) compiled.folded.clear()
+  compiled.folded.set(ch, value)
+  return value
 }
 
 export function fold(
@@ -139,24 +160,32 @@ export function fold(
     }
   }
   let out = ""
+  let kept = false
   for (const ch of text) {
     const direct = map.get(ch)
     if (direct !== undefined) {
       out += direct
+      kept = false
       continue
     }
     const cp = ch.codePointAt(0) ?? 0
     if (cp < 0x80) {
       out += ch
+      kept = false
       continue
     }
-    const base = foldMarks ? stripMarksCached(ch) : ch
-    if (base !== ch) {
-      if (base === "") continue
-      out += map.get(base) ?? (dropUnknown && (base.codePointAt(0) ?? 0) >= 0x80 ? "" : base)
+    if (foldMarks && MARK.test(ch)) {
+      if (kept && !dropUnknown) out += ch
       continue
     }
-    out += dropUnknown ? "" : ch
+    const folded = foldMarks ? foldChar(ch, compiled) : null
+    if (folded !== null) {
+      out += folded
+      kept = false
+      continue
+    }
+    if (!dropUnknown) out += ch
+    kept = !dropUnknown
   }
   return out
 }

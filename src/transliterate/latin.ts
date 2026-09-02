@@ -81,4 +81,12 @@ export const latin: TransliterationTable = {
   ʊ: "u",
   ʔ: "",
   ʼ: "",
+  ʻ: "",
+  ʹ: "",
+  ʺ: "",
+  ʽ: "",
+  ʾ: "",
+  ʿ: "",
+  ˈ: "",
+  ˌ: "",
 }

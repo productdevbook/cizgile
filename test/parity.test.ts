@@ -14,7 +14,7 @@ describe("Django django.utils.text.slugify parity", () => {
     expect(slugify(input)).toBe(expected)
   })
 
-  it("documented divergence: Django drops '&', cizgi spells it out", () => {
+  it("documented divergence: Django drops '&', cizgile spells it out", () => {
     expect(slugify("jack & jill")).toBe("jack-and-jill")
     expect(slugify("jack & jill", { transliterate: false })).toBe("jack-jill")
   })

@@ -38,8 +38,11 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
-      - name: Test
+      - name: Test (node runtime)
         run: bun run test:unit
+
+      - name: Test (bun runtime)
+        run: bun run test:bun
 
       - name: Build
         run: bun run build

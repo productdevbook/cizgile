@@ -18,7 +18,7 @@ export interface ValidateOptions {
   readonly iri?: boolean
 }
 
-type Component = "userinfo" | "host" | "path" | "query" | "fragment"
+type Component = "userinfo" | "path" | "query" | "fragment"
 
 function extraAllowed(component: Component, cp: number): boolean {
   switch (component) {
@@ -26,11 +26,8 @@ function extraAllowed(component: Component, cp: number): boolean {
       return cp === 0x3a
     case "path":
       return cp === 0x3a || cp === 0x40 || cp === 0x2f
-    case "query":
-    case "fragment":
-      return cp === 0x3a || cp === 0x40 || cp === 0x2f || cp === 0x3f
     default:
-      return false
+      return cp === 0x3a || cp === 0x40 || cp === 0x2f || cp === 0x3f
   }
 }
 
@@ -91,8 +88,6 @@ export function classifyReference(
     if (!isHost(asciiHost(a.host, iri))) return undefined
     if (a.port !== undefined && !/^[0-9]*$/.test(a.port)) return undefined
     if (c.path !== "" && !c.path.startsWith("/")) return undefined
-  } else if (c.path.startsWith("//")) {
-    return undefined
   }
   if (!validText(c.path, "path", iri)) return undefined
   if (c.query !== undefined && !validText(c.query, "query", iri)) return undefined

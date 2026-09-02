@@ -33,6 +33,17 @@ describe("transliterate()", () => {
     expect(transliterate("x́ stacked", { unknown: "drop" })).toBe("x stacked")
   })
 
+  it("keeps the marks of unknown scripts and strips only foldable ones", () => {
+    expect(transliterate("नमस्ते दुनिया")).toBe("नमस्ते दुनिया")
+    expect(transliterate("สวัสดี")).toBe("สวัสดี")
+    expect(transliterate("ひらがな カタカナ")).toBe("ひらがな カタカナ")
+    expect(transliterate("שָׁלוֹם")).toBe("שָׁלוֹם")
+    expect(transliterate("ӂ")).toBe("ӂ")
+    expect(transliterate("ӂ", { tables: [cyrillic] })).toBe("zh")
+    expect(transliterate("x́ नमस्ते", { unknown: "drop" })).toBe("x ")
+    expect(transliterate("Hawaiʻi ʿAmmān")).toBe("Hawaii Amman")
+  })
+
   it("applies extra script tables before the defaults", () => {
     expect(transliterate("Привет мир", { tables: [cyrillic] })).toBe("Privet mir")
     expect(transliterate("Щастие", { tables: [cyrillic] })).toBe("Schastie")
