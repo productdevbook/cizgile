@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest"
 
 const SRC = resolve(import.meta.dirname, "../src")
 
-async function bundle(code: string): Promise<string> {
+async function bundle(code: string, minify = false): Promise<string> {
   const build = await rolldown({
     input: "virtual-entry",
     platform: "neutral",
@@ -22,12 +22,37 @@ async function bundle(code: string): Promise<string> {
       },
     ],
   })
-  const { output } = await build.generate({ format: "es" })
+  const { output } = await build.generate({ format: "es", minify })
   await build.close()
   return output.map((chunk) => ("code" in chunk ? chunk.code : "")).join("\n")
 }
 
 const NON_LATIN = ["ж", "α", "ا", "ა", "ա", "ހ", "ב", "ᄀ", "あ"]
+
+const BUDGET_BYTES: ReadonlyArray<readonly [string, string, number]> = [
+  ["slugify only", `import { slugify } from "${SRC}/index.ts"; console.log(slugify("x"))`, 18_000],
+  ["the whole main entry", `import * as m from "${SRC}/index.ts"; console.log(m)`, 20_000],
+  [
+    "transliterate only",
+    `import { transliterate } from "${SRC}/transliterate.ts"; console.log(transliterate("x"))`,
+    4_500,
+  ],
+  ["every script table", `import * as m from "${SRC}/transliterate.ts"; console.log(m)`, 17_000],
+  [
+    "resolveUri and percentEncode",
+    `import { resolveUri, percentEncode } from "${SRC}/uri.ts"; console.log(resolveUri("http://a/b", "c"), percentEncode("x"))`,
+    6_000,
+  ],
+  ["the whole uri entry", `import * as m from "${SRC}/uri.ts"; console.log(m)`, 25_000],
+]
+
+describe("size budget (minified, not gzipped)", () => {
+  it.each(BUDGET_BYTES)("%s stays under budget", async (_label, code, budget) => {
+    const bytes = Buffer.byteLength(await bundle(code, true), "utf8")
+    expect(bytes).toBeLessThanOrEqual(budget)
+    expect(bytes).toBeGreaterThan(budget / 4)
+  })
+})
 
 describe("tree-shaking", () => {
   it("importing slugify does not pull in non-Latin script tables", async () => {

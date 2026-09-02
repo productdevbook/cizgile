@@ -1,0 +1,14 @@
+{
+  "name": "@productdevbook/cizgile",
+  "version": "0.2.0",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/index.ts",
+    "./uri": "./src/uri.ts",
+    "./transliterate": "./src/transliterate.ts"
+  },
+  "publish": {
+    "include": ["src/**/*.ts", "README.md", "LICENSE", "jsr.json"],
+    "exclude": ["src/**/*.test.ts"]
+  }
+}

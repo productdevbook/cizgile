@@ -39,7 +39,11 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
       - name: Test (node runtime)
+        if: matrix.node != '24'
         run: bun run test:unit
+      - name: Test with coverage thresholds (node runtime)
+        if: matrix.node == '24'
+        run: bun run coverage
       - name: Test (bun runtime)
         run: bun run test:bun
       - name: Build
@@ -50,5 +54,11 @@ jobs:
         run: bunx publint && bunx attw --pack . --profile esm-only
       - name: Smoke (node)
         run: node -e "import('./dist/index.mjs').then(m => { if (m.slugify('Hello World') !== 'hello-world') process.exit(1) })"
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Smoke (deno)
+        run: |
+          deno eval "import { slugify } from './dist/index.mjs'; import { resolveUri } from './dist/uri.mjs'; import { transliterate, hangul } from './dist/transliterate.mjs'; if (slugify('Hello World') !== 'hello-world' || resolveUri('http://a/b/c/d;p?q', '../../g') !== 'http://a/g' || transliterate('서울', { tables: [hangul] }) !== 'seoul') Deno.exit(1)"
       - name: Smoke (bun)
         run: bun -e "import { slugify } from './dist/index.mjs'; import { resolveUri } from './dist/uri.mjs'; if (typeof Bun === 'undefined' || slugify('Hello World') !== 'hello-world' || resolveUri('http://a/b/c/d;p?q', '../../g') !== 'http://a/g') process.exit(1)"
