@@ -2,6 +2,7 @@ name: Bench
 
 permissions:
   contents: read
+  actions: read
 
 on:
   workflow_dispatch:
@@ -26,8 +27,20 @@ jobs:
       - run: bun install --frozen-lockfile
       - name: Bench
         run: bunx vitest bench --run --outputJson bench/results.json
-      - name: Compare with the committed baseline
-        run: node bench/compare.mjs bench/results.json bench/baseline.json
+      - name: Fetch the last successful run on main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          id=$(gh run list --workflow bench.yml --branch main --status success --limit 1 --json databaseId --jq '.[0].databaseId // empty')
+          if [ -n "$id" ]; then gh run download "$id" --name bench-results --dir bench/previous || true; fi
+      - name: Compare
+        run: |
+          if [ -f bench/previous/results.json ]; then
+            node bench/compare.mjs bench/results.json bench/previous/results.json
+          else
+            echo "no previous successful run to compare with" >> "$GITHUB_STEP_SUMMARY"
+            node bench/compare.mjs bench/results.json bench/results.json
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: bench-results

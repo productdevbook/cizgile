@@ -3,3 +3,5 @@ dist
 coverage
 .DS_Store
 bench/results.json
+bench/baseline.json
+bench/previous/

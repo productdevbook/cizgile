@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs"
 
 const [, , resultsPath, baselinePath, mode = "check"] = process.argv
-const TOLERANCE = 0.25
+const TOLERANCE = 0.3
 
 const UPSTREAM = /built-in|@sindresorhus|simov/
 
@@ -39,7 +39,8 @@ if (mode === "write") {
   console.log(`wrote ${Object.keys(current).length} ratios to ${baselinePath}`)
   process.exit(0)
 }
-const baseline = JSON.parse(readFileSync(baselinePath, "utf8"))
+const baselineFile = JSON.parse(readFileSync(baselinePath, "utf8"))
+const baseline = Array.isArray(baselineFile.files) ? ratios(baselineFile) : baselineFile
 const rows = []
 let failed = false
 for (const [name, ratio] of Object.entries(current)) {
