@@ -40,9 +40,11 @@ function reachable(entry: string): Set<string> {
 }
 
 const NON_LATIN_TABLES =
-  /transliterate\/(cyrillic|greek|arabic|armenian|georgian|dhivehi|locales-cyrillic)\.ts$/
+  /transliterate\/(cyrillic|greek|arabic|armenian|georgian|dhivehi|hebrew|hangul|kana|locales-cyrillic|locales-other)\.ts$/
 const TABLE_FILES = SOURCES.filter((f) =>
-  /transliterate\/(latin|symbols|cyrillic|greek|arabic|armenian|georgian|dhivehi)\.ts$/.test(f),
+  /transliterate\/(latin|symbols|cyrillic|greek|arabic|armenian|georgian|dhivehi|hebrew|hangul|kana)\.ts$/.test(
+    f,
+  ),
 )
 
 describe("ratchets: invariants read from the source tree", () => {
@@ -73,7 +75,7 @@ describe("ratchets: invariants read from the source tree", () => {
   })
 
   it("script table files are plain object literals with no side effects", () => {
-    expect(TABLE_FILES.length).toBe(8)
+    expect(TABLE_FILES.length).toBe(11)
     for (const file of TABLE_FILES) {
       const text = read(file)
       expect(text, file).not.toMatch(/\bnew\b/)

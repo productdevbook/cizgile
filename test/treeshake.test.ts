@@ -27,7 +27,7 @@ async function bundle(code: string): Promise<string> {
   return output.map((chunk) => ("code" in chunk ? chunk.code : "")).join("\n")
 }
 
-const NON_LATIN = ["ж", "α", "ا", "ა", "ա", "ހ"]
+const NON_LATIN = ["ж", "α", "ا", "ა", "ա", "ހ", "ב", "ᄀ", "あ"]
 
 describe("tree-shaking", () => {
   it("importing slugify does not pull in non-Latin script tables", async () => {

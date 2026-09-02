@@ -14,8 +14,12 @@ export { defineLocale, type LocaleOverrides, mergeTables } from "./transliterate
 export { dhivehi } from "./transliterate/dhivehi"
 export { georgian } from "./transliterate/georgian"
 export { greek } from "./transliterate/greek"
+export { hangul } from "./transliterate/hangul"
+export { hebrew } from "./transliterate/hebrew"
+export { kana } from "./transliterate/kana"
 export { latin } from "./transliterate/latin"
 export { bg, cyrillicLocales, mk, ru, sr, uk } from "./transliterate/locales-cyrillic"
+export { el, he, ja, ko, otherLocales } from "./transliterate/locales-other"
 export {
   az,
   da,
@@ -39,6 +43,7 @@ export type {
   LatinLocaleId,
   Locale,
   LocaleId,
+  OtherLocaleId,
   TransliterationTable,
 } from "./transliterate/types"
 
@@ -48,8 +53,12 @@ import { cyrillic } from "./transliterate/cyrillic"
 import { dhivehi } from "./transliterate/dhivehi"
 import { georgian } from "./transliterate/georgian"
 import { greek } from "./transliterate/greek"
+import { hangul } from "./transliterate/hangul"
+import { hebrew } from "./transliterate/hebrew"
+import { kana } from "./transliterate/kana"
 import { latin } from "./transliterate/latin"
 import { bg, mk, ru, sr, uk } from "./transliterate/locales-cyrillic"
+import { el, he, ja, ko } from "./transliterate/locales-other"
 import {
   az,
   da,
@@ -81,6 +90,9 @@ export const allScripts: readonly TransliterationTable[] = [
   armenian,
   georgian,
   dhivehi,
+  hebrew,
+  hangul,
+  kana,
 ]
 
 export const locales: Readonly<Record<LocaleId, Locale>> = {
@@ -88,11 +100,15 @@ export const locales: Readonly<Record<LocaleId, Locale>> = {
   bg,
   da,
   de,
+  el,
   es,
   fi,
   fr,
+  he,
   hu,
   it,
+  ja,
+  ko,
   mk,
   nb,
   nl,

@@ -25,4 +25,6 @@ export type LatinLocaleId =
 
 export type CyrillicLocaleId = "bg" | "mk" | "ru" | "sr" | "uk"
 
-export type LocaleId = LatinLocaleId | CyrillicLocaleId
+export type OtherLocaleId = "el" | "he" | "ja" | "ko"
+
+export type LocaleId = LatinLocaleId | CyrillicLocaleId | OtherLocaleId

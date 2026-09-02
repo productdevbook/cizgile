@@ -9,6 +9,9 @@ import {
   defineLocale,
   georgian,
   greek,
+  hangul,
+  hebrew,
+  kana,
   latin,
   locales,
   lookup,
@@ -31,6 +34,30 @@ describe("transliterate()", () => {
     expect(transliterate("你好 Привет")).toBe("你好 Привет")
     expect(transliterate("你好 Привет", { unknown: "drop" })).toBe(" ")
     expect(transliterate("x́ stacked", { unknown: "drop" })).toBe("x stacked")
+  })
+
+  it("transliterates Hebrew, Hangul and kana with their tables", () => {
+    expect(transliterate("שלום עולם", { tables: [hebrew] })).toBe("shlvm vlm")
+    expect(transliterate("שָׁלוֹם", { tables: [hebrew] })).toBe("shlvm")
+    expect(transliterate("ישראל תל אביב", { tables: [hebrew] })).toBe("yshrl tl byb")
+    expect(transliterate("한국어 서울 김치", { tables: [hangul] })).toBe("hangukeo seoul gimchi")
+    expect(transliterate("삼성 부산 안녕하세요", { tables: [hangul] })).toBe(
+      "samseong busan annyeonghaseyo",
+    )
+    expect(transliterate("ㄱㄴㄷ ㅏㅑ", { tables: [hangul] })).toBe("gnd aya")
+    expect(transliterate("ひらがな カタカナ", { tables: [kana] })).toBe("hiragana katakana")
+    expect(transliterate("きょうと しんじゅく", { tables: [kana] })).toBe("kyouto shinjuku")
+    expect(transliterate("コーヒー ファッション ヴィラ", { tables: [kana] })).toBe(
+      "kohi fashon vira",
+    )
+    expect(transliterate("東京タワー", { tables: [kana] })).toBe("東京tawa")
+    expect(transliterate("東京タワー", { tables: [kana], unknown: "drop" })).toBe("tawa")
+    for (const table of [hebrew, hangul, kana]) {
+      for (const [key, value] of Object.entries(table)) {
+        expect(value, key).toMatch(/^[a-z ]*$/)
+        expect(key.normalize("NFC"), key).toBe(key)
+      }
+    }
   })
 
   it("keeps the marks of unknown scripts and strips only foldable ones", () => {

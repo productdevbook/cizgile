@@ -1,6 +1,20 @@
 import { describe, expect, it } from "vitest"
 import { slugify } from "../src"
-import { bg, cyrillic, defineLocale, locales, mk, ru, sr, tr, uk } from "../src/transliterate"
+import {
+  bg,
+  cyrillic,
+  defineLocale,
+  el,
+  he,
+  ja,
+  ko,
+  locales,
+  mk,
+  ru,
+  sr,
+  tr,
+  uk,
+} from "../src/transliterate"
 
 describe("Turkish", () => {
   it.each([
@@ -101,11 +115,15 @@ describe("Cyrillic locales (Locale objects from cizgile/transliterate)", () => {
         "bg",
         "da",
         "de",
+        "el",
         "es",
         "fi",
         "fr",
+        "he",
         "hu",
         "it",
+        "ja",
+        "ko",
         "mk",
         "nb",
         "nl",
@@ -118,6 +136,17 @@ describe("Cyrillic locales (Locale objects from cizgile/transliterate)", () => {
         "vi",
       ].toSorted(),
     )
+  })
+})
+
+describe("Greek, Hebrew, Japanese and Korean locales", () => {
+  it("carry their script table and conjunction", () => {
+    expect(slugify("Καλημέρα & Αθήνα", { locale: el })).toBe("kalimera-kai-athina")
+    expect(slugify("שלום & ישראל", { locale: he })).toBe("shlvm-ve-yshrl")
+    expect(slugify("とうきょう & おおさか", { locale: ja })).toBe("toukyou-to-oosaka")
+    expect(slugify("서울 & 부산", { locale: ko })).toBe("seoul-mit-busan")
+    expect(slugify("東京タワー", { locale: ja })).toBe("tawa")
+    expect(slugify("東京タワー", { locale: ja, unicode: true })).toBe("東京タワー")
   })
 })
 
