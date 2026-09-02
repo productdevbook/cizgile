@@ -100,6 +100,7 @@ import {
 import { symbols } from "./transliterate/symbols"
 import type { Locale, LocaleId, TransliterationTable } from "./transliterate/types"
 
+/** Every script table; pass as `tables` when the input language is unknown. */
 export const allScripts: readonly TransliterationTable[] = [
   latin,
   symbols,
@@ -117,6 +118,7 @@ export const allScripts: readonly TransliterationTable[] = [
   kana,
 ]
 
+/** Every locale object by id. */
 export const locales: Readonly<Record<LocaleId, Locale>> = {
   az,
   be,

@@ -23,6 +23,7 @@ function patternFor(options: IsSlugOptions): RegExp {
 
 const DEFAULT_OPTIONS: IsSlugOptions = {}
 
+/** Whether `input` is exactly what `slugify` would produce under the same options. */
 export function isSlug(input: string, options: IsSlugOptions = DEFAULT_OPTIONS): boolean {
   if (typeof input !== "string" || input === "" || input === "." || input === "..") return false
   const o = resolveOptions(options)

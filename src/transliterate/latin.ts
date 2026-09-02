@@ -1,5 +1,6 @@
 import type { TransliterationTable } from "./types"
 
+/** Latin letters with no decomposition (`ß`, `Æ`, `Ł`, `Þ`, `Ə`, ...) and the modifier letters that are dropped. */
 export const latin: TransliterationTable = {
   Æ: "AE",
   æ: "ae",

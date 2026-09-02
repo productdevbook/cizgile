@@ -1,7 +1,11 @@
+/** UTS #39 mixed-script restriction levels, from a single script (`"single"`) to no restriction (`"any"`). */
 export type ScriptRestriction = "single" | "highly-restrictive" | "moderately-restrictive" | "any"
 
+/** The result of `checkScripts`. */
 export interface ScriptCheck {
+  /** Whether the text stays within the requested restriction level. */
   readonly ok: boolean
+  /** The Unicode scripts found in the text. */
   readonly scripts: readonly string[]
 }
 
@@ -61,6 +65,7 @@ function scriptsOf(ch: string): string[] {
   return out
 }
 
+/** The Unicode script names used by `text`, ignoring Common and Inherited characters. */
 export function detectScripts(text: string): string[] {
   const definite = new Set<string>()
   const ambiguous: string[][] = []
@@ -89,6 +94,7 @@ function allowed(scripts: readonly string[], level: ScriptRestriction): boolean 
   return others.length === 1 && !EXCLUDED_WITH_LATIN.has(others[0] ?? "")
 }
 
+/** Applies a UTS #39 restriction `level` to the scripts in `text`; `ok` is false when the mix exceeds it. */
 export function checkScripts(
   text: string,
   level: ScriptRestriction = "moderately-restrictive",

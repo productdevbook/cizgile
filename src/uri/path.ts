@@ -5,6 +5,7 @@ function removeLastSegment(output: string): string {
   return index === -1 ? "" : output.slice(0, index)
 }
 
+/** RFC 3986 section 5.2.4, the two-buffer algorithm as written: resolves `.` and `..` segments. */
 export function removeDotSegments(path: string): string {
   let input = path
   let output = ""
@@ -36,10 +37,13 @@ export function removeDotSegments(path: string): string {
   return output
 }
 
+/** Options for `normalizePath`. */
 export interface NormalizePathOptions {
+  /** What to do with a trailing slash; `"keep"` by default. */
   readonly trailingSlash?: "keep" | "add" | "remove"
 }
 
+/** Removes dot segments and normalises percent-encoding in a path, relative paths included. */
 export function normalizePath(path: string, options: NormalizePathOptions = {}): string {
   let out = normalizePercentEncoding(path)
   if (out.startsWith("/")) out = removeDotSegments(out)

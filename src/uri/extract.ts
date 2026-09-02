@@ -12,6 +12,7 @@ const LEADING_PUNCTUATION = /^[(<["'{]+/
 const MARKDOWN_LINK = /^\[[^\]]*\]\(\s*(?:<([^>]*)>|([^)\s]+))(?:\s+["'][^"']*["'])?\s*\)$/
 const HTML_ATTRIBUTE = /\b(?:href|src|action|content)\s*=\s*(["'])(.*?)\1/i
 
+/** RFC 3986 Appendix C: recovers a URI from text that wraps it in `<>`, quotes or brackets, prefixes it with `URL:`, breaks it across lines or ends it with punctuation. Markdown links and `href`/`src` attributes yield their URL. */
 export function extractUri(text: string): string {
   let out = text.trim().replace(/^url:\s*/i, "")
   const markdown = MARKDOWN_LINK.exec(out)

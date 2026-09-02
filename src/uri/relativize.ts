@@ -31,6 +31,7 @@ function tail(target: UriComponents, query: boolean): string {
   return serializeUri(out)
 }
 
+/** The shortest relative reference that resolves against `base` to `target`; the target itself when they share nothing. */
 export function relativize(base: string, target: string): string {
   const b = parseUri(base)
   const t = parseUri(target)

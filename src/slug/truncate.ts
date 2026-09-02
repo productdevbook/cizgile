@@ -69,6 +69,7 @@ function stripTrailingSeparator(text: string, separator: string): string {
   return out
 }
 
+/** Cuts `slug` to at most `maxLength` UTF-16 code units at a `separator` boundary, never inside a grapheme cluster. */
 export function truncateSlug(slug: string, maxLength: number, separator = "-"): string {
   if (!Number.isInteger(maxLength) || maxLength < 0) {
     throw new RangeError("truncateSlug: maxLength must be a non-negative integer")

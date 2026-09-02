@@ -6,23 +6,39 @@ import { isSegmentNzNc } from "../uri/charset"
 import { escapeClassChar, uniqueChars } from "./charset"
 import type { ScriptRestriction } from "./scripts"
 
+/** Options for `slugify` and `createSlugger`. Every option has a default; an empty object is the everyday call. */
 export interface SlugifyOptions {
+  /** Joins words; `"-"` by default. Any URL-safe punctuation (`- _ . ~ ! $ & ' ( ) * + , ; = @`) or `""`. */
   readonly separator?: string
+  /** Lowercases the result; `true` by default. */
   readonly lowercase?: boolean
+  /** Keeps letters from every script instead of transliterating to ASCII; `false` by default. */
   readonly unicode?: boolean
+  /** Language rules: a Latin locale id such as `"tr"`, or a `Locale` object from `cizgile/transliterate`. */
   readonly locale?: LatinLocaleId | Locale
+  /** `false` skips the Latin and symbol tables (the locale table and accent folding still apply); an array adds script tables such as `cyrillic`. */
   readonly transliterate?: boolean | readonly TransliterationTable[]
+  /** Splits camelCase before slugging: `"fooBar"` becomes `"foo-bar"`; `false` by default. */
   readonly decamelize?: boolean
+  /** `[from, to]` pairs applied before anything else; spaces in `to` become separators. */
   readonly replacements?: ReadonlyArray<readonly [string, string]>
+  /** A global regex of characters to delete rather than turn into separators; apostrophes by default, `false` for none. */
   readonly remove?: RegExp | false
+  /** Extra URL-safe single characters to keep, such as `["."]` for version numbers. */
   readonly preserveCharacters?: readonly string[]
+  /** Keeps a leading `_`: `"_draft"` stays `"_draft"`. */
   readonly preserveLeadingUnderscore?: boolean
+  /** Keeps a trailing separator, for input still being typed. */
   readonly preserveTrailingSeparator?: boolean
+  /** Cuts at a word boundary, never inside a grapheme cluster. Counts UTF-16 code units like `.length`. */
   readonly maxLength?: number
+  /** Unicode mode only: the UTS #39 restriction level the result must satisfy; `"any"` by default. */
   readonly scripts?: ScriptRestriction
+  /** Unicode mode only: what to do when the result mixes text directions (RFC 3987 section 4.2); `"allow"` by default. */
   readonly bidi?: "allow" | "encode" | "throw"
 }
 
+/** The `slugify` options that shape what a valid slug looks like. */
 export type IsSlugOptions = Pick<
   SlugifyOptions,
   | "separator"

@@ -18,6 +18,12 @@ function collapse(text: string, o: ResolvedOptions): string {
   return out
 }
 
+/**
+ * Turns text into a URL slug: an RFC 3986 `segment-nz-nc` in ASCII mode, NFKC letters, digits and marks in unicode mode.
+ * Returns `""` when nothing usable remains and never throws on ordinary text.
+ * @throws {TypeError} when `input` is not a string or an option is malformed (`preserveCharacters`, a non-global `remove`, an unknown locale id).
+ * @throws {RangeError} for an invalid `separator` or `maxLength`, and in unicode mode when `scripts` or `bidi: "throw"` rejects the result.
+ */
 export function slugify(input: string, options?: SlugifyOptions): string {
   if (typeof input !== "string") throw new TypeError("slugify: input must be a string")
   const o = resolveOptions(options)

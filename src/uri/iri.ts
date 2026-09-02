@@ -4,6 +4,7 @@ import { parseUri, serializeUri } from "./parse"
 import { domainToAscii } from "./punycode"
 import { encodeUtf8, readHexByte, readUtf8 } from "./utf8"
 
+/** RFC 3987 `ucschar`: the non-ASCII code points an IRI may contain unencoded. */
 export function isUcschar(cp: number): boolean {
   return (
     (cp >= 0xa0 && cp <= 0xd7ff) ||
@@ -13,6 +14,7 @@ export function isUcschar(cp: number): boolean {
   )
 }
 
+/** RFC 3987 `iprivate`: private-use code points, allowed only in the query. */
 export function isIprivate(cp: number): boolean {
   return (
     (cp >= 0xe000 && cp <= 0xf8ff) ||
@@ -25,6 +27,7 @@ const BIDI_CONTROLS = /\p{Bidi_Control}/u
 const BIDI_CONTROLS_GLOBAL = /\p{Bidi_Control}/gu
 const IRI_ASCII_MAY_ENCODE = '<>"{}|\\^` '
 
+/** Whether `cp` is a bidirectional formatting character (RFC 3987 section 4.1 forbids them). */
 export function isBidiControl(cp: number): boolean {
   return (
     cp === 0x061c ||
@@ -35,25 +38,34 @@ export function isBidiControl(cp: number): boolean {
   )
 }
 
+/** Whether `input` contains any bidirectional formatting character. */
 export function hasBidiControls(input: string): boolean {
   return BIDI_CONTROLS.test(input)
 }
 
+/** RFC 3987 `iunreserved`: `unreserved` or `ucschar`. */
 export function isIunreserved(cp: number): boolean {
   return isUnreserved(cp) || (isUcschar(cp) && !isBidiControl(cp))
 }
 
+/** RFC 3987 `ipchar` less `pct-encoded`. */
 export function isIpchar(cp: number): boolean {
   return isIunreserved(cp) || isSubDelim(cp) || cp === 0x3a || cp === 0x40
 }
 
+/** Options for `iriToUri`. */
 export interface IriToUriOptions {
+  /** What to do with bidirectional formatting characters: throw, or strip them; by default they are percent-encoded like any other character. */
   readonly bidi?: "throw" | "strip"
+  /** Normalises to NFC first; off by default because RFC 3987 section 3.1 says not to alter characters. */
   readonly nfc?: boolean
+  /** Rejects characters no IRI may contain instead of encoding them. */
   readonly strict?: boolean
+  /** How to convert a non-ASCII host: percent-encode it (default) or apply `domainToAscii`. */
   readonly host?: "percent" | "punycode"
 }
 
+/** RFC 3987 section 3.1: percent-encodes the non-ASCII characters of an IRI, component by component, without altering them. */
 export function iriToUri(iri: string, options: IriToUriOptions = {}): string {
   let input = iri
   if (hasBidiControls(input)) {
@@ -131,6 +143,7 @@ function decodeComponent(text: string, allowPrivate: boolean): string {
   return out
 }
 
+/** RFC 3987 section 3.2: decodes the percent-encoded sequences a URI may show as characters, and only those, per component. */
 export function uriToIri(uri: string): string {
   const c = parseUri(uri)
   if (

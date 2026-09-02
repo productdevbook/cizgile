@@ -1,5 +1,6 @@
 import type { TransliterationTable } from "./types"
 
+/** Symbols spelled out in English (`&`, `©`, currency signs) or turned into separators (dashes, quotes, bullets). */
 export const symbols: TransliterationTable = {
   "&": " and ",
   "©": " c ",

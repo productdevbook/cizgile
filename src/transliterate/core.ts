@@ -2,13 +2,19 @@ import { latin } from "./latin"
 import { symbols } from "./symbols"
 import type { Locale, TransliterationTable } from "./types"
 
+/** Options for `transliterate`. */
 export interface TransliterateOptions {
+  /** Language rules consulted before the tables. */
   readonly locale?: Locale
+  /** Extra script tables, consulted before the Latin and symbol defaults. */
   readonly tables?: readonly TransliterationTable[]
+  /** What happens to characters no table covers; `"keep"` by default. */
   readonly unknown?: "keep" | "drop"
+  /** Folds compatibility characters first (ligatures, superscripts, circled digits), as `slugify` does; `false` by default. */
   readonly nfkc?: boolean
 }
 
+/** The tables every call consults last: `latin`, then `symbols`. */
 export const DEFAULT_TABLES: readonly TransliterationTable[] = [latin, symbols]
 
 type Sequences = ReadonlyArray<readonly [string, string]>
@@ -82,6 +88,7 @@ export function compileTables(tables: readonly TransliterationTable[]): Compiled
   return compiled
 }
 
+/** The table list a `transliterate` call would consult, in lookup order. */
 export function resolveTables(options: TransliterateOptions): readonly TransliterationTable[] {
   const out: TransliterationTable[] = []
   if (options.locale !== undefined) {
@@ -93,6 +100,7 @@ export function resolveTables(options: TransliterateOptions): readonly Translite
   return out
 }
 
+/** The first table value for `key`, or `undefined`. */
 export function lookup(tables: readonly TransliterationTable[], key: string): string | undefined {
   for (const table of tables) {
     const value = table[key]
@@ -101,6 +109,7 @@ export function lookup(tables: readonly TransliterationTable[], key: string): st
   return undefined
 }
 
+/** Removes combining marks: `"é"` becomes `"e"`, `"ǿ"` becomes `"ø"`. */
 export function stripMarks(input: string): string {
   return input
     .normalize("NFD")
@@ -141,6 +150,7 @@ function foldChar(ch: string, compiled: CompiledTables): string | null {
   return value
 }
 
+/** The transliteration core: applies `tables` to NFC text, folding marks unless told not to. */
 export function fold(
   input: string,
   tables: readonly TransliterationTable[] | CompiledTables,
@@ -205,6 +215,7 @@ function compatEntries(table: TransliterationTable): ReadonlyArray<readonly [str
   return out
 }
 
+/** Applies the table entries whose keys NFKC would split, so a ligature gets its table value before normalisation. */
 export function applyCompat(text: string, tables: readonly TransliterationTable[]): string {
   let out = text
   for (const table of tables) {
@@ -215,6 +226,7 @@ export function applyCompat(text: string, tables: readonly TransliterationTable[
   return out
 }
 
+/** Replaces non-ASCII letters with ASCII from the tables and the mark-stripping fallback. Characters no table knows are kept whole, marks included, or dropped with `unknown: "drop"`. */
 export function transliterate(input: string, options: TransliterateOptions = {}): string {
   const tables = resolveTables(options)
   let text = input.normalize("NFC")

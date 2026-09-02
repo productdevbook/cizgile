@@ -11,6 +11,7 @@ function isLtr(ch: string): boolean {
   return LETTER.test(ch) && !RTL.test(ch)
 }
 
+/** RFC 3987 section 4.2: whether `text` can be a URL component without mixing text directions in a way that renders ambiguously. */
 export function isBidiSafeComponent(text: string): boolean {
   let hasRtl = false
   let hasLtr = false

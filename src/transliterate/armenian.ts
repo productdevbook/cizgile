@@ -1,5 +1,6 @@
 import type { TransliterationTable } from "./types"
 
+/** Armenian to Latin; `ե` and `ո` take their word-initial spelling on the capital. */
 export const armenian: TransliterationTable = {
   ու: "u",
   Ու: "U",

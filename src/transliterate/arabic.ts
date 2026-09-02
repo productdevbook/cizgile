@@ -1,5 +1,6 @@
 import type { TransliterationTable } from "./types"
 
+/** Arabic letters to Latin; short vowels are marks and fall away. */
 export const arabic: TransliterationTable = {
   ء: "e",
   آ: "a",
@@ -61,6 +62,7 @@ export const arabic: TransliterationTable = {
   "؛": ";",
 }
 
+/** Persian letters that differ from Arabic: `پ چ ژ گ` and the Persian yeh and kaf. */
 export const persian: TransliterationTable = {
   چ: "ch",
   ک: "k",
@@ -80,6 +82,7 @@ export const persian: TransliterationTable = {
   "۹": "9",
 }
 
+/** Urdu letters that differ from Arabic: `ٹ ڈ ڑ ں ے`. */
 export const urdu: TransliterationTable = {
   ٹ: "t",
   ڈ: "d",
@@ -90,6 +93,7 @@ export const urdu: TransliterationTable = {
   ے: "e",
 }
 
+/** Pashto letters that differ from Arabic: `ټ ډ ړ ږ ښ ڼ`. */
 export const pashto: TransliterationTable = {
   ټ: "t",
   ځ: "z",

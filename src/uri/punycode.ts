@@ -32,6 +32,7 @@ function digitValue(cp: number): number {
   return -1
 }
 
+/** RFC 3492 Punycode encoding of one label, without the `xn--` prefix. */
 export function punycodeEncode(input: string): string {
   const points = Array.from(input, (ch) => ch.codePointAt(0) ?? 0)
   let out = ""
@@ -69,6 +70,10 @@ export function punycodeEncode(input: string): string {
   return out
 }
 
+/**
+ * RFC 3492 Punycode decoding of one label, without the `xn--` prefix.
+ * @throws {RangeError} on malformed input.
+ */
 export function punycodeDecode(input: string): string {
   const output: number[] = []
   const last = input.lastIndexOf(DELIMITER)
@@ -166,6 +171,10 @@ function checkDomain(fn: string, labels: readonly string[], host: string): strin
   return out
 }
 
+/**
+ * Converts a domain to its A-label form: maps and lowercases each label the way UTS #46 does, punycodes the non-ASCII ones, and validates lengths, hyphens and existing `xn--` labels. IP literals pass through.
+ * @throws {RangeError} when a label or the domain is not valid.
+ */
 export function domainToAscii(host: string): string {
   if (host === "" || host.startsWith("[")) return host
   const labels = host.split(LABEL_SEPARATORS).flatMap((label) => {
@@ -179,6 +188,10 @@ export function domainToAscii(host: string): string {
   return host.endsWith(".") && out !== "" ? `${out}.` : out
 }
 
+/**
+ * Converts the `xn--` labels of a domain back to Unicode and lowercases the rest.
+ * @throws {RangeError} when an `xn--` label does not decode to a valid U-label.
+ */
 export function domainToUnicode(host: string): string {
   if (host === "" || host.startsWith("[")) return host
   const labels = host.split(".").map((label) => {

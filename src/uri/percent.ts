@@ -1,6 +1,7 @@
 import { type EncodeSet, isUnreserved, keepPredicate } from "./charset"
 import { encodeUtf8, hexByte, readHexByte, readUtf8 } from "./utf8"
 
+/** Percent-encodes `input` as UTF-8 with uppercase hex, leaving the characters `keep` names untouched; `"form"` also turns spaces into `+`. */
 export function percentEncode(input: string, keep: EncodeSet = "unreserved"): string {
   const keepFn = keepPredicate(keep)
   const plusForSpace = keep === "form"
@@ -26,7 +27,9 @@ export function percentEncode(input: string, keep: EncodeSet = "unreserved"): st
   return out
 }
 
+/** Options for `percentDecode`. */
 export interface PercentDecodeOptions {
+  /** Decodes `+` as a space, as `application/x-www-form-urlencoded` does. */
   readonly plusAsSpace?: boolean
 }
 
@@ -46,6 +49,7 @@ function decodeBytes(bytes: readonly number[]): string {
   return out
 }
 
+/** Decodes every `%XX` sequence as UTF-8; malformed bytes become U+FFFD and lone `%` is kept. */
 export function percentDecode(input: string, options: PercentDecodeOptions = {}): string {
   if (!input.includes("%") && !(options.plusAsSpace === true && input.includes("+"))) return input
   let out = ""
@@ -70,6 +74,7 @@ export function percentDecode(input: string, options: PercentDecodeOptions = {})
   return out
 }
 
+/** RFC 3986 section 6.2.2.2: decodes percent-encoded `unreserved` characters and uppercases the hex of the rest. */
 export function normalizePercentEncoding(input: string): string {
   if (!input.includes("%")) return input
   let out = ""

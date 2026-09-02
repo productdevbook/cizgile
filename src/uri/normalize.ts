@@ -2,12 +2,17 @@ import { parseUri, serializeUri } from "./parse"
 import { removeDotSegments } from "./path"
 import { normalizePercentEncoding } from "./percent"
 
+/** Options for `normalizeUri`. */
 export interface NormalizeUriOptions {
+  /** Scheme to default port, merged over `DEFAULT_PORTS`. */
   readonly defaultPorts?: Readonly<Record<string, number>>
+  /** RFC 3986 section 6.2.3: drop default ports and turn an empty path into `/`; `true` by default. */
   readonly schemeBased?: boolean
+  /** Redacts credentials, for logs; `"keep"` by default. */
   readonly userinfo?: "keep" | "strip-password" | "strip"
 }
 
+/** Default ports of the common schemes, used by `normalizeUri` and `equivalentUris`. */
 export const DEFAULT_PORTS: Readonly<Record<string, number>> = {
   http: 80,
   https: 443,
@@ -16,12 +21,17 @@ export const DEFAULT_PORTS: Readonly<Record<string, number>> = {
   ftp: 21,
 }
 
+/** The parts of an RFC 3986 `authority`. */
 export interface AuthorityComponents {
+  /** Without the trailing `@`. */
   userinfo?: string
+  /** As written, brackets included for IP literals. */
   host: string
+  /** Digits only, without the colon; `""` when the colon was present but empty. */
   port?: string
 }
 
+/** Splits an authority into userinfo, host and port. */
 export function parseAuthority(authority: string): AuthorityComponents {
   const at = authority.lastIndexOf("@")
   const out: AuthorityComponents = { host: "" }
@@ -45,6 +55,7 @@ export function parseAuthority(authority: string): AuthorityComponents {
   return out
 }
 
+/** Recomposes an authority from its parts. */
 export function serializeAuthority(components: AuthorityComponents): string {
   let out = ""
   if (components.userinfo !== undefined) out += components.userinfo + "@"
@@ -53,6 +64,7 @@ export function serializeAuthority(components: AuthorityComponents): string {
   return out
 }
 
+/** RFC 3986 section 6.2 syntax-based and scheme-based normalisation: case, percent-encoding, dot segments, default ports, empty path. */
 export function normalizeUri(input: string, options: NormalizeUriOptions = {}): string {
   const ports = options.defaultPorts ?? DEFAULT_PORTS
   const schemeBased = options.schemeBased ?? true

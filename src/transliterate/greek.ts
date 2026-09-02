@@ -1,5 +1,6 @@
 import type { TransliterationTable } from "./types"
 
+/** Modern Greek to Latin: `η` and `ι` are `i`, `β` is `v`, `θ` is `th`. */
 export const greek: TransliterationTable = {
   α: "a",
   β: "v",

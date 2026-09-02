@@ -1,5 +1,6 @@
 import type { TransliterationTable } from "./types"
 
+/** Hangul jamo to Revised Romanization, jamo by jamo; precomposed syllables reach it through NFD, with no sound-change rules across syllables. */
 export const hangul: TransliterationTable = {
   ᄀ: "g",
   ᄁ: "kk",

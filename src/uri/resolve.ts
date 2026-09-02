@@ -1,17 +1,25 @@
 import { parseUri, serializeUri, type UriComponents } from "./parse"
 import { removeDotSegments } from "./path"
 
+/** Options for `resolveUri`. */
 export interface ResolveUriOptions {
+  /** Strict parsing (RFC 3986 section 5.2.2): `http:g` against an `http:` base stays `http:g`; `true` by default. */
   readonly strict?: boolean
+  /** Accepts a base without a scheme instead of throwing. */
   readonly allowRelativeBase?: boolean
 }
 
+/** RFC 3986 section 5.2.3: merges a relative path reference with the base path. */
 export function mergePaths(base: UriComponents, referencePath: string): string {
   if (base.authority !== undefined && base.path === "") return "/" + referencePath
   const index = base.path.lastIndexOf("/")
   return index === -1 ? referencePath : base.path.slice(0, index + 1) + referencePath
 }
 
+/**
+ * RFC 3986 section 5.2 reference resolution; every section 5.4 example passes.
+ * @throws {TypeError} when `base` is not an absolute URI, unless `allowRelativeBase` is set.
+ */
 export function resolveUri(
   base: string,
   reference: string,

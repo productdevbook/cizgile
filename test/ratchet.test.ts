@@ -103,6 +103,43 @@ describe("ratchets: invariants read from the source tree", () => {
     }
   })
 
+  it("every name the entry points export is documented where it is declared", () => {
+    const entries = ["index.ts", "transliterate.ts", "uri.ts"].map((f) => join(SRC, f))
+    let checked = 0
+    for (const entry of entries) {
+      const text = read(entry)
+      for (const block of text.matchAll(/export(?: type)? \{([^}]*)\} from "([^"]+)"/g)) {
+        const target = resolveSpecifier(entry, block[2] ?? "")
+        const lines = read(target).split("\n")
+        for (const raw of (block[1] ?? "").split(",")) {
+          const name = raw.replace(/\btype\b/, "").trim()
+          if (name === "") continue
+          const at = lines.findIndex((line) =>
+            new RegExp(`^export (?:function|const|interface|type|async function) ${name}\\b`).test(
+              line,
+            ),
+          )
+          expect(at, `${relative(ROOT, target)} declares ${name}`).toBeGreaterThan(0)
+          expect(
+            lines[at - 1]?.trimEnd().endsWith("*/"),
+            `${relative(ROOT, target)}: ${name} has no JSDoc`,
+          ).toBe(true)
+          checked += 1
+        }
+      }
+      for (const local of text.matchAll(/^export const (\w+)/gm)) {
+        const lines = text.split("\n")
+        const at = lines.findIndex((line) => line.startsWith(`export const ${local[1]}`))
+        expect(
+          lines[at - 1]?.trimEnd().endsWith("*/"),
+          `${relative(ROOT, entry)}: ${local[1]} has no JSDoc`,
+        ).toBe(true)
+        checked += 1
+      }
+    }
+    expect(checked).toBeGreaterThan(120)
+  })
+
   it("never touches a host runtime API", () => {
     for (const file of SOURCES) {
       const text = read(file)

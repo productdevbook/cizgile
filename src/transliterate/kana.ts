@@ -1,5 +1,6 @@
 import type { TransliterationTable } from "./types"
 
+/** Hiragana and katakana to Hepburn, digraphs and foreign-sound combinations included; the long-vowel mark and sokuon are dropped, kanji is left alone. */
 export const kana: TransliterationTable = {
   あ: "a",
   い: "i",

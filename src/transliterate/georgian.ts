@@ -1,5 +1,6 @@
 import type { TransliterationTable } from "./types"
 
+/** Georgian Mkhedruli to Latin. */
 export const georgian: TransliterationTable = {
   ა: "a",
   ბ: "b",

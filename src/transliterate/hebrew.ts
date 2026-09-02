@@ -1,5 +1,6 @@
 import type { TransliterationTable } from "./types"
 
+/** Hebrew consonants to Latin, final forms and Yiddish ligatures included; vowel points fall away. */
 export const hebrew: TransliterationTable = {
   א: "",
   ב: "b",

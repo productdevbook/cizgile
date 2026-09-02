@@ -1,5 +1,6 @@
 import type { TransliterationTable } from "./types"
 
+/** Thaana (Dhivehi) to Latin, the sindresorhus/transliterate values. */
 export const dhivehi: TransliterationTable = {
   ހ: "h",
   ށ: "sh",

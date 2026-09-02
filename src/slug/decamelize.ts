@@ -1,3 +1,4 @@
+/** Inserts spaces at camelCase and acronym boundaries: `"getHTTPResponse"` becomes `"get HTTP Response"`. */
 export function decamelize(input: string): string {
   return input
     .replace(/(\p{Lu}{2,})(\p{N}+)/gu, "$1 $2")

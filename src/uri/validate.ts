@@ -5,16 +5,24 @@ import { parseAuthority } from "./normalize"
 import { parseUri, type UriComponents } from "./parse"
 import { readHexByte } from "./utf8"
 
+/** The RFC 3986 section 3.3 path productions. */
 export type PathForm = "empty" | "absolute" | "abempty" | "rootless" | "noscheme"
 
+/** The result of `classifyReference`. */
 export interface ReferenceClassification {
+  /** Whether the reference carries a scheme. */
   readonly kind: "uri" | "relative"
+  /** Whether it is an `absolute-URI`: a scheme and no fragment. */
   readonly absolute: boolean
+  /** Which path production matched. */
   readonly path: PathForm
+  /** The parsed components. */
   readonly components: UriComponents
 }
 
+/** Options for `classifyReference`. */
 export interface ValidateOptions {
+  /** Validates against the RFC 3987 IRI grammar instead of the URI grammar. */
   readonly iri?: boolean
 }
 
@@ -64,6 +72,7 @@ function asciiHost(host: string, iri: boolean): string {
   return out
 }
 
+/** Which RFC 3986 path production `path` matches. */
 export function pathForm(path: string, components?: UriComponents): PathForm {
   if (path === "") return "empty"
   if (path.startsWith("/")) {
@@ -75,6 +84,7 @@ export function pathForm(path: string, components?: UriComponents): PathForm {
   return first.includes(":") ? "rootless" : "noscheme"
 }
 
+/** Validates `input` against the RFC 3986 (or 3987) grammar and reports its kind, or returns `undefined` when it does not parse. */
 export function classifyReference(
   input: string,
   options: ValidateOptions = {},
@@ -102,26 +112,32 @@ export function classifyReference(
   }
 }
 
+/** Whether `input` is a valid RFC 3986 `URI-reference`. */
 export function isUriReference(input: string): boolean {
   return classifyReference(input) !== undefined
 }
 
+/** Whether `input` is a valid RFC 3986 `URI`: it has a scheme. */
 export function isUri(input: string): boolean {
   return classifyReference(input)?.kind === "uri"
 }
 
+/** Whether `input` is a valid RFC 3986 `absolute-URI`: a scheme and no fragment. */
 export function isAbsoluteUri(input: string): boolean {
   return classifyReference(input)?.absolute === true
 }
 
+/** Whether `input` is a valid RFC 3986 `relative-ref`: no scheme. */
 export function isRelativeReference(input: string): boolean {
   return classifyReference(input)?.kind === "relative"
 }
 
+/** Whether `input` is a valid RFC 3987 `IRI-reference`. */
 export function isIriReference(input: string): boolean {
   return classifyReference(input, { iri: true }) !== undefined
 }
 
+/** Whether `input` is a valid RFC 3987 `IRI`. */
 export function isIri(input: string): boolean {
   return classifyReference(input, { iri: true })?.kind === "uri"
 }

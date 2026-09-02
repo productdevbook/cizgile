@@ -1,5 +1,6 @@
 import type { TransliterationTable } from "./types"
 
+/** Cyrillic to Latin, the simov/slugify values, covering Russian, Kazakh, Belarusian and the other national alphabets. */
 export const cyrillic: TransliterationTable = {
   А: "A",
   а: "a",
@@ -129,6 +130,7 @@ export const cyrillic: TransliterationTable = {
   ѵ: "i",
 }
 
+/** Ukrainian refinements: `г` is `h`, `и` is `y`, `є ї й ю я` take their word-initial spelling on the capital. */
 export const cyrillicUk: TransliterationTable = {
   Г: "H",
   г: "h",
@@ -148,6 +150,7 @@ export const cyrillicUk: TransliterationTable = {
   я: "ia",
 }
 
+/** Bulgarian refinements: `щ` is `sht`, `ъ` is `a`. */
 export const cyrillicBg: TransliterationTable = {
   Й: "Y",
   й: "y",
@@ -161,6 +164,7 @@ export const cyrillicBg: TransliterationTable = {
   ь: "y",
 }
 
+/** Macedonian refinements: `ѓ ќ ѕ џ љ њ`. */
 export const cyrillicMk: TransliterationTable = {
   Х: "H",
   х: "h",
@@ -174,6 +178,7 @@ export const cyrillicMk: TransliterationTable = {
   ш: "s",
 }
 
+/** Serbian refinements: `ђ ћ џ љ њ`, `х` is `h`. */
 export const cyrillicSr: TransliterationTable = {
   Х: "H",
   х: "h",

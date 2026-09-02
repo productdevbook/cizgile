@@ -4,6 +4,7 @@ function turkishLowercase(input: string): string {
   return input.toLocaleLowerCase("tr")
 }
 
+/** German: `ä ö ü` become `ae oe ue`, `ß` becomes `ss`, `&` becomes `und`. */
 export const de: Locale = {
   id: "de",
   table: {
@@ -19,6 +20,7 @@ export const de: Locale = {
   },
 }
 
+/** Turkish: dotted and dotless i, `ğ ş ç ö ü` stripped, `&` becomes `ve`; lowercases with the Turkish rules. */
 export const tr: Locale = {
   id: "tr",
   table: {
@@ -39,6 +41,7 @@ export const tr: Locale = {
   lowercase: turkishLowercase,
 }
 
+/** Azerbaijani: the Turkish letters plus `ə`, `&` becomes `ve`. */
 export const az: Locale = {
   id: "az",
   table: {
@@ -61,6 +64,7 @@ export const az: Locale = {
   lowercase: turkishLowercase,
 }
 
+/** Danish: `ø å æ` become `oe aa ae`, `&` becomes `og`. */
 export const da: Locale = {
   id: "da",
   table: {
@@ -74,6 +78,7 @@ export const da: Locale = {
   },
 }
 
+/** Norwegian Bokmål: `ø å æ` become `oe aa ae`, `&` becomes `og`. */
 export const nb: Locale = {
   id: "nb",
   table: {
@@ -87,6 +92,7 @@ export const nb: Locale = {
   },
 }
 
+/** Swedish: `ä ö å` become `ae oe aa`, `&` becomes `och`. */
 export const sv: Locale = {
   id: "sv",
   table: {
@@ -100,6 +106,7 @@ export const sv: Locale = {
   },
 }
 
+/** Finnish: `ä ö å` become `ae oe aa`, `&` becomes `ja`. */
 export const fi: Locale = {
   id: "fi",
   table: {
@@ -113,6 +120,7 @@ export const fi: Locale = {
   },
 }
 
+/** Hungarian: `&` becomes `es`. */
 export const hu: Locale = {
   id: "hu",
   table: {
@@ -120,6 +128,7 @@ export const hu: Locale = {
   },
 }
 
+/** Vietnamese: `đ` becomes `d`, `&` becomes `va`. */
 export const vi: Locale = {
   id: "vi",
   table: {
@@ -129,6 +138,7 @@ export const vi: Locale = {
   },
 }
 
+/** Spanish: `ñ` becomes `n`, `&` becomes `y`. */
 export const es: Locale = {
   id: "es",
   table: {
@@ -138,6 +148,7 @@ export const es: Locale = {
   },
 }
 
+/** French: `œ æ` become `oe ae`, `&` becomes `et`. */
 export const fr: Locale = {
   id: "fr",
   table: {
@@ -149,6 +160,7 @@ export const fr: Locale = {
   },
 }
 
+/** Portuguese: `&` becomes `e`. */
 export const pt: Locale = {
   id: "pt",
   table: {
@@ -156,6 +168,7 @@ export const pt: Locale = {
   },
 }
 
+/** Italian: `&` becomes `e`. */
 export const it: Locale = {
   id: "it",
   table: {
@@ -163,6 +176,7 @@ export const it: Locale = {
   },
 }
 
+/** Dutch: `ĳ` becomes `ij`, `&` becomes `en`. */
 export const nl: Locale = {
   id: "nl",
   table: {
@@ -172,6 +186,7 @@ export const nl: Locale = {
   },
 }
 
+/** Polish: `&` becomes `i`. */
 export const pl: Locale = {
   id: "pl",
   table: {
@@ -179,6 +194,7 @@ export const pl: Locale = {
   },
 }
 
+/** Romanian: `&` becomes `si`. */
 export const ro: Locale = {
   id: "ro",
   table: {
@@ -186,6 +202,7 @@ export const ro: Locale = {
   },
 }
 
+/** Czech: `&` becomes `a`. */
 export const cs: Locale = {
   id: "cs",
   table: {
@@ -193,6 +210,7 @@ export const cs: Locale = {
   },
 }
 
+/** Slovak: `&` becomes `a`. */
 export const sk: Locale = {
   id: "sk",
   table: {
@@ -200,6 +218,7 @@ export const sk: Locale = {
   },
 }
 
+/** Slovenian: `&` becomes `in`. */
 export const sl: Locale = {
   id: "sl",
   table: {
@@ -207,6 +226,7 @@ export const sl: Locale = {
   },
 }
 
+/** Croatian: `&` becomes `i`. */
 export const hr: Locale = {
   id: "hr",
   table: {
@@ -214,6 +234,7 @@ export const hr: Locale = {
   },
 }
 
+/** Icelandic: `þ ð` become `th d`, `&` becomes `og`. */
 export const is: Locale = {
   id: "is",
   table: {
@@ -225,6 +246,7 @@ export const is: Locale = {
   },
 }
 
+/** Estonian: `&` becomes `ja`. */
 export const et: Locale = {
   id: "et",
   table: {
@@ -232,6 +254,7 @@ export const et: Locale = {
   },
 }
 
+/** Latvian: `&` becomes `un`. */
 export const lv: Locale = {
   id: "lv",
   table: {
@@ -239,6 +262,7 @@ export const lv: Locale = {
   },
 }
 
+/** Lithuanian: `&` becomes `ir`. */
 export const lt: Locale = {
   id: "lt",
   table: {
@@ -246,6 +270,7 @@ export const lt: Locale = {
   },
 }
 
+/** Catalan: the punt volat in `l·l` is dropped, `&` becomes `i`. */
 export const ca: Locale = {
   id: "ca",
   table: {
@@ -254,6 +279,7 @@ export const ca: Locale = {
   },
 }
 
+/** The Latin-script locales by id; these ship with the main entry. */
 export const latinLocales: Readonly<Record<LatinLocaleId, Locale>> = {
   az,
   ca,
