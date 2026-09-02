@@ -45,7 +45,7 @@ export type LatinLocaleId =
 export type CyrillicLocaleId = "be" | "bg" | "kk" | "mk" | "ru" | "sr" | "uk"
 
 /** Locales that carry the Greek, Hebrew, kana or Hangul table; import the objects from `cizgile/transliterate`. */
-export type OtherLocaleId = "el" | "he" | "ja" | "ko"
+export type OtherLocaleId = "el" | "he" | "hi" | "ja" | "ko"
 
 /** Every id in the `locales` registry. */
 export type LocaleId = LatinLocaleId | CyrillicLocaleId | OtherLocaleId

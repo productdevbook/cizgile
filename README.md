@@ -1,6 +1,6 @@
 <p align="center">
   <br>
-  <img src=".github/assets/cover.svg?v=f85c00e" alt="cizgile — Zero-dependency URL slug engine" width="100%">
+  <img src=".github/assets/cover.svg?v=167fb13" alt="cizgile — Zero-dependency URL slug engine" width="100%">
   <br><br>
   <b style="font-size: 2em;">cizgile</b>
   <br><br>
@@ -35,7 +35,7 @@ No dependencies. ESM only. Node 20+, Bun and Deno are exercised in CI; the code 
 ## Why cizgile
 
 - **Slugs that are correct by construction.** Every ASCII slug is a valid URL path segment (RFC 3986 `segment-nz-nc`) — no percent-encoding needed, no `.` or `..`, no accidental scheme prefix.
-- **Speaks your language.** 36 locales (`tr`, `de`, `pl`, `sv`, `uk`, `ja`, `ko`, …) and 10 scripts (Latin, Cyrillic, Greek, Arabic, Armenian, Georgian, Dhivehi, Hebrew, Hangul, kana). `ß` → `ss`, `İ` → `i`, `Щ` → `shch`, `서울` → `seoul`.
+- **Speaks your language.** 37 locales (`tr`, `de`, `pl`, `sv`, `uk`, `hi`, `ja`, `ko`, …) and 11 scripts (Latin, Cyrillic, Greek, Arabic, Armenian, Georgian, Dhivehi, Hebrew, Devanagari, Hangul, kana). `ß` → `ss`, `İ` → `i`, `Щ` → `shch`, `서울` → `seoul`.
 - **Unicode slugs when you want them.** `你好-world` stays readable, and `iriToUri` gives you the exact percent-encoded form for the wire.
 - **A real URL toolkit underneath.** Resolve, normalise, compare, validate and relativise URLs by the RFC, cross-checked against the WHATWG `URL` parser.
 - **Small and tree-shakeable.** `import { slugify }` ships the Latin table only; other scripts load only when you import them.
@@ -89,7 +89,7 @@ const swiss = defineLocale(de, { id: "de-CH", table: { ß: "ss" } })
 slugify("Straße", { locale: swiss }) // "strasse"
 ```
 
-Locale ids: `az ca cs da de es et fi fr hr hu is it lt lv nb nl pl pt ro sk sl sv tr vi`. Locale objects: those plus `be bg kk mk ru sr uk` (Cyrillic) and `el he ja ko` (Greek, Hebrew, kana, Hangul). `registerLocale(ru, uk)` makes those ids usable as strings too. Every Latin and Cyrillic locale spells `&`, `%`, `$` and `£` in its language: `slugify("50% off", { locale: "de" })` is `"50-prozent-off"`, without a locale `"50-off"`.
+Locale ids: `az ca cs da de es et fi fr hr hu is it lt lv nb nl pl pt ro sk sl sv tr vi`. Locale objects: those plus `be bg kk mk ru sr uk` (Cyrillic) and `el he hi ja ko` (Greek, Hebrew, Devanagari, kana, Hangul). `registerLocale(ru, uk)` makes those ids usable as strings too. Every Latin and Cyrillic locale spells `&`, `%`, `$` and `£` in its language: `slugify("50% off", { locale: "de" })` is `"50-prozent-off"`, without a locale `"50-off"`.
 
 ### Unicode slugs
 
@@ -162,17 +162,17 @@ The pipeline runs in this order: strip control/format characters → NFC → `re
 ## Transliteration on its own
 
 ```ts
-import { transliterate, cyrillic, hangul, kana, locales } from "cizgile/transliterate"
+import { transliterate, cyrillic, hangul, kana, devanagari, locales } from "cizgile/transliterate"
 
 transliterate("Straße Ærø") // "Strasse AEro"
 transliterate("Привет", { tables: [cyrillic] }) // "Privet"
 transliterate("Ängsö", { locale: locales.sv }) // "Aengsoe"
-transliterate("서울 ひらがな", { tables: [hangul, kana] }) // "seoul hiragana"
+transliterate("서울 ひらがな नमस्ते", { tables: [hangul, kana, devanagari] }) // "seoul hiragana namaste"
 transliterate("नमस्ते 你好") // "नमस्ते 你好" — unknown scripts are kept intact (use unknown: "drop" to remove)
 transliterate("ﬁnal x² Ⅷ", { nfkc: true }) // "final x2 VIII"
 ```
 
-Tables: `latin symbols cyrillic cyrillicUk cyrillicBg cyrillicMk cyrillicSr greek arabic persian urdu pashto armenian georgian dhivehi hebrew hangul kana`, plus `allScripts`. Where a letter is spelled differently at the start of a word (Armenian `ե`, Ukrainian `є ї й ю я`), the capital carries the word-initial form. Hangul is romanised jamo by jamo (Revised Romanization without sound-change rules, so `한국어` is `hangukeo`), kana with Hepburn (the long-vowel mark and sokuon are dropped); kanji and Han are left as they are. `defineLocale` and `mergeTables` return new objects — nothing global is ever mutated.
+Tables: `latin symbols cyrillic cyrillicUk cyrillicBg cyrillicMk cyrillicSr greek arabic persian urdu pashto armenian georgian dhivehi hebrew devanagari hangul kana`, plus `allScripts`. Where a letter is spelled differently at the start of a word (Armenian `ե`, Ukrainian `є ї й ю я`), the capital carries the word-initial form. Devanagari is romanised syllable by syllable (inherent `a`, no vowel length, no schwa deletion: `भारत` is `bharata`), Hangul jamo by jamo (Revised Romanization without sound-change rules, so `한국어` is `hangukeo`), kana with Hepburn (the long-vowel mark and sokuon are dropped); kanji and Han are left as they are. `defineLocale` and `mergeTables` return new objects — nothing global is ever mutated.
 
 ## URL toolkit
 
@@ -318,7 +318,7 @@ bun run test      # oxlint, oxfmt, tsc, vitest under node, then vitest under bun
 bun run build     # rolldown → dist/*.mjs + dist/*.d.mts
 bun run coverage
 bun run bench     # vitest bench against @sindresorhus/slugify, simov/slugify and the built-ins
-bun run bench:baseline  # rewrite bench/baseline.json (cizgile/reference ratios the Bench workflow checks)
+bun run bench:baseline  # write bench/baseline.json locally; the Bench workflow compares each run with the last successful one on main
 bun run release   # bumpp: bump, tag, push — the tag publishes to npm
 ```
 

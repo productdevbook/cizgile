@@ -5,6 +5,7 @@ import {
   be,
   bg,
   cyrillic,
+  devanagari,
   greek,
   hangul,
   hebrew,
@@ -15,6 +16,7 @@ import {
   defineLocale,
   el,
   he,
+  hi,
   ja,
   kk,
   ko,
@@ -134,6 +136,7 @@ describe("Cyrillic locales (Locale objects from cizgile/transliterate)", () => {
         "fi",
         "fr",
         "he",
+        "hi",
         "hr",
         "hu",
         "is",
@@ -195,6 +198,8 @@ describe("Greek, Hebrew, Japanese and Korean locales", () => {
   it("carry their script table and conjunction", () => {
     expect(slugify("Καλημέρα & Αθήνα", { locale: el })).toBe("kalimera-kai-athina")
     expect(slugify("שלום & ישראל", { locale: he })).toBe("shlvm-ve-yshrl")
+    expect(slugify("नमस्ते & दुनिया", { locale: hi })).toBe("namaste-aur-duniya")
+    expect(slugify("नमस्ते दुनिया", { locale: hi, unicode: true })).toBe("नमस्ते-दुनिया")
     expect(slugify("とうきょう & おおさか", { locale: ja })).toBe("toukyou-to-oosaka")
     expect(slugify("서울 & 부산", { locale: ko })).toBe("seoul-mit-busan")
     expect(slugify("東京タワー", { locale: ja })).toBe("tawa")
@@ -214,7 +219,7 @@ describe("locale symbol words (%, $, £)", () => {
     expect(slugify("50% off", { locale: "de", unicode: true })).toBe("50-prozent-off")
     expect(slugify("50% off", { locale: "de", transliterate: "none" })).toBe("50-prozent-off")
     for (const locale of Object.values(locales)) {
-      if (locale.tables?.some((t) => t === hebrew || t === kana || t === hangul || t === greek))
+      if (locale.tables?.some((t) => [hebrew, kana, hangul, greek, devanagari].includes(t)))
         continue
       for (const key of ["%", "$", "£", "&"]) {
         expect(locale.table[key], `${locale.id} ${key}`).toMatch(/^ [a-z ]+ $/)

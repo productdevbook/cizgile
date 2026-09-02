@@ -1,3 +1,4 @@
+import { devanagari } from "./devanagari"
 import { greek } from "./greek"
 import { hangul } from "./hangul"
 import { hebrew } from "./hebrew"
@@ -9,6 +10,13 @@ export const el: Locale = {
   id: "el",
   table: { "&": " kai " },
   tables: [greek],
+}
+
+/** Hindi: the Devanagari table, `&` becomes `aur`. */
+export const hi: Locale = {
+  id: "hi",
+  table: { "%": " pratishat ", $: " dollar ", "£": " pound ", "&": " aur " },
+  tables: [devanagari],
 }
 
 /** Hebrew: the Hebrew table, `&` becomes `ve`. */
@@ -36,6 +44,7 @@ export const ko: Locale = {
 export const otherLocales: Readonly<Record<OtherLocaleId, Locale>> = {
   el,
   he,
+  hi,
   ja,
   ko,
 }

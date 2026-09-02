@@ -11,6 +11,7 @@ export {
 } from "./transliterate/core"
 export { cyrillic, cyrillicBg, cyrillicMk, cyrillicSr, cyrillicUk } from "./transliterate/cyrillic"
 export { defineLocale, type LocaleOverrides, mergeTables } from "./transliterate/define"
+export { devanagari } from "./transliterate/devanagari"
 export { dhivehi } from "./transliterate/dhivehi"
 export { georgian } from "./transliterate/georgian"
 export { greek } from "./transliterate/greek"
@@ -19,7 +20,7 @@ export { hebrew } from "./transliterate/hebrew"
 export { kana } from "./transliterate/kana"
 export { latin } from "./transliterate/latin"
 export { be, bg, cyrillicLocales, kk, mk, ru, sr, uk } from "./transliterate/locales-cyrillic"
-export { el, he, ja, ko, otherLocales } from "./transliterate/locales-other"
+export { el, he, hi, ja, ko, otherLocales } from "./transliterate/locales-other"
 export {
   az,
   ca,
@@ -62,6 +63,7 @@ export type {
 import { arabic, pashto, persian, urdu } from "./transliterate/arabic"
 import { armenian } from "./transliterate/armenian"
 import { cyrillic } from "./transliterate/cyrillic"
+import { devanagari } from "./transliterate/devanagari"
 import { dhivehi } from "./transliterate/dhivehi"
 import { georgian } from "./transliterate/georgian"
 import { greek } from "./transliterate/greek"
@@ -70,7 +72,7 @@ import { hebrew } from "./transliterate/hebrew"
 import { kana } from "./transliterate/kana"
 import { latin } from "./transliterate/latin"
 import { be, bg, kk, mk, ru, sr, uk } from "./transliterate/locales-cyrillic"
-import { el, he, ja, ko } from "./transliterate/locales-other"
+import { el, he, hi, ja, ko } from "./transliterate/locales-other"
 import {
   az,
   ca,
@@ -117,6 +119,7 @@ export const allScripts: readonly TransliterationTable[] = [
   hebrew,
   hangul,
   kana,
+  devanagari,
 ]
 
 /** Every locale object by id. */
@@ -134,6 +137,7 @@ export const locales: Readonly<Record<LocaleId, Locale>> = {
   fi,
   fr,
   he,
+  hi,
   hr,
   hu,
   is,

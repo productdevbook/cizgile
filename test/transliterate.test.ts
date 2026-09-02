@@ -7,6 +7,7 @@ import {
   cyrillicUk,
   de,
   defineLocale,
+  devanagari,
   georgian,
   greek,
   hangul,
@@ -74,6 +75,19 @@ describe("transliterate()", () => {
 
   it("spells the Latin letters that have no decomposition", () => {
     expect(transliterate("Ƿƿ Ȝȝ Ʌʌ Ƣƣ Ȣȣ Ʈʈ Ɲɲ Ɂɂ Ƨƨ")).toBe("Ww Ghgh Vv Ghgh Ouou Tt Nn  Ss")
+  })
+
+  it("transliterates Devanagari syllable by syllable", () => {
+    expect(transliterate("नमस्ते दुनिया", { tables: [devanagari] })).toBe("namaste duniya")
+    expect(transliterate("हिन्दी भारत", { tables: [devanagari] })).toBe("hindi bharata")
+    expect(transliterate("क्षत्रिय ज्ञान", { tables: [devanagari] })).toBe("kshatriya jnyana")
+    expect(transliterate("क़िला फ़िल्म", { tables: [devanagari] })).toBe("qila filma")
+    expect(transliterate("१२३ ॐ। संस्कृतम्", { tables: [devanagari] })).toBe("123 om  sanskritam")
+    expect(transliterate("मुंबई", { tables: [devanagari] })).toBe("munbai")
+    for (const [key, value] of Object.entries(devanagari)) {
+      expect(value, key).toMatch(/^[a-z0-9 ]*$/)
+      expect(key.normalize("NFC"), key).toBe(key)
+    }
   })
 
   it("keeps the marks of unknown scripts and strips only foldable ones", () => {
