@@ -27,6 +27,10 @@ interface Row {
   readonly transitionalStatus: string[]
 }
 
+function value(c: string | undefined, fallback: string): string {
+  return c === undefined || c === "" ? fallback : c === '""' ? "" : unescape(c)
+}
+
 function rows(): Row[] {
   const out: Row[] = []
   readFileSync(FILE, "utf8")
@@ -35,8 +39,6 @@ function rows(): Row[] {
       const line = raw.replace(/#.*/, "")
       if (line.trim() === "") return
       const cols = line.split(";").map((c) => c.trim())
-      const value = (c: string | undefined, fallback: string): string =>
-        c === undefined || c === "" ? fallback : c === '""' ? "" : unescape(c)
       const source = value(cols[0], "")
       const toUnicode = value(cols[1], source)
       const unicodeStatus = statuses(cols[2] ?? "")
