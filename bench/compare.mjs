@@ -16,17 +16,20 @@ function referenceFor(bench, references) {
 
 function ratios(results) {
   const out = {}
-  for (const file of results.files) {
-    for (const group of file.groups) {
-      const references = group.benchmarks.filter(
+  for (const file of results.testResults) {
+    for (const group of file.assertionResults) {
+      const tasks = group.benchmarks.flatMap((b) => b.tasks)
+      const references = tasks.filter(
         (b) => b.name.includes("built-in") || b.name.startsWith("@sindresorhus"),
       )
       if (references.length === 0) continue
-      for (const bench of group.benchmarks) {
+      for (const bench of tasks) {
         if (UPSTREAM.test(bench.name)) continue
         const reference = referenceFor(bench, references)
         if (reference === undefined) continue
-        out[`${group.fullName} > ${bench.name}`] = Number((bench.hz / reference.hz).toFixed(3))
+        out[`${group.fullName} > ${bench.name}`] = Number(
+          (bench.throughput.mean / reference.throughput.mean).toFixed(3),
+        )
       }
     }
   }
@@ -40,7 +43,7 @@ if (mode === "write") {
   process.exit(0)
 }
 const baselineFile = JSON.parse(readFileSync(baselinePath, "utf8"))
-const baseline = Array.isArray(baselineFile.files) ? ratios(baselineFile) : baselineFile
+const baseline = Array.isArray(baselineFile.testResults) ? ratios(baselineFile) : baselineFile
 const rows = []
 let failed = false
 for (const [name, ratio] of Object.entries(current)) {

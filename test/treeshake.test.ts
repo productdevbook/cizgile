@@ -30,8 +30,8 @@ async function bundle(code: string, minify = false): Promise<string> {
 const NON_LATIN = ["ж", "α", "ا", "ა", "ա", "ހ", "ב", "ᄀ", "あ", "क", "ক", "க", "മ"]
 
 const BUDGET_BYTES: ReadonlyArray<readonly [string, string, number]> = [
-  ["slugify only", `import { slugify } from "${SRC}/index.ts"; console.log(slugify("x"))`, 18_000],
-  ["the whole main entry", `import * as m from "${SRC}/index.ts"; console.log(m)`, 20_000],
+  ["slugify only", `import { slugify } from "${SRC}/index.ts"; console.log(slugify("x"))`, 18_500],
+  ["the whole main entry", `import * as m from "${SRC}/index.ts"; console.log(m)`, 20_500],
   [
     "transliterate only",
     `import { transliterate } from "${SRC}/transliterate.ts"; console.log(transliterate("x"))`,

@@ -17,16 +17,16 @@ jobs:
   bench:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.4.0
-      - uses: actions/setup-node@v6
+          bun-version: 1.4.3
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
       - run: bun install --frozen-lockfile
       - name: Bench
-        run: bunx vitest bench --run --outputJson bench/results.json
+        run: bunx vitest bench --run --reporter=default --reporter=json --outputFile.json=bench/results.json
       - name: Fetch the last successful run on main
         env:
           GH_TOKEN: ${{ github.token }}
@@ -41,7 +41,7 @@ jobs:
             echo "no previous successful run to compare with" >> "$GITHUB_STEP_SUMMARY"
             node bench/compare.mjs bench/results.json bench/results.json
           fi
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: bench-results
           path: bench/results.json

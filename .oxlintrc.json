@@ -21,6 +21,12 @@
   "ignorePatterns": ["dist", "coverage"],
   "overrides": [
     {
+      "files": ["bench/**"],
+      "rules": {
+        "vitest/expect-expect": "off"
+      }
+    },
+    {
       "files": ["test/**"],
       "rules": {
         "typescript/no-unsafe-type-assertion": "off"

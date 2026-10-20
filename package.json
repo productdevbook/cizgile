@@ -64,26 +64,26 @@
     "prepack": "bun run build",
     "test:bun": "bun --bun vitest run",
     "bench": "vitest bench --run",
-    "bench:baseline": "vitest bench --run --outputJson bench/results.json && node bench/compare.mjs bench/results.json bench/baseline.json write"
+    "bench:baseline": "vitest bench --run --reporter=default --reporter=json --outputFile.json=bench/results.json && node bench/compare.mjs bench/results.json bench/baseline.json write"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",
-    "@sindresorhus/slugify": "^3.0.0",
-    "@types/bun": "1.4.0",
-    "@vitest/coverage-v8": "4.1.11",
-    "bumpp": "12.2.2",
-    "oxfmt": "0.65.0",
-    "oxlint": "1.80.0",
-    "oxlint-tsgolint": "7.0.2001",
-    "publint": "0.3.24",
-    "rolldown": "1.2.6",
-    "rolldown-plugin-dts": "0.28.4",
+    "@sindresorhus/slugify": "^3.0.1",
+    "@types/bun": "1.4.3",
+    "@vitest/coverage-v8": "5.0.5",
+    "bumpp": "12.3.0",
+    "oxfmt": "0.74.0",
+    "oxlint": "1.89.0",
+    "oxlint-tsgolint": "7.0.2004",
+    "publint": "0.3.25",
+    "rolldown": "1.2.14",
+    "rolldown-plugin-dts": "0.28.8",
     "slugify": "^1.6.9",
     "typescript": "7.0.2",
-    "vitest": "4.1.11"
+    "vitest": "5.0.5"
   },
   "engines": {
     "node": ">=20.19.0"
   },
-  "packageManager": "bun@1.4.0"
+  "packageManager": "bun@1.4.3"
 }
