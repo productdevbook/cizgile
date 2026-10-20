@@ -19,9 +19,13 @@ export const DEFAULT_TABLES: readonly TransliterationTable[] = [latin, symbols]
 
 type Sequences = ReadonlyArray<readonly [string, string]>
 
+/** A table key that starts with this character is a rule: the rest is a regular expression source (flags `gu`) and the value its replacement, `$1` groups allowed. Rules run in table order, before the sequences and the character lookup; the scripts that reorder or contextualise letters (Thai, Lao, Khmer, Myanmar) use them. */
+export const RULE_PREFIX = "\u0001"
+
 export interface CompiledTables {
   readonly map: ReadonlyMap<string, string>
   readonly sequences: Sequences
+  readonly rules: ReadonlyArray<readonly [RegExp, string]>
   readonly ascii: RegExp | undefined
   readonly folded: Map<string, string | null>
 }
@@ -53,12 +57,14 @@ function tableId(table: TransliterationTable): number {
 function build(tables: readonly TransliterationTable[]): CompiledTables {
   const map = new Map<string, string>()
   const multi: Array<readonly [string, string]> = []
+  const rules: Array<readonly [RegExp, string]> = []
   for (const table of tables) {
     for (const key of Object.keys(table)) {
       if (map.has(key)) continue
       const value = table[key] ?? ""
       map.set(key, value)
-      if (codePointCount(key) > 1) multi.push([key, value])
+      if (key.startsWith(RULE_PREFIX)) rules.push([new RegExp(key.slice(1), "gu"), value])
+      else if (codePointCount(key) > 1) multi.push([key, value])
     }
   }
   multi.sort((a, b) => b[0].length - a[0].length)
@@ -69,7 +75,7 @@ function build(tables: readonly TransliterationTable[]): CompiledTables {
     asciiKeys.length === 0
       ? undefined
       : new RegExp(`[${asciiKeys.map((k) => k.replace(/[\]\\^-]/g, "\\$&")).join("")}]`, "g")
-  return { map, sequences: multi, ascii, folded: new Map() }
+  return { map, sequences: multi, rules, ascii, folded: new Map() }
 }
 
 export function compileTables(tables: readonly TransliterationTable[]): CompiledTables {
@@ -165,6 +171,7 @@ export function fold(
       ? text
       : text.replace(compiled.ascii, (m) => map.get(m) ?? m)
   }
+  for (const [pattern, to] of compiled.rules) text = text.replace(pattern, to)
   if (compiled.sequences.length > 0) {
     for (const [key, value] of compiled.sequences) {
       if (text.includes(key)) text = text.split(key).join(value)
@@ -209,7 +216,7 @@ function compatEntries(table: TransliterationTable): ReadonlyArray<readonly [str
   if (cached !== undefined) return cached
   const out: Array<readonly [string, string]> = []
   for (const [key, value] of Object.entries(table)) {
-    if (key.normalize("NFKC") !== key) out.push([key, value])
+    if (key.normalize("NFKC") !== key && !key.startsWith(RULE_PREFIX)) out.push([key, value])
   }
   compatCache.set(table, out)
   return out

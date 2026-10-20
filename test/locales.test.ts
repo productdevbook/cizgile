@@ -15,12 +15,17 @@ import {
   hi,
   ja,
   kk,
+  km,
   ko,
+  lo,
   locales,
   mk,
+  my,
   ru,
+  si,
   sr,
   ta,
+  th,
   tr,
   uk,
 } from "../src/transliterate"
@@ -142,12 +147,15 @@ describe("Cyrillic locales (Locale objects from cizgile/transliterate)", () => {
         "it",
         "ja",
         "kk",
+        "km",
         "kn",
         "ko",
+        "lo",
         "lt",
         "lv",
         "mk",
         "ml",
+        "my",
         "nb",
         "nl",
         "or",
@@ -156,12 +164,14 @@ describe("Cyrillic locales (Locale objects from cizgile/transliterate)", () => {
         "pt",
         "ro",
         "ru",
+        "si",
         "sk",
         "sl",
         "sr",
         "sv",
         "ta",
         "te",
+        "th",
         "tr",
         "uk",
         "vi",
@@ -206,6 +216,13 @@ describe("Greek, Hebrew, Japanese and Korean locales", () => {
     expect(slugify("नमस्ते & दुनिया", { locale: hi })).toBe("namaste-aur-duniya")
     expect(slugify("தமிழ் & சென்னை", { locale: ta })).toBe("tamil-matrum-chennai")
     expect(slugify("বাংলা & ঢাকা", { locale: bn })).toBe("bangla-ebong-dhaka")
+    expect(slugify("ไทย & ลาว", { locale: th })).toBe("thai-lae-lao")
+    expect(slugify("ລາວ & ໄທ", { locale: lo })).toBe("lao-lae-thai")
+    expect(slugify("ភ្នំពេញ & សៀមរាប", { locale: km })).toBe("phnumpenh-ning-siemreab")
+    expect(slugify("ရန်ကုန် & မန္တလေး", { locale: my })).toBe("yankun-hnin-mantale")
+    expect(slugify("කොළඹ & ගාල්ල", { locale: si })).toBe("kolamba-saha-galla")
+    expect(slugify("กรุงเทพมหานคร", { locale: th })).toBe("krungthepmahanakhon")
+    expect(slugify("เมือง ใหม่", { locale: th })).toBe("mueang-mai")
     expect(slugify("नमस्ते दुनिया", { locale: hi, unicode: true })).toBe("नमस्ते-दुनिया")
     expect(slugify("とうきょう & おおさか", { locale: ja })).toBe("toukyou-to-oosaka")
     expect(slugify("서울 & 부산", { locale: ko })).toBe("seoul-mit-busan")

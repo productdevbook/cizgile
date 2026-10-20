@@ -16,10 +16,15 @@ export { bengali } from "./transliterate/bengali"
 export { gujarati } from "./transliterate/gujarati"
 export { gurmukhi } from "./transliterate/gurmukhi"
 export { kannada } from "./transliterate/kannada"
+export { khmer } from "./transliterate/khmer"
+export { lao } from "./transliterate/lao"
 export { malayalam } from "./transliterate/malayalam"
+export { myanmar } from "./transliterate/myanmar"
 export { oriya } from "./transliterate/oriya"
+export { sinhala } from "./transliterate/sinhala"
 export { tamil } from "./transliterate/tamil"
 export { telugu } from "./transliterate/telugu"
+export { thai } from "./transliterate/thai"
 export { dhivehi } from "./transliterate/dhivehi"
 export { georgian } from "./transliterate/georgian"
 export { greek } from "./transliterate/greek"
@@ -35,14 +40,19 @@ export {
   he,
   hi,
   ja,
+  km,
   kn,
   ko,
+  lo,
   ml,
+  my,
   or,
   otherLocales,
   pa,
+  si,
   ta,
   te,
+  th,
 } from "./transliterate/locales-other"
 export {
   az,
@@ -91,10 +101,15 @@ import { bengali } from "./transliterate/bengali"
 import { gujarati } from "./transliterate/gujarati"
 import { gurmukhi } from "./transliterate/gurmukhi"
 import { kannada } from "./transliterate/kannada"
+import { khmer } from "./transliterate/khmer"
+import { lao } from "./transliterate/lao"
 import { malayalam } from "./transliterate/malayalam"
+import { myanmar } from "./transliterate/myanmar"
 import { oriya } from "./transliterate/oriya"
+import { sinhala } from "./transliterate/sinhala"
 import { tamil } from "./transliterate/tamil"
 import { telugu } from "./transliterate/telugu"
+import { thai } from "./transliterate/thai"
 import { dhivehi } from "./transliterate/dhivehi"
 import { georgian } from "./transliterate/georgian"
 import { greek } from "./transliterate/greek"
@@ -103,7 +118,26 @@ import { hebrew } from "./transliterate/hebrew"
 import { kana } from "./transliterate/kana"
 import { latin } from "./transliterate/latin"
 import { be, bg, kk, mk, ru, sr, uk } from "./transliterate/locales-cyrillic"
-import { bn, el, gu, he, hi, ja, kn, ko, ml, or, pa, ta, te } from "./transliterate/locales-other"
+import {
+  bn,
+  el,
+  gu,
+  he,
+  hi,
+  ja,
+  km,
+  kn,
+  ko,
+  lo,
+  ml,
+  my,
+  or,
+  pa,
+  si,
+  ta,
+  te,
+  th,
+} from "./transliterate/locales-other"
 import {
   az,
   ca,
@@ -159,6 +193,11 @@ export const allScripts: readonly TransliterationTable[] = [
   telugu,
   kannada,
   malayalam,
+  thai,
+  lao,
+  khmer,
+  myanmar,
+  sinhala,
 ]
 
 /** Every locale object by id. */
@@ -185,12 +224,15 @@ export const locales: Readonly<Record<LocaleId, Locale>> = {
   it,
   ja,
   kk,
+  km,
   kn,
   ko,
+  lo,
   lt,
   lv,
   mk,
   ml,
+  my,
   nb,
   nl,
   or,
@@ -199,12 +241,14 @@ export const locales: Readonly<Record<LocaleId, Locale>> = {
   pt,
   ro,
   ru,
+  si,
   sk,
   sl,
   sr,
   sv,
   ta,
   te,
+  th,
   tr,
   uk,
   vi,

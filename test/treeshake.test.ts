@@ -27,10 +27,29 @@ async function bundle(code: string, minify = false): Promise<string> {
   return output.map((chunk) => ("code" in chunk ? chunk.code : "")).join("\n")
 }
 
-const NON_LATIN = ["ж", "α", "ا", "ა", "ա", "ހ", "ב", "ᄀ", "あ", "क", "ক", "க", "മ"]
+const NON_LATIN = [
+  "ж",
+  "α",
+  "ا",
+  "ა",
+  "ա",
+  "ހ",
+  "ב",
+  "ᄀ",
+  "あ",
+  "क",
+  "ক",
+  "க",
+  "മ",
+  "ก",
+  "ກ",
+  "ក",
+  "က",
+  "ක",
+]
 
 const BUDGET_BYTES: ReadonlyArray<readonly [string, string, number]> = [
-  ["slugify only", `import { slugify } from "${SRC}/index.ts"; console.log(slugify("x"))`, 18_000],
+  ["slugify only", `import { slugify } from "${SRC}/index.ts"; console.log(slugify("x"))`, 18_200],
   ["the whole main entry", `import * as m from "${SRC}/index.ts"; console.log(m)`, 20_000],
   [
     "transliterate only",

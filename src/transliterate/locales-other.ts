@@ -3,10 +3,15 @@ import { devanagari } from "./devanagari"
 import { gujarati } from "./gujarati"
 import { gurmukhi } from "./gurmukhi"
 import { kannada } from "./kannada"
+import { khmer } from "./khmer"
+import { lao } from "./lao"
 import { malayalam } from "./malayalam"
+import { myanmar } from "./myanmar"
 import { oriya } from "./oriya"
+import { sinhala } from "./sinhala"
 import { tamil } from "./tamil"
 import { telugu } from "./telugu"
+import { thai } from "./thai"
 import { greek } from "./greek"
 import { hangul } from "./hangul"
 import { hebrew } from "./hebrew"
@@ -104,6 +109,41 @@ export const ml: Locale = {
   tables: [malayalam],
 }
 
+/** Thai: the thai table, `&` becomes `lae`. */
+export const th: Locale = {
+  id: "th",
+  table: { "&": " lae " },
+  tables: [thai],
+}
+
+/** Lao: the lao table, `&` becomes `lae`. */
+export const lo: Locale = {
+  id: "lo",
+  table: { "&": " lae " },
+  tables: [lao],
+}
+
+/** Khmer: the khmer table, `&` becomes `ning`. */
+export const km: Locale = {
+  id: "km",
+  table: { "&": " ning " },
+  tables: [khmer],
+}
+
+/** Burmese: the myanmar table, `&` becomes `hnin`. */
+export const my: Locale = {
+  id: "my",
+  table: { "&": " hnin " },
+  tables: [myanmar],
+}
+
+/** Sinhala: the sinhala table, `&` becomes `saha`. */
+export const si: Locale = {
+  id: "si",
+  table: { "&": " saha " },
+  tables: [sinhala],
+}
+
 /** The locales that carry a non-Latin, non-Cyrillic script table, by id. */
 export const otherLocales: Readonly<Record<OtherLocaleId, Locale>> = {
   bn,
@@ -112,11 +152,16 @@ export const otherLocales: Readonly<Record<OtherLocaleId, Locale>> = {
   he,
   hi,
   ja,
+  km,
   kn,
   ko,
+  lo,
   ml,
+  my,
   or,
   pa,
+  si,
   ta,
   te,
+  th,
 }

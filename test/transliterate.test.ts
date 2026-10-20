@@ -13,7 +13,12 @@ import {
   gujarati,
   gurmukhi,
   kannada,
+  khmer,
+  lao,
   malayalam,
+  myanmar,
+  sinhala,
+  thai,
   oriya,
   tamil,
   telugu,
@@ -114,6 +119,115 @@ describe("transliterate()", () => {
       expect(value, key).toMatch(/^[a-z0-9 ]*$/)
       expect(key.normalize("NFC"), key).toBe(key)
     }
+  })
+
+  it.each([
+    ["Bangkok", thai, "กรุงเทพมหานคร", "krungthepmahanakhon"],
+    ["Vientiane", lao, "ວຽງຈັນ", "viangchan"],
+    ["Phnom Penh", khmer, "ភ្នំពេញ", "phnumpenh"],
+    ["Yangon", myanmar, "ရန်ကုန်", "yankun"],
+    ["Colombo", sinhala, "කොළඹ", "kolamba"],
+  ] as const)("%s in its own script", (_name, table, input, expected) => {
+    expect(transliterate(input, { tables: [table] })).toBe(expected)
+    expect(transliterate(input)).toBe(input)
+  })
+
+  it.each([
+    ["ไทย", "thai"],
+    ["เมือง", "mueang"],
+    ["โรงเรียน", "rongrian"],
+    ["กรุงเทพ", "krungthep"],
+    ["คน", "khon"],
+    ["สวัสดี", "sawatdi"],
+    ["ขอบคุณ", "khopkhun"],
+    ["ประเทศไทย", "prathetthai"],
+    ["เชียงใหม่", "chiangmai"],
+    ["ภูเก็ต", "phuket"],
+    ["สงกรานต์", "songkran"],
+    ["น้ำ", "nam"],
+    ["ใหม่", "mai"],
+    ["แมว", "maeo"],
+    ["ควร", "khuan"],
+    ["จันทร์", "chan"],
+    ["ศาสตร์", "sat"],
+    ["บรรทัด", "banthat"],
+    ["โทรศัพท์", "thorasap"],
+    ["ขนม", "khanom"],
+    ["ตลาด", "talat"],
+  ])("thai reorders prefixed vowels and reads final consonants: %s", (input, expected) => {
+    expect(transliterate(input, { tables: [thai] })).toBe(expected)
+  })
+
+  it("thai digits, repetition mark, abbreviation sign and mixed text", () => {
+    expect(transliterate("ปี ๒๕๖๗", { tables: [thai] })).toBe("pi 2567")
+    expect(transliterate("เด็กๆ", { tables: [thai] })).toBe("dek")
+    expect(transliterate("กรุงเทพฯ", { tables: [thai] })).toBe("krungthep")
+    expect(transliterate("Hello กรุงเทพ 2", { tables: [thai] })).toBe("Hello krungthep 2")
+    expect(transliterate("ก", { tables: [thai] })).toBe("ko")
+    expect(transliterate("น้ำ", { tables: [thai], nfkc: true })).toBe("nam")
+  })
+
+  it.each([
+    ["ລາວ", "lao"],
+    ["ຫຼວງພະບາງ", "luangphabang"],
+    ["ສະບາຍດີ", "sabaidi"],
+    ["ເຮືອນ", "huean"],
+    ["ຄົນ", "khon"],
+    ["ໂຮງຮຽນ", "honghian"],
+    ["ສະຫວັນນະເຂດ", "savannakhet"],
+    ["ເມືອງ ໑໒໓", "mueang 123"],
+  ])("lao reorders prefixed vowels: %s", (input, expected) => {
+    expect(transliterate(input, { tables: [lao] })).toBe(expected)
+  })
+
+  it.each([
+    ["កម្ពុជា", "kampuchea"],
+    ["សៀមរាប", "siemreab"],
+    ["ខ្មែរ", "khmaer"],
+    ["ខ្ញុំ", "khnhom"],
+    ["កំពង់ចាម", "kampongcham"],
+    ["ប្រជាជន", "bracheachon"],
+    ["គាត់", "keat"],
+    ["១២៣", "123"],
+  ])("khmer reads vowels by the series of the base consonant: %s", (input, expected) => {
+    expect(transliterate(input, { tables: [khmer] })).toBe(expected)
+  })
+
+  it.each([
+    ["မန္တလေး", "mantale"],
+    ["မြန်မာ", "myanma"],
+    ["ကမ္ဘာ", "kambha"],
+    ["မှ", "hma"],
+    ["၁၂၃", "123"],
+  ])("myanmar medials, asat and stacked consonants: %s", (input, expected) => {
+    expect(transliterate(input, { tables: [myanmar] })).toBe(expected)
+  })
+
+  it.each([
+    ["ශ්\u200Dරී ලංකා", "shri lanka"],
+    ["සිංහල", "sinhala"],
+    ["ආයුබෝවන්", "ayubovan"],
+    ["෧෨", "12"],
+  ])("sinhala syllables, virama and rakaransaya: %s", (input, expected) => {
+    expect(transliterate(input, { tables: [sinhala] })).toBe(expected)
+  })
+
+  it("rule keys (a leading U+0001) run in table order before the character lookup", () => {
+    const rules = { "\u0001(a)(b)": "$2$1", b: "B" }
+    expect(transliterate("xéab", { tables: [rules] })).toBe("xeBa")
+    const merged = mergeTables(rules, { é: "E" })
+    expect(transliterate("éab", { tables: [merged] })).toBe("EBa")
+  })
+
+  it("southeast asian tables emit only ASCII and leave other scripts alone", () => {
+    for (const table of [thai, lao, khmer, myanmar, sinhala]) {
+      for (const [key, value] of Object.entries(table)) {
+        if (key.startsWith("\u0001")) continue
+        expect(value, key).toMatch(/^[a-z0-9 ,.]*$/)
+        expect(key.normalize("NFC"), key).toBe(key)
+      }
+    }
+    expect(transliterate("ไทย Привет", { tables: [thai] })).toBe("thai Привет")
   })
 
   it("keeps the marks of unknown scripts and strips only foldable ones", () => {

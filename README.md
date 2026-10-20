@@ -1,6 +1,6 @@
 <p align="center">
   <br>
-  <img src=".github/assets/cover.svg?v=bcfc1d9" alt="cizgile — Zero-dependency URL slug engine" width="100%">
+  <img src=".github/assets/cover.svg?v=7e268b8" alt="cizgile — Zero-dependency URL slug engine" width="100%">
   <br><br>
   <b style="font-size: 2em;">cizgile</b>
   <br><br>
@@ -35,7 +35,7 @@ No dependencies. ESM only. Node 20+, Bun and Deno are exercised in CI; the code 
 ## Why cizgile
 
 - **Slugs that are correct by construction.** Every ASCII slug is a valid URL path segment (RFC 3986 `segment-nz-nc`) — no percent-encoding needed, no `.` or `..`, no accidental scheme prefix.
-- **Speaks your language.** 45 locales (`tr`, `de`, `pl`, `sv`, `uk`, `hi`, `ta`, `ja`, `ko`, …) and 19 scripts (Latin, Cyrillic, Greek, Arabic, Armenian, Georgian, Dhivehi, Hebrew, Hangul, kana, Devanagari and the seven other Indic scripts). `ß` → `ss`, `İ` → `i`, `Щ` → `shch`, `서울` → `seoul`.
+- **Speaks your language.** 50 locales (`tr`, `de`, `pl`, `sv`, `uk`, `hi`, `ta`, `th`, `ja`, `ko`, …) and 24 scripts (Latin, Cyrillic, Greek, Arabic, Armenian, Georgian, Dhivehi, Hebrew, Hangul, kana, Devanagari and the seven other Indic scripts, Sinhala, Thai, Lao, Khmer, Myanmar). `ß` → `ss`, `İ` → `i`, `Щ` → `shch`, `서울` → `seoul`.
 - **Unicode slugs when you want them.** `你好-world` stays readable, and `iriToUri` gives you the exact percent-encoded form for the wire.
 - **A real URL toolkit underneath.** Resolve, normalise, compare, validate and relativise URLs by the RFC, cross-checked against the WHATWG `URL` parser.
 - **Small and tree-shakeable.** `import { slugify }` ships the Latin table only; other scripts load only when you import them.
@@ -89,7 +89,7 @@ const swiss = defineLocale(de, { id: "de-CH", table: { ß: "ss" } })
 slugify("Straße", { locale: swiss }) // "strasse"
 ```
 
-Locale ids: `az ca cs da de es et fi fr hr hu is it lt lv nb nl pl pt ro sk sl sv tr vi`. Locale objects: those plus `be bg kk mk ru sr uk` (Cyrillic) and `el he hi ja ko` (Greek, Hebrew, Devanagari, kana, Hangul), `bn pa gu or ta te kn ml` (Bengali, Gurmukhi, Gujarati, Odia, Tamil, Telugu, Kannada, Malayalam). `registerLocale(ru, uk)` makes those ids usable as strings too. Every Latin and Cyrillic locale spells `&`, `%`, `$` and `£` in its language: `slugify("50% off", { locale: "de" })` is `"50-prozent-off"`, without a locale `"50-off"`.
+Locale ids: `az ca cs da de es et fi fr hr hu is it lt lv nb nl pl pt ro sk sl sv tr vi`. Locale objects: those plus `be bg kk mk ru sr uk` (Cyrillic) and `el he hi ja ko` (Greek, Hebrew, Devanagari, kana, Hangul), `bn pa gu or ta te kn ml si` (Bengali, Gurmukhi, Gujarati, Odia, Tamil, Telugu, Kannada, Malayalam, Sinhala) and `th lo km my` (Thai, Lao, Khmer, Burmese). `registerLocale(ru, uk)` makes those ids usable as strings too. Every Latin and Cyrillic locale spells `&`, `%`, `$` and `£` in its language: `slugify("50% off", { locale: "de" })` is `"50-prozent-off"`, without a locale `"50-off"`.
 
 ### Unicode slugs
 
@@ -172,7 +172,7 @@ transliterate("नमस्ते 你好") // "नमस्ते 你好" — un
 transliterate("ﬁnal x² Ⅷ", { nfkc: true }) // "final x2 VIII"
 ```
 
-Tables: `latin symbols cyrillic cyrillicUk cyrillicBg cyrillicMk cyrillicSr greek arabic persian urdu pashto armenian georgian dhivehi hebrew devanagari bengali gurmukhi gujarati oriya tamil telugu kannada malayalam hangul kana`, plus `allScripts`. Where a letter is spelled differently at the start of a word (Armenian `ե`, Ukrainian `є ї й ю я`), the capital carries the word-initial form. Devanagari and the other Indic scripts are romanised syllable by syllable (inherent `a`, no vowel length, no schwa deletion: `भारत` is `bharata`), Hangul jamo by jamo (Revised Romanization without sound-change rules, so `한국어` is `hangukeo`), kana with Hepburn (the long-vowel mark and sokuon are dropped); kanji and Han are left as they are. `defineLocale` and `mergeTables` return new objects — nothing global is ever mutated.
+Tables: `latin symbols cyrillic cyrillicUk cyrillicBg cyrillicMk cyrillicSr greek arabic persian urdu pashto armenian georgian dhivehi hebrew devanagari bengali gurmukhi gujarati oriya tamil telugu kannada malayalam sinhala thai lao khmer myanmar hangul kana`, plus `allScripts`. Where a letter is spelled differently at the start of a word (Armenian `ե`, Ukrainian `є ї й ю я`), the capital carries the word-initial form. Devanagari and the other Indic scripts are romanised syllable by syllable (inherent `a`, no vowel length, no schwa deletion: `भारत` is `bharata`; Sinhala `කොළඹ` is `kolamba`), Hangul jamo by jamo (Revised Romanization without sound-change rules, so `한국어` is `hangukeo`), kana with Hepburn (the long-vowel mark and sokuon are dropped); kanji and Han are left as they are. The Thai, Lao, Khmer and Myanmar tables need context, so besides letters they carry rules (a table key starting with U+0001 is a regular expression, its value the replacement). Thai follows the Royal Thai General System without tone marks or vowel length: the vowels written before the consonant (`เ แ โ ใ ไ`) move behind it, a consonant is read as initial or final from its neighbours, a bare consonant takes `a` or, before the final, `o`, and silent letters under `์` are dropped (`ไทย` is `thai`, `เมือง` is `mueang`, `โรงเรียน` is `rongrian`, `กรุงเทพ` is `krungthep`). Lao uses the same logic with a simple BGN/PCGN-style spelling (`ວຽງຈັນ` is `viangchan`), Khmer reads each vowel sign by the series of its base consonant, UNGEGN-style (`ភ្នំពេញ` is `phnumpenh`, `កម្ពុជា` is `kampuchea`), and Myanmar keeps the inherent `a` unless the asat, a vowel sign or a stacked consonant follows (`မြန်မာ` is `myanma`, `ရန်ကုန်` is `yankun`). None of them has a dictionary or word segmentation: words are not split, the repetition mark `ๆ` is dropped, and irregular spellings, linking syllables (`พัทยา` is `phatya`, not `phatthaya`), Khmer and Lao silent letters and the Myanmar rhyme and tone rules are not handled, so output is a deterministic transcription of the spelling rather than of the pronunciation. `defineLocale` and `mergeTables` return new objects — nothing global is ever mutated.
 
 ## URL toolkit
 
