@@ -30,7 +30,7 @@ slugify("Straße Über Ärger", { locale: "de" }) // "strasse-ueber-aerger"
 slugify("你好 World", { unicode: true }) // "你好-world"
 ```
 
-No dependencies. ESM only. Node 20+, Bun and Deno are exercised in CI; the code touches no host API, so browsers and edge workers run it as-is.
+No dependencies. ESM only. Node 20+ and Bun are exercised in CI; the code touches no host API, so browsers and edge workers run it as-is.
 
 ## Why cizgile
 

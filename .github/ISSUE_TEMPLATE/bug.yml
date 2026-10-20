@@ -36,4 +36,4 @@ body:
     id: runtime
     attributes:
       label: Runtime
-      placeholder: "Node 24.1, Bun 1.4, Deno 2.x, browser ..."
+      placeholder: "Node 24.1, Bun 1.4, browser ..."
