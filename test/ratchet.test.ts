@@ -74,6 +74,16 @@ describe("ratchets: invariants read from the source tree", () => {
     for (const f of files) expect(f, f).toMatch(/^uri(\.ts|\/)/)
   })
 
+  it("neither the main nor the uri entry reaches the IDNA tables", () => {
+    for (const entry of ["index.ts", "uri.ts"]) {
+      const files = [...reachable(join(SRC, entry))].map((f) => relative(SRC, f))
+      for (const f of files) expect(f, f).not.toMatch(/^idna/)
+    }
+    const idna = [...reachable(join(SRC, "idna.ts"))].map((f) => relative(SRC, f))
+    expect(idna).toContain("idna/data.ts")
+    for (const f of idna) expect(f, f).toMatch(/^(idna|uri\/punycode)/)
+  })
+
   it("script table files are plain object literals with no side effects", () => {
     expect(TABLE_FILES.length).toBe(20)
     for (const file of TABLE_FILES) {
@@ -104,7 +114,7 @@ describe("ratchets: invariants read from the source tree", () => {
   })
 
   it("every name the entry points export is documented where it is declared", () => {
-    const entries = ["index.ts", "transliterate.ts", "uri.ts"].map((f) => join(SRC, f))
+    const entries = ["index.ts", "transliterate.ts", "uri.ts", "idna.ts"].map((f) => join(SRC, f))
     let checked = 0
     for (const entry of entries) {
       const text = read(entry)
@@ -163,6 +173,7 @@ describe("ratchets: invariants read from the source tree", () => {
       .map((e) => (typeof e === "string" ? e : (e.default ?? "")))
       .filter((p) => p.endsWith(".mjs"))
     expect(entries.toSorted()).toEqual([
+      "./dist/idna.mjs",
       "./dist/index.mjs",
       "./dist/transliterate.mjs",
       "./dist/uri.mjs",

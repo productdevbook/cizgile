@@ -40,13 +40,14 @@ No dependencies. ESM only. Node 20+ and Bun are exercised in CI; the code touche
 - **A real URL toolkit underneath.** Resolve, normalise, compare, validate and relativise URLs by the RFC, cross-checked against the WHATWG `URL` parser.
 - **Small and tree-shakeable.** `import { slugify }` ships the Latin table only; other scripts load only when you import them.
 
-## Three entry points
+## Four entry points
 
 | import                  | what you get                                                                                          |
 | ----------------------- | ----------------------------------------------------------------------------------------------------- |
 | `cizgile`               | `slugify`, `isSlug`, `createSlugger`, `truncateSlug`, `measure`, `decamelize`, script and bidi guards |
 | `cizgile/transliterate` | `transliterate`, per-script tables, locales, `defineLocale`                                           |
 | `cizgile/uri`           | percent-encoding, `resolveUri`, `normalizeUri`, `relativize`, validators, IRI ↔ URI, punycode         |
+| `cizgile/uri/idna`      | full UTS #46 `idnaToAscii` / `idnaToUnicode`: status table, CONTEXTJ/CONTEXTO, RFC 5893 bidi rule     |
 
 ## Slugs
 
@@ -253,7 +254,39 @@ iriToUri("http://例え.jp/résumé", { host: "punycode" }) // "http://xn--r8jz4
 `uriToIri(uri)` — decodes only what §3.2 allows, per component.
 `punycodeEncode` `punycodeDecode` `domainToAscii` `domainToUnicode` — RFC 3492, no dependencies. `domainToAscii` maps and lowercases labels the way UTS #46 does, then rejects what no DNS name may carry: empty labels, labels over 63 octets, names over 253, leading or trailing hyphens, non-LDH characters and `xn--` labels that do not round-trip.
 
-Deliberately not implemented: RFC 6874 IPv6 zone identifiers (reverted by RFC 9844), the network-based normalisation of §6.2.4, and the UTS #46 status table, CONTEXTJ/CONTEXTO and the RFC 5893 bidi rule for domains.
+Deliberately not implemented: RFC 6874 IPv6 zone identifiers (reverted by RFC 9844) and the network-based normalisation of §6.2.4. The UTS #46 status table, CONTEXTJ/CONTEXTO and the RFC 5893 bidi rule live in the optional `cizgile/uri/idna` entry below, so `cizgile/uri` stays small.
+
+### Full IDNA (`cizgile/uri/idna`)
+
+`domainToAscii` in `cizgile/uri` approximates UTS #46: it removes format characters, applies NFKC and lowercases, so it does not know which code points are disallowed, ignored or deviations, and it does not check joiners or the bidi rule. `cizgile/uri/idna` carries the real Unicode 16.0.0 table (about 45 KB minified, which is why it is a separate import) and passes every case of the official `IdnaTestV2.txt`, nontransitional and transitional, down to the error codes.
+
+```ts
+import { idnaToAscii, idnaToUnicode, idnaToAsciiResult } from "cizgile/uri/idna"
+
+idnaToAscii("Bücher.DE") // "xn--bcher-kva.de"
+idnaToAscii("faß.de", { transitionalProcessing: true }) // "fass.de"
+idnaToUnicode("xn--r8jz45g.jp") // "例え.jp"
+idnaToAscii("a_b.com", { beStrict: true }) // throws RangeError: "a_b.com" is not valid (U1)
+idnaToAsciiResult("aא") // { result: "xn--a-...", errors: ["B5", "B6"] }
+```
+
+`idnaToAscii` and `idnaToUnicode` throw a `RangeError` that lists the error codes, like `domainToAscii`. `idnaToAsciiResult` and `idnaToUnicodeResult` never throw: they return `{ result, errors }` with the best-effort result and every UTS #46 code (`P4`, `V1` to `V7`, `U1`, `B1` to `B6`, `C1`, `C2`, `A3`, `A4_1`, `A4_2`, `X4_2`, and `O1` for CONTEXTO). `codePointStatus(cp)` exposes the table itself.
+
+Options default to the WHATWG URL Standard's domain to ASCII:
+
+| option                   | default | effect                                                                                   |
+| ------------------------ | ------- | ---------------------------------------------------------------------------------------- |
+| `beStrict`               | `false` | turns on `useSTD3ASCIIRules`, `checkHyphens` and `verifyDnsLength` unless set explicitly |
+| `useSTD3ASCIIRules`      | `false` | only `a-z`, `0-9`, `-` among ASCII characters (`U1`)                                     |
+| `checkHyphens`           | `false` | no `--` in positions 3 and 4, no hyphen at either end (`V2`, `V3`)                       |
+| `checkBidi`              | `true`  | RFC 5893 rules 1 to 6 for every label of a bidi domain name (`B1` to `B6`)               |
+| `checkJoiners`           | `true`  | RFC 5892 CONTEXTJ for U+200C and U+200D (`C1`, `C2`)                                     |
+| `checkContextO`          | `false` | RFC 5892 A.3 to A.9: middle dot, keraia, geresh, gershayim, katakana middle dot, digits  |
+| `transitionalProcessing` | `false` | IDNA2003 mapping of `ß`, `ς`, U+200C, U+200D (deprecated)                                |
+| `verifyDnsLength`        | `false` | labels 1 to 63, name 1 to 253 without the root dot (`A4_1`, `A4_2`; `X4_2` in ToUnicode) |
+| `ignoreInvalidPunycode`  | `false` | keep an undecodable `xn--` label instead of `P4`                                         |
+
+Unicode 16 folded the old `disallowed_STD3_*` statuses into the validity criteria, so the table has five statuses and `useSTD3ASCIIRules` is a plain check. `String.prototype.normalize` (NFC) comes from the runtime; everything else is data generated by `scripts/gen-idna.mjs`, which also refreshes the test fixture. CONTEXTO is not part of UTS #46 and `IdnaTestV2.txt` does not test it, so `checkContextO` is separate from `beStrict`.
 
 </details>
 

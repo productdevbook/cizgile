@@ -5,6 +5,7 @@ const config: RolldownOptions = defineConfig({
   input: {
     index: "src/index.ts",
     uri: "src/uri.ts",
+    idna: "src/idna.ts",
     transliterate: "src/transliterate.ts",
   },
   platform: "neutral",

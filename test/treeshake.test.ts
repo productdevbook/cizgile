@@ -44,6 +44,12 @@ const BUDGET_BYTES: ReadonlyArray<readonly [string, string, number]> = [
     6_000,
   ],
   ["the whole uri entry", `import * as m from "${SRC}/uri.ts"; console.log(m)`, 25_000],
+  [
+    "idnaToAscii only",
+    `import { idnaToAscii } from "${SRC}/idna.ts"; console.log(idnaToAscii("x"))`,
+    52_000,
+  ],
+  ["the whole idna entry", `import * as m from "${SRC}/idna.ts"; console.log(m)`, 52_000],
 ]
 
 describe("size budget (minified, not gzipped)", () => {
@@ -55,6 +61,12 @@ describe("size budget (minified, not gzipped)", () => {
 })
 
 describe("tree-shaking", () => {
+  it("the uri entry carries no IDNA table", async () => {
+    const code = await bundle(`import * as m from "${SRC}/uri.ts"; console.log(m)`, true)
+    expect(code).not.toContain("codePointStatus")
+    expect(code).not.toContain("16.0.0")
+  })
+
   it("importing slugify does not pull in non-Latin script tables", async () => {
     const code = await bundle(
       `import { slugify } from "${SRC}/index.ts"; console.log(slugify("x"))`,
