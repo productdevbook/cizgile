@@ -44,6 +44,10 @@
       "types": "./dist/uri.d.mts",
       "default": "./dist/uri.mjs"
     },
+    "./uri/idna": {
+      "types": "./dist/idna.d.mts",
+      "default": "./dist/idna.mjs"
+    },
     "./transliterate": {
       "types": "./dist/transliterate.d.mts",
       "default": "./dist/transliterate.mjs"
